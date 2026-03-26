@@ -1,0 +1,114 @@
+import { Request, Response } from 'express';
+import { db } from '../config/firebase';
+import { Product } from '../models/types';
+
+export const createProduct = async (req: Request, res: Response) => {
+  const { name, description, price, discountPrice, category, images, stock } = req.body;
+
+  if (!name || !price || !category || !stock) {
+    return res.status(400).json({ message: 'Name, price, category, and stock are required' });
+  }
+
+  try {
+    const newProduct: Product = {
+      id: db.collection('products').doc().id,
+      name,
+      description,
+      price,
+      discountPrice,
+      category,
+      images: images || [],
+      stock,
+      rating: 0,
+      reviewsCount: 0,
+      createdAt: new Date().toISOString(),
+    };
+
+    await db.collection('products').doc(newProduct.id).set(newProduct);
+    res.status(201).json(newProduct);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error creating product' });
+  }
+};
+
+export const getAllProducts = async (req: Request, res: Response) => {
+  const { category, minPrice, maxPrice, search, sort } = req.query;
+
+  try {
+    let query: any = db.collection('products');
+
+    if (category) {
+      query = query.where('category', '==', category);
+    }
+
+    const snapshot = await query.get();
+    let products = snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() } as Product));
+
+    // Client-side filtering for search and price (Firestore has limitations on multiple range filters)
+    if (search) {
+      const searchLower = String(search).toLowerCase();
+      products = products.filter(p => 
+        p.name.toLowerCase().includes(searchLower) || 
+        p.description.toLowerCase().includes(searchLower)
+      );
+    }
+
+    if (minPrice) {
+      products = products.filter(p => p.price >= Number(minPrice));
+    }
+
+    if (maxPrice) {
+      products = products.filter(p => p.price <= Number(maxPrice));
+    }
+
+    if (sort === 'price_asc') {
+      products.sort((a, b) => a.price - b.price);
+    } else if (sort === 'price_desc') {
+      products.sort((a, b) => b.price - a.price);
+    } else {
+      products.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    }
+
+    res.json(products);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error fetching products' });
+  }
+};
+
+export const getSingleProduct = async (req: Request, res: Response) => {
+  try {
+    const productDoc = await db.collection('products').doc(req.params.id).get();
+    if (!productDoc.exists) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+    res.json({ id: productDoc.id, ...productDoc.data() });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+export const updateProduct = async (req: Request, res: Response) => {
+  try {
+    const productRef = db.collection('products').doc(req.params.id);
+    const productDoc = await productRef.get();
+    
+    if (!productDoc.exists) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    await productRef.update(req.body);
+    const updatedDoc = await productRef.get();
+    res.json({ id: updatedDoc.id, ...updatedDoc.data() });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error updating product' });
+  }
+};
+
+export const deleteProduct = async (req: Request, res: Response) => {
+  try {
+    await db.collection('products').doc(req.params.id).delete();
+    res.json({ message: 'Product deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error deleting product' });
+  }
+};

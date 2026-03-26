@@ -1,0 +1,98 @@
+export type UserRole = 'admin' | 'customer';
+
+export interface UserProfile {
+  uid: string;
+  email: string;
+  displayName?: string;
+  photoURL?: string;
+  role: UserRole;
+  phone?: string;
+  address?: string;
+  createdAt: string;
+}
+
+export interface Product {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  discountPrice?: number;
+  category: string;
+  images: string[];
+  videoUrl?: string;
+  stock: number;
+  sizes?: string[];
+  colors?: string[];
+  rating: number;
+  reviewsCount: number;
+  featured?: boolean;
+  trending?: boolean;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface CartItem extends Product {
+  quantity: number;
+  selectedSize?: string;
+  selectedColor?: string;
+  selected?: boolean;
+}
+
+export type OrderStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'refunded';
+export type PaymentMethod = 'bkash' | 'nagad' | 'rocket' | 'card' | 'cod';
+export type DeliveryArea = 'inside-dhaka' | 'outside-dhaka';
+
+export interface Order {
+  id: string;
+  userId: string;
+  customerName: string;
+  customerEmail: string;
+  phone: string;
+  address: string;
+  items: CartItem[];
+  subtotal: number;
+  deliveryCharge: number;
+  discount: number;
+  total: number;
+  status: OrderStatus;
+  paymentMethod: PaymentMethod;
+  paymentStatus: 'pending' | 'paid';
+  deliveryArea: DeliveryArea;
+  transactionId?: string;
+  customerNote?: string;
+  refundRequest?: {
+    reason: string;
+    status: 'pending' | 'approved' | 'rejected';
+    requestedAt: string;
+    processedAt?: string;
+  };
+  createdAt: string;
+}
+
+export interface Review {
+  id: string;
+  productId: string;
+  userId: string;
+  userName: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
+}
+
+export interface Coupon {
+  id: string;
+  code: string;
+  type: 'percentage' | 'fixed';
+  value: number;
+  minOrderAmount: number;
+  expiryDate: string;
+  usageLimit: number;
+  usedCount: number;
+  isActive: boolean;
+  createdAt: string;
+}
+
+export interface AppConfig {
+  deliveryInsideDhaka: number;
+  deliveryOutsideDhaka: number;
+}
