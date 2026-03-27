@@ -80,42 +80,42 @@ export default function Home() {
 
       {/* Features Bar */}
       <section className="border-b border-gray-100 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div className="flex items-center space-x-4">
+        <div className="container-custom py-6 md:py-10">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+            <div className="flex items-center space-x-3 md:space-x-4">
               <div className="flex-shrink-0">
-                <Truck className="h-10 w-10 text-[#f15a29]" />
+                <Truck className="h-8 w-8 md:h-10 md:h-10 text-[#f15a29]" />
               </div>
               <div>
-                <h3 className="font-bold text-gray-900">Fast Delivery</h3>
-                <p className="text-sm text-gray-500">All over Bangladesh</p>
+                <h3 className="font-bold text-gray-900 text-xs md:text-base">Fast Delivery</h3>
+                <p className="text-[10px] md:text-sm text-gray-500">All over BD</p>
               </div>
             </div>
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-3 md:space-x-4">
               <div className="flex-shrink-0">
-                <ShieldCheck className="h-10 w-10 text-[#f15a29]" />
+                <ShieldCheck className="h-8 w-8 md:h-10 md:h-10 text-[#f15a29]" />
               </div>
               <div>
-                <h3 className="font-bold text-gray-900">Secure Payment</h3>
-                <p className="text-sm text-gray-500">bKash, Nagad, Rocket, Card</p>
+                <h3 className="font-bold text-gray-900 text-xs md:text-base">Secure Pay</h3>
+                <p className="text-[10px] md:text-sm text-gray-500">bKash, Nagad</p>
               </div>
             </div>
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-3 md:space-x-4">
               <div className="flex-shrink-0">
-                <RotateCcw className="h-10 w-10 text-[#f15a29]" />
+                <RotateCcw className="h-8 w-8 md:h-10 md:h-10 text-[#f15a29]" />
               </div>
               <div>
-                <h3 className="font-bold text-gray-900">Easy Returns</h3>
-                <p className="text-sm text-gray-500">7-day return policy</p>
+                <h3 className="font-bold text-gray-900 text-xs md:text-base">Easy Returns</h3>
+                <p className="text-[10px] md:text-sm text-gray-500">7-day policy</p>
               </div>
             </div>
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-3 md:space-x-4">
               <div className="flex-shrink-0">
-                <Headphones className="h-10 w-10 text-[#f15a29]" />
+                <Headphones className="h-8 w-8 md:h-10 md:h-10 text-[#f15a29]" />
               </div>
               <div>
-                <h3 className="font-bold text-gray-900">24/7 Support</h3>
-                <p className="text-sm text-gray-500">WhatsApp & Phone</p>
+                <h3 className="font-bold text-gray-900 text-xs md:text-base">24/7 Support</h3>
+                <p className="text-[10px] md:text-sm text-gray-500">WhatsApp</p>
               </div>
             </div>
           </div>
@@ -123,7 +123,7 @@ export default function Home() {
       </section>
 
       {/* Categories */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="container-custom">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
           <div>
             <h2 className="text-4xl font-black text-gray-900 mb-2">Shop by Category</h2>
@@ -160,7 +160,7 @@ export default function Home() {
       </section>
 
       {/* Our Collection */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="container-custom">
         <div className="flex justify-between items-end mb-12">
           <div>
             <h2 className="text-3xl font-black text-gray-900 mb-2">Our Collection</h2>
@@ -170,7 +170,7 @@ export default function Home() {
             View All <ArrowRight className="ml-2 h-5 w-5" />
           </Link>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {loading ? (
             [...Array(8)].map((_, i) => (
               <div key={i} className="animate-pulse bg-white rounded-2xl h-[450px]"></div>
@@ -185,7 +185,7 @@ export default function Home() {
 
       {/* Featured Products */}
       <section className="bg-gray-50 py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="container-custom">
           <div className="flex justify-between items-end mb-12">
             <div>
               <h2 className="text-3xl font-black text-gray-900 mb-2">Featured Products</h2>
@@ -195,7 +195,7 @@ export default function Home() {
               View All <ArrowRight className="ml-2 h-5 w-5" />
             </Link>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {loading ? (
               [...Array(4)].map((_, i) => (
                 <div key={i} className="animate-pulse bg-white rounded-2xl h-[450px]"></div>
@@ -210,7 +210,7 @@ export default function Home() {
       </section>
 
       {/* Trending Products */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="container-custom">
         <div className="flex justify-between items-end mb-12">
           <div>
             <h2 className="text-3xl font-black text-gray-900 mb-2">Trending Now</h2>
@@ -220,7 +220,7 @@ export default function Home() {
             View All <ArrowRight className="ml-2 h-5 w-5" />
           </Link>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {loading ? (
             [...Array(8)].map((_, i) => (
               <div key={i} className="animate-pulse bg-white rounded-2xl h-[450px]"></div>
@@ -239,7 +239,7 @@ export default function Home() {
           <div className="absolute top-10 left-10 text-white transform -rotate-12"><Quote size={120} /></div>
           <div className="absolute bottom-10 right-10 text-white transform rotate-12"><Quote size={120} /></div>
         </div>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="container-custom relative z-10">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-black text-white mb-4">What Our Customers Say</h2>
             <div className="flex justify-center space-x-1">

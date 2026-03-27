@@ -100,6 +100,7 @@ service cloud.firestore {
              (!('primaryColor' in data) || data.primaryColor is string) &&
              (!('topBannerText' in data) || data.topBannerText == null || data.topBannerText == "" || (data.topBannerText is string && data.topBannerText.size() < 500)) &&
              (!('topBannerLink' in data) || data.topBannerLink == null || data.topBannerLink == "" || (data.topBannerLink is string && data.topBannerLink.size() < 500)) &&
+             (!('bannerTextColor' in data) || data.bannerTextColor is string) &&
              (!('categories' in data) || data.categories == null || data.categories is list) &&
              (!('banners' in data) || data.banners == null || data.banners is list) &&
              (!('smallBanners' in data) || data.smallBanners == null || data.smallBanners is list);

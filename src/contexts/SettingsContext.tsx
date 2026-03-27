@@ -32,6 +32,7 @@ interface SiteSettings {
   topBannerLink: string;
   enableImageSearch: boolean;
   primaryColor: string;
+  bannerTextColor: string;
   banners: Banner[];
   smallBanners: Banner[];
   categories: Category[];
@@ -59,6 +60,7 @@ const defaultSettings: SiteSettings = {
   topBannerLink: '',
   enableImageSearch: true,
   primaryColor: '#10b981',
+  bannerTextColor: '#111827',
   banners: [],
   smallBanners: [],
   categories: [],

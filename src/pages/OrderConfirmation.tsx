@@ -45,7 +45,7 @@ export default function OrderConfirmation() {
 
   if (loading) {
     return (
-      <div className="max-w-3xl mx-auto px-4 py-24 text-center">
+      <div className="container-custom py-24 text-center">
         <div className="animate-spin h-12 w-12 border-4 border-orange-600 border-t-transparent rounded-full mx-auto"></div>
       </div>
     );
@@ -53,7 +53,7 @@ export default function OrderConfirmation() {
 
   if (!order) {
     return (
-      <div className="max-w-3xl mx-auto px-4 py-24 text-center">
+      <div className="container-custom py-24 text-center">
         <h1 className="text-3xl font-black mb-4">Order Not Found</h1>
         <Link to="/" className="bg-orange-600 text-white px-8 py-3 rounded-xl font-bold">Back to Home</Link>
       </div>
@@ -61,7 +61,7 @@ export default function OrderConfirmation() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="container-custom py-12">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

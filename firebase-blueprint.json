@@ -122,6 +122,7 @@
         "deliveryChargeOutside": { "type": "number" },
         "topBannerText": { "type": "string" },
         "topBannerLink": { "type": "string" },
+        "bannerTextColor": { "type": "string" },
         "categories": {
           "type": "array",
           "items": {

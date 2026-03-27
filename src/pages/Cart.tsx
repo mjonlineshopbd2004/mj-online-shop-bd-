@@ -12,7 +12,7 @@ export default function Cart() {
 
   if (items.length === 0) {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-24 text-center">
+      <div className="container-custom py-24 text-center">
         <div className="bg-gray-50 w-32 h-32 rounded-full flex items-center justify-center mx-auto mb-8">
           <ShoppingBag className="h-16 w-16 text-gray-300" />
         </div>
@@ -32,7 +32,7 @@ export default function Cart() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="container-custom py-12">
       <div className="flex items-center justify-between mb-12">
         <h1 className="text-4xl font-black text-gray-900">Shopping Cart</h1>
         <div className="flex items-center space-x-3 bg-gray-50 px-6 py-3 rounded-2xl border border-gray-100">

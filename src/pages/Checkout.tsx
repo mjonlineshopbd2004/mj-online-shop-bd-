@@ -225,7 +225,7 @@ export default function Checkout() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="container-custom py-12">
       <button
         onClick={() => navigate('/cart')}
         className="flex items-center text-gray-500 font-bold hover:text-orange-600 mb-8 transition-colors"

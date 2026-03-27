@@ -8,16 +8,20 @@ export default function TopBanner() {
 
   return (
     <div className="bg-gray-900 text-white py-2 px-4">
-      <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center text-[10px] sm:text-xs font-bold uppercase tracking-widest">
+      <div className="container-custom flex flex-col sm:flex-row justify-between items-center text-[10px] sm:text-xs font-bold uppercase tracking-widest">
         <div className="flex items-center space-x-4 mb-2 sm:mb-0">
           <div className="flex items-center space-x-1">
             <Truck className="h-3 w-3 text-orange-500" />
             {settings.topBannerLink ? (
-              <Link to={settings.topBannerLink} className="hover:text-orange-500 transition-colors">
+              <Link 
+                to={settings.topBannerLink} 
+                className="hover:text-orange-500 transition-colors"
+                style={{ color: settings.bannerTextColor || '#ffffff' }}
+              >
                 {settings.topBannerText}
               </Link>
             ) : (
-              <span>{settings.topBannerText}</span>
+              <span style={{ color: settings.bannerTextColor || '#ffffff' }}>{settings.topBannerText}</span>
             )}
           </div>
           <div className="hidden md:flex items-center space-x-1">

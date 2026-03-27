@@ -97,7 +97,7 @@ export default function OrderHistory() {
 
   if (loading) {
     return (
-      <div className="max-w-5xl mx-auto px-4 py-24">
+      <div className="container-custom py-24">
         <div className="animate-pulse space-y-6">
           {[...Array(3)].map((_, i) => (
             <div key={i} className="h-48 bg-gray-100 rounded-[2rem]"></div>
@@ -108,7 +108,7 @@ export default function OrderHistory() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="container-custom py-12">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
         <div>
           <h1 className="text-4xl font-black text-gray-900 mb-2">Order History</h1>

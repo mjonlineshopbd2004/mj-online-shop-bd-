@@ -36,6 +36,7 @@ interface SiteSettings {
   topBannerLink: string;
   enableImageSearch: boolean;
   primaryColor: string;
+  bannerTextColor: string;
   banners: Banner[];
   smallBanners: Banner[];
   categories: Category[];
@@ -60,6 +61,7 @@ export default function AdminSettings() {
     topBannerLink: '',
     enableImageSearch: true,
     primaryColor: '#10b981',
+    bannerTextColor: '#111827',
     banners: [
       {
         topText: 'Exclusive Offer',
@@ -185,9 +187,9 @@ export default function AdminSettings() {
   }
 
   return (
-    <div className="p-4 sm:p-8 bg-[#0a0a0a] min-h-screen text-white space-y-12 max-w-5xl mx-auto">
+    <div className="container-custom py-8 sm:py-12 bg-[#0a0a0a] min-h-screen text-white space-y-12">
       <div>
-        <h1 className="text-4xl font-black tracking-tight mb-2">Settings</h1>
+        <h1 className="text-3xl sm:text-4xl font-black tracking-tight mb-2">Settings</h1>
         <p className="text-gray-400 font-bold">Configure your store information and preferences</p>
       </div>
 
@@ -323,7 +325,7 @@ export default function AdminSettings() {
           </h2>
           
           <div className="space-y-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div className="space-y-3">
                 <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-2">Top Banner Text</label>
                 <input
@@ -342,6 +344,21 @@ export default function AdminSettings() {
                   className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-emerald-500 transition-all font-bold text-white"
                   placeholder="/products"
                 />
+              </div>
+              <div className="space-y-3">
+                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-2">Banner Text Color</label>
+                <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-2xl px-6 py-3">
+                  <div 
+                    className="w-8 h-8 rounded-lg border border-white/20"
+                    style={{ backgroundColor: settings.bannerTextColor }}
+                  />
+                  <input
+                    type="color"
+                    value={settings.bannerTextColor}
+                    onChange={(e) => setSettings({ ...settings, bannerTextColor: e.target.value })}
+                    className="w-full h-10 bg-transparent border-none cursor-pointer"
+                  />
+                </div>
               </div>
             </div>
 

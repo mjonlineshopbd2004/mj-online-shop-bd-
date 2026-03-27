@@ -10,10 +10,10 @@ export default function HeroSection() {
   const smallBanners = settings.smallBanners || [];
 
   return (
-    <div className="container-custom py-8">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-auto lg:h-[500px]">
+    <div className="container-custom py-4 md:py-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 h-auto lg:h-[500px]">
         {/* Main Left Banner */}
-        <div className="lg:col-span-2 relative overflow-hidden bg-[#f3f9fb] group rounded-none">
+        <div className="lg:col-span-2 relative overflow-hidden bg-[#f3f9fb] group rounded-2xl md:rounded-none h-[350px] md:h-[500px] lg:h-full">
           <div className="absolute inset-0 z-0">
             <img
               src={banners[0]?.image || "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=1000"}
@@ -34,9 +34,20 @@ export default function HeroSection() {
                   {banners[0].topText}
                 </p>
               )}
-              <h2 className="text-4xl md:text-6xl font-black text-gray-900 mb-6 leading-tight">
+              <h2 
+                className="text-4xl md:text-6xl font-black mb-4 leading-tight"
+                style={{ color: settings.bannerTextColor || '#111827' }}
+              >
                 {banners[0]?.title || "Premium Collection"}
               </h2>
+              {banners[0]?.subtitle && (
+                <p 
+                  className="text-lg md:text-xl font-medium mb-8 max-w-lg opacity-90"
+                  style={{ color: settings.bannerTextColor || '#111827' }}
+                >
+                  {banners[0].subtitle}
+                </p>
+              )}
               <Link
                 to={banners[0]?.link || "/products"}
                 className="inline-flex items-center justify-center px-8 py-4 bg-primary text-white font-bold text-lg hover:bg-primary-dark transition-all shadow-xl shadow-primary/20 group/btn"
@@ -49,7 +60,7 @@ export default function HeroSection() {
         </div>
 
         {/* Right Side Banner */}
-        <div className="relative overflow-hidden bg-[#fde1b6] p-10 flex flex-col justify-end group rounded-none">
+        <div className="relative overflow-hidden bg-[#fde1b6] p-8 md:p-10 flex flex-col justify-end group rounded-2xl md:rounded-none h-[250px] md:h-[500px] lg:h-full">
           <div className="absolute inset-0 z-0">
             <img
               src={smallBanners[0]?.image || "https://images.unsplash.com/photo-1621939514649-280e2ee25f60?auto=format&fit=crop&q=80&w=600"}
@@ -65,9 +76,20 @@ export default function HeroSection() {
                 {smallBanners[0].topText}
               </p>
             )}
-            <h3 className="text-2xl font-black text-gray-900 mb-4">
+            <h3 
+              className="text-2xl font-black mb-2"
+              style={{ color: settings.bannerTextColor || '#111827' }}
+            >
               {smallBanners[0]?.title || "Weekend Discount"}
             </h3>
+            {smallBanners[0]?.subtitle && (
+              <p 
+                className="text-sm font-medium mb-4 opacity-90"
+                style={{ color: settings.bannerTextColor || '#111827' }}
+              >
+                {smallBanners[0].subtitle}
+              </p>
+            )}
             <Link
               to={smallBanners[0]?.link || "/products"}
               className="inline-flex items-center gap-2 text-gray-900 font-bold hover:text-primary transition-colors group/link"

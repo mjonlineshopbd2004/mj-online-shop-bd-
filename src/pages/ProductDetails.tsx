@@ -145,7 +145,7 @@ export default function ProductDetails() {
 
   if (loading) {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-20">
+      <div className="container-custom py-20">
         <div className="animate-pulse flex flex-col md:flex-row gap-12">
           <div className="md:w-1/2 aspect-square bg-gray-100 rounded-3xl"></div>
           <div className="md:w-1/2 space-y-6">
@@ -161,7 +161,7 @@ export default function ProductDetails() {
 
   if (!product) {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-20 text-center">
+      <div className="container-custom py-20 text-center">
         <h1 className="text-3xl font-black mb-4">Product Not Found</h1>
         <button onClick={() => navigate('/products')} className="bg-orange-600 text-white px-8 py-3 rounded-xl font-bold">Back to Shop</button>
       </div>
@@ -181,7 +181,7 @@ export default function ProductDetails() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="container-custom py-12">
       <div className="flex flex-col lg:flex-row gap-12 mb-24">
         {/* Image Gallery */}
         <div className="lg:w-1/2 space-y-4">

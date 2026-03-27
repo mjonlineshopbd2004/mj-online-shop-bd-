@@ -1,16 +1,39 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { User, Phone, MapPin, Mail, Save, Loader2, LogOut } from 'lucide-react';
+import { User, Phone, MapPin, Mail, Save, Loader2, LogOut, Download } from 'lucide-react';
 import { motion } from 'motion/react';
 
 export default function Profile() {
   const { profile, updateUserProfile, logout } = useAuth();
   const [isSaving, setIsSaving] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [formData, setFormData] = useState({
     displayName: '',
     phone: '',
     address: '',
   });
+
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e: any) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setDeferredPrompt(null);
+    }
+  };
 
   useEffect(() => {
     if (profile) {
@@ -43,7 +66,7 @@ export default function Profile() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="container-custom py-12">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -58,6 +81,26 @@ export default function Profile() {
         </div>
 
         <div className="p-8 sm:p-12">
+          {deferredPrompt && (
+            <div className="mb-10 bg-orange-50 border-2 border-orange-200 rounded-3xl p-6 flex flex-col sm:flex-row items-center justify-between gap-6">
+              <div className="flex items-center space-x-4">
+                <div className="bg-orange-600 p-3 rounded-2xl text-white">
+                  <Download className="h-6 w-6" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-black text-gray-900">Install MJ SHOP App</h3>
+                  <p className="text-sm text-gray-500 font-medium">Install our app for a better shopping experience!</p>
+                </div>
+              </div>
+              <button
+                onClick={handleInstallClick}
+                className="bg-orange-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-orange-700 transition-all shadow-lg shadow-orange-200 whitespace-nowrap"
+              >
+                Install Now
+              </button>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-10">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {/* Name */}
