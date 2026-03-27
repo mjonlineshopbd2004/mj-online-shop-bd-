@@ -16,13 +16,13 @@ export default function Cart() {
         <div className="bg-gray-50 w-32 h-32 rounded-full flex items-center justify-center mx-auto mb-8">
           <ShoppingBag className="h-16 w-16 text-gray-300" />
         </div>
-        <h1 className="text-4xl font-black text-gray-900 mb-4">Your cart is empty</h1>
+        <h1 className="text-4xl font-bold tracking-tight text-gray-900 mb-4">Your cart is empty</h1>
         <p className="text-gray-500 text-lg mb-10 max-w-md mx-auto">
           Looks like you haven't added anything to your cart yet. Explore our latest collections and find something you love!
         </p>
         <Link
           to="/products"
-          className="inline-flex items-center bg-orange-600 text-white px-10 py-4 rounded-2xl font-black text-lg shadow-xl hover:bg-orange-700 transition-all"
+          className="inline-flex items-center bg-orange-600 text-white px-10 py-4 rounded-2xl font-bold text-lg shadow-xl hover:bg-orange-700 transition-all"
         >
           Start Shopping
           <ArrowRight className="ml-2 h-5 w-5" />
@@ -34,7 +34,7 @@ export default function Cart() {
   return (
     <div className="container-custom py-12">
       <div className="flex items-center justify-between mb-12">
-        <h1 className="text-4xl font-black text-gray-900">Shopping Cart</h1>
+        <h1 className="text-4xl font-bold tracking-tight text-gray-900">Shopping Cart</h1>
         <div className="flex items-center space-x-3 bg-gray-50 px-6 py-3 rounded-2xl border border-gray-100">
           <input
             type="checkbox"
@@ -42,7 +42,7 @@ export default function Cart() {
             onChange={(e) => toggleAllSelection(e.target.checked)}
             className="w-5 h-5 rounded-lg border-gray-300 text-orange-600 focus:ring-orange-500 cursor-pointer"
           />
-          <span className="text-sm font-black text-gray-900 uppercase tracking-widest">Select All</span>
+          <span className="text-sm font-bold text-gray-900 uppercase tracking-widest">Select All</span>
         </div>
       </div>
 
@@ -71,7 +71,7 @@ export default function Cart() {
               </div>
               
               <div className="flex-1 text-center sm:text-left">
-                <h3 className="text-xl font-black text-gray-900 mb-1">{item.name}</h3>
+                <h3 className="text-xl font-bold tracking-tight text-gray-900 mb-1">{item.name}</h3>
                 <p className="text-orange-600 font-bold text-sm mb-2 uppercase tracking-widest">{item.category}</p>
                 <div className="flex flex-wrap justify-center sm:justify-start gap-4 text-sm font-bold text-gray-500">
                   {item.selectedSize && <span>Size: <span className="text-gray-900">{item.selectedSize}</span></span>}
@@ -87,7 +87,7 @@ export default function Cart() {
                   >
                     <Minus className="h-4 w-4" />
                   </button>
-                  <span className="w-10 text-center font-black">{item.quantity}</span>
+                  <span className="w-10 text-center font-bold">{item.quantity}</span>
                   <button
                     onClick={() => updateQuantity(item.id, item.quantity + 1, item.selectedSize, item.selectedColor)}
                     className="p-2 text-gray-600 hover:bg-white hover:shadow-sm rounded-lg transition-all"
@@ -96,7 +96,7 @@ export default function Cart() {
                   </button>
                 </div>
                 <div className="flex items-center space-x-4">
-                  <span className="text-xl font-black text-gray-900">
+                  <span className="text-xl font-bold tracking-tight text-gray-900">
                     {formatPrice((item.discountPrice || item.price) * item.quantity)}
                   </span>
                   <button
@@ -114,7 +114,7 @@ export default function Cart() {
         {/* Order Summary */}
         <aside className="lg:w-96">
           <div className="bg-gray-900 text-white rounded-[2.5rem] p-8 shadow-2xl sticky top-24">
-            <h2 className="text-2xl font-black mb-8">Order Summary</h2>
+            <h2 className="text-2xl font-bold tracking-tight mb-8">Order Summary</h2>
             
             <div className="space-y-4 mb-8">
               <div className="flex justify-between text-gray-400 font-bold">
@@ -130,8 +130,8 @@ export default function Cart() {
                 <span className="text-white">Calculated at checkout</span>
               </div>
               <div className="border-t border-white/10 pt-4 flex justify-between items-center">
-                <span className="text-xl font-black">Total</span>
-                <span className="text-3xl font-black text-orange-500">{formatPrice(selectedSubtotal)}</span>
+                <span className="text-xl font-bold tracking-tight">Total</span>
+                <span className="text-3xl font-bold tracking-tight text-orange-500">{formatPrice(selectedSubtotal)}</span>
               </div>
             </div>
 
@@ -139,7 +139,7 @@ export default function Cart() {
               <button
                 onClick={() => navigate('/checkout')}
                 disabled={selectedItems.length === 0}
-                className="w-full bg-orange-600 text-white py-5 rounded-2xl font-black text-xl shadow-xl hover:bg-orange-700 transition-all flex items-center justify-center space-x-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-orange-600 text-white py-5 rounded-2xl font-bold text-xl shadow-xl hover:bg-orange-700 transition-all flex items-center justify-center space-x-3 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <span>Checkout Now</span>
                 <ArrowRight className="h-6 w-6" />

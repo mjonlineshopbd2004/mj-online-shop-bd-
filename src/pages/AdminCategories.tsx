@@ -6,6 +6,7 @@ import { Plus, X, Loader2, Layers, Trash2, Upload, Image as ImageIcon } from 'lu
 import { motion } from 'motion/react';
 import { auth } from '../lib/firebase';
 import { uploadFile } from '../lib/upload';
+import { CATEGORIES } from '../constants';
 
 enum OperationType {
   CREATE = 'create',
@@ -73,7 +74,7 @@ const DEFAULT_SETTINGS = {
   email: 'mjonlineshopbd@gmail.com',
   deliveryChargeInside: 60,
   deliveryChargeOutside: 120,
-  categories: [],
+  categories: CATEGORIES.map(name => ({ name, image: `https://picsum.photos/seed/${name}/600/800` })),
   banners: []
 };
 
@@ -83,6 +84,8 @@ export default function AdminCategories() {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [newCategory, setNewCategory] = useState({ name: '', image: '' });
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [editCategory, setEditCategory] = useState({ name: '', image: '' });
 
   useEffect(() => {
     const unsub = onSnapshot(doc(db, 'settings', 'site'), (docSnap) => {
@@ -101,14 +104,18 @@ export default function AdminCategories() {
     return () => unsub();
   }, []);
 
-  const handleImageUpload = async (file: File) => {
+  const handleImageUpload = async (file: File, isEdit: boolean = false) => {
     setUploading(true);
     try {
       const idToken = await auth.currentUser?.getIdToken();
       if (!idToken) throw new Error('Not authenticated');
       const url = await uploadFile(file, idToken);
       if (url) {
-        setNewCategory(prev => ({ ...prev, image: url }));
+        if (isEdit) {
+          setEditCategory(prev => ({ ...prev, image: url }));
+        } else {
+          setNewCategory(prev => ({ ...prev, image: url }));
+        }
         toast.success('Image uploaded successfully');
       }
     } catch (error) {
@@ -157,6 +164,40 @@ export default function AdminCategories() {
     }
   };
 
+  const handleUpdateCategory = async () => {
+    if (editingIndex === null) return;
+    if (!editCategory.name.trim()) {
+      toast.error('Please enter a category name');
+      return;
+    }
+
+    const updatedCategories = [...categories];
+    updatedCategories[editingIndex] = {
+      name: editCategory.name.trim(),
+      image: editCategory.image
+    };
+
+    setSaving(true);
+    const path = 'settings/site';
+    try {
+      const docRef = doc(db, 'settings', 'site');
+      const docSnap = await getDoc(docRef);
+      const currentData = docSnap.exists() ? docSnap.data() : DEFAULT_SETTINGS;
+
+      await setDoc(docRef, {
+        ...currentData,
+        categories: updatedCategories
+      });
+      setCategories(updatedCategories);
+      setEditingIndex(null);
+      toast.success('Category updated successfully');
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, path);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handleRemoveCategory = async (index: number) => {
     const updatedCategories = categories.filter((_, i) => i !== index);
     setSaving(true);
@@ -180,6 +221,42 @@ export default function AdminCategories() {
     }
   };
 
+  const SUGGESTED_CATEGORIES = [
+    { name: 'Shoes', image: 'https://picsum.photos/seed/shoes/600/800' },
+    { name: 'Bags', image: 'https://picsum.photos/seed/bags/600/800' },
+    { name: 'Jewelry', image: 'https://picsum.photos/seed/jewelry/600/800' },
+    { name: 'Women\'s Clothing', image: 'https://picsum.photos/seed/women-clothing/600/800' },
+    { name: 'Watches', image: 'https://picsum.photos/seed/watches/600/800' },
+    { name: 'Electronics & Gadgets', image: 'https://picsum.photos/seed/electronics/600/800' },
+    { name: 'Home & Kitchen', image: 'https://picsum.photos/seed/kitchen/600/800' },
+  ];
+
+  const handleQuickAdd = async (suggested: Category) => {
+    if (categories.some(cat => cat.name.toLowerCase() === suggested.name.toLowerCase())) {
+      toast.error('Category already exists');
+      return;
+    }
+    
+    const updatedCategories = [...categories, suggested];
+    setSaving(true);
+    try {
+      const docRef = doc(db, 'settings', 'site');
+      const docSnap = await getDoc(docRef);
+      const currentData = docSnap.exists() ? docSnap.data() : DEFAULT_SETTINGS;
+      
+      await setDoc(docRef, {
+        ...currentData,
+        categories: updatedCategories
+      });
+      setCategories(updatedCategories);
+      toast.success(`${suggested.name} added successfully`);
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, 'settings/site');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-[#0a0a0a]">
@@ -198,33 +275,176 @@ export default function AdminCategories() {
       </div>
 
       <div className="bg-white/5 border border-white/10 rounded-[2.5rem] p-8 space-y-8">
+        <div>
+          <h2 className="text-xl font-black tracking-tight mb-4">Quick Add Suggested Categories</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-4">
+            {SUGGESTED_CATEGORIES.map((suggested) => (
+              <button
+                key={suggested.name}
+                onClick={() => handleQuickAdd(suggested)}
+                disabled={saving || categories.some(cat => cat.name === suggested.name)}
+                className="flex flex-col items-center gap-2 p-4 bg-white/5 border border-white/10 rounded-2xl hover:bg-emerald-500/10 hover:border-emerald-500/50 transition-all group disabled:opacity-50"
+              >
+                <div className="h-12 w-12 rounded-xl overflow-hidden bg-white/5">
+                  <img src={suggested.image} alt="" className="h-full w-full object-cover group-hover:scale-110 transition-transform" />
+                </div>
+                <span className="text-[10px] font-black uppercase tracking-widest text-center">{suggested.name}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="space-y-6">
-            <div className="space-y-3">
-              <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-2">Category Name</label>
-              <div className="relative group">
-                <Layers className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 group-focus-within:text-emerald-500 transition-colors" />
-                <input
-                  type="text"
-                  value={newCategory.name}
-                  onChange={(e) => setNewCategory(prev => ({ ...prev, name: e.target.value }))}
-                  onKeyDown={(e) => e.key === 'Enter' && !saving && handleAddCategory()}
-                  placeholder="Enter category name..."
-                  disabled={saving}
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl pl-14 pr-6 py-4 outline-none focus:border-emerald-500 transition-all font-bold text-white disabled:opacity-50"
-                />
-              </div>
-            </div>
+            {editingIndex !== null ? (
+              <div className="space-y-6 p-6 bg-emerald-500/5 border border-emerald-500/20 rounded-3xl">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-lg font-black text-emerald-500">Edit Category</h3>
+                  <button 
+                    onClick={() => setEditingIndex(null)}
+                    className="p-2 hover:bg-white/5 rounded-xl transition-all"
+                  >
+                    <X className="h-5 w-5 text-gray-500" />
+                  </button>
+                </div>
 
-            <div className="space-y-3">
-              <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-2">Category Image</label>
-              <div className="relative">
-                {newCategory.image ? (
-                  <div className="relative aspect-video rounded-2xl overflow-hidden border border-white/10 group/img">
-                    <img src={newCategory.image} alt="" className="w-full h-full object-cover" />
-                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center gap-4">
-                      <label className="cursor-pointer bg-white text-black px-6 py-2 rounded-xl font-black text-xs hover:scale-105 transition-transform">
-                        Change
+                <div className="space-y-3">
+                  <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-2">Category Name</label>
+                  <div className="relative group">
+                    <Layers className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 group-focus-within:text-emerald-500 transition-colors" />
+                    <input
+                      type="text"
+                      value={editCategory.name}
+                      onChange={(e) => setEditCategory(prev => ({ ...prev, name: e.target.value }))}
+                      onKeyDown={(e) => e.key === 'Enter' && !saving && handleUpdateCategory()}
+                      placeholder="Enter category name..."
+                      disabled={saving}
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl pl-14 pr-6 py-4 outline-none focus:border-emerald-500 transition-all font-bold text-white disabled:opacity-50"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-2 flex justify-between">
+                    <span>Category Image</span>
+                    <span className="text-emerald-500/50">Optional</span>
+                  </label>
+                  <div className="relative">
+                    {editCategory.image ? (
+                      <div className="relative aspect-video rounded-2xl overflow-hidden border border-white/10 group/img">
+                        <img src={editCategory.image} alt="" className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center gap-4">
+                          <label className="cursor-pointer bg-white text-black px-6 py-2 rounded-xl font-black text-xs hover:scale-105 transition-transform">
+                            Change
+                            <input
+                              type="file"
+                              className="hidden"
+                              accept="image/*"
+                              onChange={(e) => e.target.files?.[0] && handleImageUpload(e.target.files[0], true)}
+                            />
+                          </label>
+                          <button
+                            onClick={() => setEditCategory(prev => ({ ...prev, image: '' }))}
+                            className="bg-red-500 text-white px-6 py-2 rounded-xl font-black text-xs hover:scale-105 transition-transform"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <label className="flex flex-col items-center justify-center aspect-video bg-white/5 border-2 border-dashed border-white/10 rounded-2xl cursor-pointer hover:border-emerald-500/50 transition-all group/upload">
+                        {uploading ? (
+                          <Loader2 className="h-8 w-8 text-emerald-500 animate-spin" />
+                        ) : (
+                          <>
+                            <Upload className="h-8 w-8 text-gray-500 group-hover/upload:text-emerald-500 transition-colors mb-2" />
+                            <span className="text-xs font-black text-gray-500 group-hover/upload:text-emerald-500 uppercase tracking-widest">Upload Image</span>
+                          </>
+                        )}
+                        <input
+                          type="file"
+                          className="hidden"
+                          accept="image/*"
+                          onChange={(e) => e.target.files?.[0] && handleImageUpload(e.target.files[0], true)}
+                        />
+                      </label>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setEditingIndex(null)}
+                    disabled={saving}
+                    className="flex-1 bg-white/5 text-white py-4 rounded-2xl font-black hover:bg-white/10 transition-all disabled:opacity-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleUpdateCategory}
+                    disabled={saving || uploading}
+                    className="flex-[2] bg-emerald-600 text-white py-4 rounded-2xl font-black hover:bg-emerald-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg shadow-emerald-600/20"
+                  >
+                    {saving ? <Loader2 className="h-5 w-5 animate-spin" /> : <Plus className="h-5 w-5" />}
+                    Save Changes
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="space-y-3">
+                  <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-2">Category Name</label>
+                  <div className="relative group">
+                    <Layers className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 group-focus-within:text-emerald-500 transition-colors" />
+                    <input
+                      type="text"
+                      value={newCategory.name}
+                      onChange={(e) => setNewCategory(prev => ({ ...prev, name: e.target.value }))}
+                      onKeyDown={(e) => e.key === 'Enter' && !saving && handleAddCategory()}
+                      placeholder="Enter category name..."
+                      disabled={saving}
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl pl-14 pr-6 py-4 outline-none focus:border-emerald-500 transition-all font-bold text-white disabled:opacity-50"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-2 flex justify-between">
+                    <span>Category Image</span>
+                    <span className="text-emerald-500/50">Optional</span>
+                  </label>
+                  <div className="relative">
+                    {newCategory.image ? (
+                      <div className="relative aspect-video rounded-2xl overflow-hidden border border-white/10 group/img">
+                        <img src={newCategory.image} alt="" className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center gap-4">
+                          <label className="cursor-pointer bg-white text-black px-6 py-2 rounded-xl font-black text-xs hover:scale-105 transition-transform">
+                            Change
+                            <input
+                              type="file"
+                              className="hidden"
+                              accept="image/*"
+                              onChange={(e) => e.target.files?.[0] && handleImageUpload(e.target.files[0])}
+                            />
+                          </label>
+                          <button
+                            onClick={() => setNewCategory(prev => ({ ...prev, image: '' }))}
+                            className="bg-red-500 text-white px-6 py-2 rounded-xl font-black text-xs hover:scale-105 transition-transform"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <label className="flex flex-col items-center justify-center aspect-video bg-white/5 border-2 border-dashed border-white/10 rounded-2xl cursor-pointer hover:border-emerald-500/50 transition-all group/upload">
+                        {uploading ? (
+                          <Loader2 className="h-8 w-8 text-emerald-500 animate-spin" />
+                        ) : (
+                          <>
+                            <Upload className="h-8 w-8 text-gray-500 group-hover/upload:text-emerald-500 transition-colors mb-2" />
+                            <span className="text-xs font-black text-gray-500 group-hover/upload:text-emerald-500 uppercase tracking-widest">Upload Image</span>
+                          </>
+                        )}
                         <input
                           type="file"
                           className="hidden"
@@ -232,43 +452,20 @@ export default function AdminCategories() {
                           onChange={(e) => e.target.files?.[0] && handleImageUpload(e.target.files[0])}
                         />
                       </label>
-                      <button
-                        onClick={() => setNewCategory(prev => ({ ...prev, image: '' }))}
-                        className="bg-red-500 text-white px-6 py-2 rounded-xl font-black text-xs hover:scale-105 transition-transform"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <label className="flex flex-col items-center justify-center aspect-video bg-white/5 border-2 border-dashed border-white/10 rounded-2xl cursor-pointer hover:border-emerald-500/50 transition-all group/upload">
-                    {uploading ? (
-                      <Loader2 className="h-8 w-8 text-emerald-500 animate-spin" />
-                    ) : (
-                      <>
-                        <Upload className="h-8 w-8 text-gray-500 group-hover/upload:text-emerald-500 transition-colors mb-2" />
-                        <span className="text-xs font-black text-gray-500 group-hover/upload:text-emerald-500 uppercase tracking-widest">Upload Image</span>
-                      </>
                     )}
-                    <input
-                      type="file"
-                      className="hidden"
-                      accept="image/*"
-                      onChange={(e) => e.target.files?.[0] && handleImageUpload(e.target.files[0])}
-                    />
-                  </label>
-                )}
-              </div>
-            </div>
+                  </div>
+                </div>
 
-            <button
-              onClick={handleAddCategory}
-              disabled={saving || uploading}
-              className="w-full bg-emerald-600 text-white py-4 rounded-2xl font-black hover:bg-emerald-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg shadow-emerald-600/20"
-            >
-              {saving ? <Loader2 className="h-5 w-5 animate-spin" /> : <Plus className="h-5 w-5" />}
-              Add Category
-            </button>
+                <button
+                  onClick={handleAddCategory}
+                  disabled={saving || uploading}
+                  className="w-full bg-emerald-600 text-white py-4 rounded-2xl font-black hover:bg-emerald-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg shadow-emerald-600/20"
+                >
+                  {saving ? <Loader2 className="h-5 w-5 animate-spin" /> : <Plus className="h-5 w-5" />}
+                  Add Category
+                </button>
+              </>
+            )}
           </div>
 
           <div className="space-y-4">
@@ -294,12 +491,24 @@ export default function AdminCategories() {
                   <div className="flex-1">
                     <span className="font-black text-lg block">{category.name}</span>
                   </div>
-                  <button
-                    onClick={() => handleRemoveCategory(index)}
-                    className="p-3 text-gray-500 hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all"
-                  >
-                    <Trash2 className="h-5 w-5" />
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => {
+                        setEditingIndex(index);
+                        setEditCategory(category);
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }}
+                      className="p-3 text-gray-500 hover:text-emerald-500 hover:bg-emerald-500/10 rounded-xl transition-all"
+                    >
+                      <Plus className="h-5 w-5 rotate-45" />
+                    </button>
+                    <button
+                      onClick={() => handleRemoveCategory(index)}
+                      className="p-3 text-gray-500 hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all"
+                    >
+                      <Trash2 className="h-5 w-5" />
+                    </button>
+                  </div>
                 </motion.div>
               ))}
 

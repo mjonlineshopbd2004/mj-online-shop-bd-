@@ -236,18 +236,18 @@ export default function Checkout() {
 
       <div className="flex flex-col lg:flex-row gap-12">
         <div className="flex-1">
-          <h1 className="text-4xl font-black text-gray-900 mb-12">Checkout</h1>
+          <h1 className="text-4xl font-bold tracking-tight text-gray-900 mb-12">Checkout</h1>
 
           <form onSubmit={handleSubmit} className="space-y-12">
             {/* Shipping Info */}
             <section>
               <div className="flex items-center space-x-3 mb-8">
                 <div className="bg-orange-100 p-3 rounded-2xl"><MapPin className="h-6 w-6 text-orange-600" /></div>
-                <h2 className="text-2xl font-black text-gray-900">Shipping Information</h2>
+                <h2 className="text-2xl font-bold tracking-tight text-gray-900">Shipping Information</h2>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label className="text-sm font-black text-gray-500 uppercase tracking-widest">Full Name</label>
+                  <label className="text-sm font-bold text-gray-500 uppercase tracking-widest">Full Name</label>
                   <div className="relative">
                     <input
                       type="text"
@@ -260,7 +260,7 @@ export default function Checkout() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-black text-gray-500 uppercase tracking-widest">Phone Number</label>
+                  <label className="text-sm font-bold text-gray-500 uppercase tracking-widest">Phone Number</label>
                   <div className="relative">
                     <input
                       type="tel"
@@ -274,7 +274,7 @@ export default function Checkout() {
                   </div>
                 </div>
                 <div className="md:col-span-2 space-y-2">
-                  <label className="text-sm font-black text-gray-500 uppercase tracking-widest">Full Address</label>
+                  <label className="text-sm font-bold text-gray-500 uppercase tracking-widest">Full Address</label>
                   <textarea
                     required
                     rows={3}
@@ -284,7 +284,7 @@ export default function Checkout() {
                   />
                 </div>
                 <div className="md:col-span-2 space-y-2">
-                  <label className="text-sm font-black text-gray-500 uppercase tracking-widest">Customer Note (Optional)</label>
+                  <label className="text-sm font-bold text-gray-500 uppercase tracking-widest">Customer Note (Optional)</label>
                   <textarea
                     rows={2}
                     placeholder="Any special instructions for your order?"
@@ -300,7 +300,7 @@ export default function Checkout() {
             <section>
               <div className="flex items-center space-x-3 mb-8">
                 <div className="bg-orange-100 p-3 rounded-2xl"><Truck className="h-6 w-6 text-orange-600" /></div>
-                <h2 className="text-2xl font-black text-gray-900">Delivery Area</h2>
+                <h2 className="text-2xl font-bold tracking-tight text-gray-900">Delivery Area</h2>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {DELIVERY_AREAS.map((area) => (
@@ -316,7 +316,7 @@ export default function Checkout() {
                     )}
                   >
                     <div className="text-left">
-                      <p className="font-black text-gray-900">{area.name}</p>
+                      <p className="font-bold text-gray-900">{area.name}</p>
                       <p className="text-sm text-gray-500 font-bold">
                         Delivery Charge: {formatPrice(area.id === 'inside-dhaka' ? settings.deliveryChargeInside : settings.deliveryChargeOutside)}
                       </p>
@@ -331,7 +331,7 @@ export default function Checkout() {
             <section>
               <div className="flex items-center space-x-3 mb-8">
                 <div className="bg-orange-100 p-3 rounded-2xl"><CreditCard className="h-6 w-6 text-orange-600" /></div>
-                <h2 className="text-2xl font-black text-gray-900">Payment Method</h2>
+                <h2 className="text-2xl font-bold tracking-tight text-gray-900">Payment Method</h2>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {PAYMENT_METHODS.map((method) => (
@@ -347,7 +347,7 @@ export default function Checkout() {
                     )}
                   >
                     <span className="text-3xl">{method.icon}</span>
-                    <p className="font-black text-gray-900">{method.name}</p>
+                    <p className="font-bold text-gray-900">{method.name}</p>
                     {formData.paymentMethod === method.id && <CheckCircle2 className="h-5 w-5 text-orange-600" />}
                   </button>
                 ))}
@@ -358,13 +358,13 @@ export default function Checkout() {
                   <div>
                     <p className="text-orange-800 font-bold mb-2">Payment Instructions:</p>
                     <p className="text-orange-700 text-sm">
-                      Please send the total amount to <span className="font-black text-orange-900">01810580592</span> (Personal) via <span className="font-black capitalize text-orange-900">{formData.paymentMethod}</span> and provide the transaction ID and screenshot below.
+                      Please send the total amount to <span className="font-bold text-orange-900">{settings.paymentNumber || '01810580592'}</span> (Personal) via <span className="font-bold capitalize text-orange-900">{formData.paymentMethod}</span> and provide the transaction ID and screenshot below.
                     </p>
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                      <label className="text-sm font-black text-orange-800 uppercase tracking-widest">Transaction ID</label>
+                      <label className="text-sm font-bold text-orange-800 uppercase tracking-widest">Transaction ID</label>
                       <input
                         type="text"
                         required
@@ -376,7 +376,7 @@ export default function Checkout() {
                     </div>
 
                     <div className="space-y-2">
-                      <label className="text-sm font-black text-orange-800 uppercase tracking-widest">Payment Screenshot</label>
+                      <label className="text-sm font-bold text-orange-800 uppercase tracking-widest">Payment Screenshot</label>
                       <div className="relative group">
                         <input
                           type="file"
@@ -430,7 +430,7 @@ export default function Checkout() {
         {/* Order Summary Sidebar */}
         <aside className="lg:w-96">
           <div className="bg-gray-900 text-white rounded-[2.5rem] p-8 shadow-2xl sticky top-24">
-            <h2 className="text-2xl font-black mb-8">Your Order</h2>
+            <h2 className="text-2xl font-bold tracking-tight mb-8">Your Order</h2>
             
             <div className="max-h-60 overflow-y-auto mb-8 pr-2 space-y-4 scrollbar-hide">
               {selectedItems.map((item) => (
@@ -442,7 +442,7 @@ export default function Checkout() {
                     <p className="font-bold truncate">{item.name}</p>
                     <p className="text-xs text-gray-400">Qty: {item.quantity} × {formatPrice(item.discountPrice || item.price)}</p>
                   </div>
-                  <p className="font-black text-orange-500">{formatPrice((item.discountPrice || item.price) * item.quantity)}</p>
+                  <p className="font-bold text-orange-500">{formatPrice((item.discountPrice || item.price) * item.quantity)}</p>
                 </div>
               ))}
             </div>
@@ -457,15 +457,15 @@ export default function Checkout() {
                 <span className="text-white">{formatPrice(deliveryCharge)}</span>
               </div>
               <div className="border-t border-white/10 pt-4 flex justify-between items-center">
-                <span className="text-xl font-black">Total</span>
-                <span className="text-3xl font-black text-orange-500">{formatPrice(total)}</span>
+                <span className="text-xl font-bold tracking-tight">Total</span>
+                <span className="text-3xl font-bold tracking-tight text-orange-500">{formatPrice(total)}</span>
               </div>
             </div>
 
             <button
               onClick={handleSubmit}
               disabled={isSubmitting}
-              className="w-full bg-orange-600 text-white py-5 rounded-2xl font-black text-xl shadow-xl hover:bg-orange-700 transition-all flex items-center justify-center space-x-3 disabled:opacity-50"
+              className="w-full bg-orange-600 text-white py-5 rounded-2xl font-bold text-xl shadow-xl hover:bg-orange-700 transition-all flex items-center justify-center space-x-3 disabled:opacity-50"
             >
               {isSubmitting ? (
                 <div className="h-6 w-6 border-4 border-white border-t-transparent rounded-full animate-spin"></div>

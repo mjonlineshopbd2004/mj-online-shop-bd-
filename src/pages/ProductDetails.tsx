@@ -162,7 +162,7 @@ export default function ProductDetails() {
   if (!product) {
     return (
       <div className="container-custom py-20 text-center">
-        <h1 className="text-3xl font-black mb-4">Product Not Found</h1>
+        <h1 className="text-3xl font-bold mb-4 tracking-tight">Product Not Found</h1>
         <button onClick={() => navigate('/products')} className="bg-orange-600 text-white px-8 py-3 rounded-xl font-bold">Back to Shop</button>
       </div>
     );
@@ -209,7 +209,7 @@ export default function ProductDetails() {
               </>
             )}
             {discount > 0 && (
-              <div className="absolute top-6 left-6 bg-red-500 text-white px-4 py-2 rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl">
+              <div className="absolute top-6 left-6 bg-red-500 text-white px-4 py-2 rounded-2xl font-bold text-sm uppercase tracking-widest shadow-xl">
                 Save {discount}%
               </div>
             )}
@@ -233,12 +233,12 @@ export default function ProductDetails() {
         {/* Product Info */}
         <div className="lg:w-1/2">
           <div className="mb-8">
-            <p className="text-orange-600 font-black uppercase tracking-[0.2em] text-sm mb-4">{product.category}</p>
-            <h1 className="text-4xl md:text-5xl font-black text-gray-900 mb-4 leading-tight">{product.name}</h1>
+            <p className="text-orange-600 font-bold uppercase tracking-[0.2em] text-sm mb-4">{product.category}</p>
+            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 leading-tight tracking-tight">{product.name}</h1>
             <div className="flex items-center space-x-4">
               <div className="flex items-center bg-yellow-50 px-3 py-1 rounded-full">
                 <Star className="h-4 w-4 text-yellow-500 fill-current mr-1" />
-                <span className="text-sm font-black text-yellow-700">{product.rating}</span>
+                <span className="text-sm font-bold text-yellow-700">{product.rating}</span>
               </div>
               <span className="text-gray-400 font-bold">|</span>
               <span className="text-gray-500 font-bold">{product.reviewsCount} Customer Reviews</span>
@@ -253,7 +253,7 @@ export default function ProductDetails() {
           </div>
 
           <div className="flex items-center space-x-4 mb-10">
-            <span className="text-4xl font-black text-gray-900">
+            <span className="text-4xl font-bold text-gray-900 tracking-tight">
               {formatPrice(product.discountPrice || product.price)}
             </span>
             {product.discountPrice && (
@@ -271,14 +271,14 @@ export default function ProductDetails() {
             {/* Size Selection */}
             {product.sizes && product.sizes.length > 0 && (
               <div>
-                <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest mb-4">Select Size</h3>
+                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-widest mb-4">Select Size</h3>
                 <div className="flex flex-wrap gap-3">
                   {product.sizes.map(size => (
                     <button
                       key={size}
                       onClick={() => setSelectedSize(size)}
                       className={cn(
-                        "w-14 h-14 rounded-2xl flex items-center justify-center font-black transition-all border-2",
+                        "w-14 h-14 rounded-2xl flex items-center justify-center font-bold transition-all border-2",
                         selectedSize === size
                           ? "bg-gray-900 border-gray-900 text-white shadow-xl"
                           : "bg-white border-gray-100 text-gray-600 hover:border-gray-900"
@@ -294,7 +294,7 @@ export default function ProductDetails() {
             {/* Color Selection */}
             {product.colors && product.colors.length > 0 && (
               <div>
-                <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest mb-4">Select Color</h3>
+                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-widest mb-4">Select Color</h3>
                 <div className="flex flex-wrap gap-4">
                   {product.colors.map(color => (
                     <button
@@ -316,7 +316,7 @@ export default function ProductDetails() {
 
             {/* Quantity */}
             <div>
-              <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest mb-4">Quantity</h3>
+              <h3 className="text-sm font-bold text-gray-900 uppercase tracking-widest mb-4">Quantity</h3>
               <div className="flex items-center space-x-4">
                 <div className="flex items-center bg-gray-50 rounded-2xl p-1 border border-gray-100">
                   <button
@@ -325,7 +325,7 @@ export default function ProductDetails() {
                   >
                     <Minus className="h-5 w-5" />
                   </button>
-                  <span className="w-12 text-center font-black text-xl">{quantity}</span>
+                  <span className="w-12 text-center font-bold text-xl">{quantity}</span>
                   <button
                     onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
                     className="p-3 text-gray-600 hover:bg-white hover:shadow-sm rounded-xl transition-all"
@@ -341,7 +341,7 @@ export default function ProductDetails() {
             <button
               onClick={handleAddToCart}
               disabled={product.stock <= 0}
-              className="flex-1 bg-white text-orange-600 border-2 border-orange-600 py-4 rounded-2xl font-black text-lg hover:bg-orange-50 transition-all flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 bg-white text-orange-600 border-2 border-orange-600 py-4 rounded-2xl font-bold text-lg hover:bg-orange-50 transition-all flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <ShoppingCart className="h-5 w-5" />
               <span>Add to Cart</span>
@@ -349,7 +349,7 @@ export default function ProductDetails() {
             <button
               onClick={handleBuyNow}
               disabled={product.stock <= 0}
-              className="flex-1 bg-orange-600 text-white py-4 rounded-2xl font-black text-lg shadow-xl shadow-orange-100 hover:bg-orange-700 transition-all flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 bg-orange-600 text-white py-4 rounded-2xl font-bold text-lg shadow-xl shadow-orange-100 hover:bg-orange-700 transition-all flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <ShoppingBag className="h-5 w-5" />
               <span>Buy Now</span>
@@ -372,21 +372,21 @@ export default function ProductDetails() {
             <div className="flex items-center space-x-3">
               <div className="bg-orange-50 p-3 rounded-2xl"><Truck className="h-6 w-6 text-orange-600" /></div>
               <div>
-                <p className="text-sm font-black text-gray-900">Fast Delivery</p>
+                <p className="text-sm font-bold text-gray-900">Fast Delivery</p>
                 <p className="text-xs text-gray-500">Across Bangladesh</p>
               </div>
             </div>
             <div className="flex items-center space-x-3">
               <div className="bg-orange-50 p-3 rounded-2xl"><ShieldCheck className="h-6 w-6 text-orange-600" /></div>
               <div>
-                <p className="text-sm font-black text-gray-900">Secure Payment</p>
+                <p className="text-sm font-bold text-gray-900">Secure Payment</p>
                 <p className="text-xs text-gray-500">100% Protected</p>
               </div>
             </div>
             <div className="flex items-center space-x-3">
               <div className="bg-orange-50 p-3 rounded-2xl"><RefreshCw className="h-6 w-6 text-orange-600" /></div>
               <div>
-                <p className="text-sm font-black text-gray-900">Easy Returns</p>
+                <p className="text-sm font-bold text-gray-900">Easy Returns</p>
                 <p className="text-xs text-gray-500">7-Day Return Policy</p>
               </div>
             </div>
@@ -398,21 +398,21 @@ export default function ProductDetails() {
       <section className="pt-24 border-t border-gray-100 mb-24">
         <div className="flex flex-col lg:flex-row gap-12">
           <div className="lg:w-1/3">
-            <h2 className="text-3xl font-black text-gray-900 mb-4">Customer Reviews</h2>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4 tracking-tight">Customer Reviews</h2>
             <div className="flex items-center space-x-4 mb-8">
               <div className="flex items-center bg-yellow-50 px-4 py-2 rounded-2xl">
                 <Star className="h-6 w-6 text-yellow-500 fill-current mr-2" />
-                <span className="text-2xl font-black text-yellow-700">{product.rating}</span>
+                <span className="text-2xl font-bold text-yellow-700">{product.rating}</span>
               </div>
               <p className="text-gray-500 font-bold">Based on {reviews.length} reviews</p>
             </div>
 
             {/* Review Form */}
             <div className="bg-gray-50 p-8 rounded-[2rem] border border-gray-100">
-              <h3 className="text-xl font-black text-gray-900 mb-6">Write a Review</h3>
+              <h3 className="text-xl font-bold text-gray-900 mb-6 tracking-tight">Write a Review</h3>
               <form onSubmit={handleReviewSubmit} className="space-y-6">
                 <div>
-                  <label className="text-sm font-black text-gray-500 uppercase tracking-widest mb-3 block">Rating</label>
+                  <label className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-3 block">Rating</label>
                   <div className="flex space-x-2">
                     {[1, 2, 3, 4, 5].map((star) => (
                       <button
@@ -432,7 +432,7 @@ export default function ProductDetails() {
                   </div>
                 </div>
                 <div>
-                  <label className="text-sm font-black text-gray-500 uppercase tracking-widest mb-3 block">Your Comment</label>
+                  <label className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-3 block">Your Comment</label>
                   <textarea
                     rows={4}
                     className="w-full bg-white border-2 border-transparent focus:border-orange-500 rounded-2xl px-6 py-4 outline-none transition-all font-bold"
@@ -444,7 +444,7 @@ export default function ProductDetails() {
                 <button
                   type="submit"
                   disabled={isSubmittingReview}
-                  className="w-full bg-gray-900 text-white py-4 rounded-2xl font-black text-lg shadow-xl hover:bg-black transition-all flex items-center justify-center space-x-2 disabled:opacity-50"
+                  className="w-full bg-gray-900 text-white py-4 rounded-2xl font-bold text-lg shadow-xl hover:bg-black transition-all flex items-center justify-center space-x-2 disabled:opacity-50"
                 >
                   {isSubmittingReview ? (
                     <div className="h-6 w-6 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -471,17 +471,17 @@ export default function ProductDetails() {
                   <div key={review.id} className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
                     <div className="flex justify-between items-start mb-4">
                       <div className="flex items-center space-x-4">
-                        <div className="h-12 w-12 bg-orange-100 rounded-full flex items-center justify-center font-black text-orange-600">
+                        <div className="h-12 w-12 bg-orange-100 rounded-full flex items-center justify-center font-bold text-orange-600">
                           {review.userName.charAt(0).toUpperCase()}
                         </div>
                         <div>
-                          <p className="font-black text-gray-900">{review.userName}</p>
+                          <p className="font-bold text-gray-900">{review.userName}</p>
                           <p className="text-xs text-gray-400 font-bold">{new Date(review.createdAt).toLocaleDateString()}</p>
                         </div>
                       </div>
                       <div className="flex items-center bg-yellow-50 px-3 py-1 rounded-full">
                         <Star className="h-3 w-3 text-yellow-500 fill-current mr-1" />
-                        <span className="text-xs font-black text-yellow-700">{review.rating}</span>
+                        <span className="text-xs font-bold text-yellow-700">{review.rating}</span>
                       </div>
                     </div>
                     <p className="text-gray-600 font-medium leading-relaxed italic">"{review.comment}"</p>
@@ -498,7 +498,7 @@ export default function ProductDetails() {
         <section className="pt-24 border-t border-gray-100">
           <div className="flex justify-between items-end mb-12">
             <div>
-              <h2 className="text-3xl font-black text-gray-900 mb-2">Similar Products</h2>
+              <h2 className="text-3xl font-bold text-gray-900 mb-2 tracking-tight">Similar Products</h2>
               <p className="text-gray-500 font-medium">You might also like these suggestions</p>
             </div>
           </div>

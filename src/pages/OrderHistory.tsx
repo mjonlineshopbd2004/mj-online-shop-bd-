@@ -111,7 +111,7 @@ export default function OrderHistory() {
     <div className="container-custom py-12">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
         <div>
-          <h1 className="text-4xl font-black text-gray-900 mb-2">Order History</h1>
+          <h1 className="text-4xl font-bold tracking-tight text-gray-900 mb-2">Order History</h1>
           <p className="text-gray-500 font-medium">Manage and track your recent orders</p>
         </div>
         <Link
@@ -133,15 +133,15 @@ export default function OrderHistory() {
               <div className="p-8">
                 <div className="flex flex-wrap justify-between items-start gap-6 mb-8 pb-8 border-b border-gray-50">
                   <div className="space-y-1">
-                    <p className="text-xs font-black text-gray-400 uppercase tracking-widest">Order ID</p>
-                    <p className="text-lg font-black text-gray-900">#{order.id.slice(-8).toUpperCase()}</p>
+                    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Order ID</p>
+                    <p className="text-lg font-bold text-gray-900">#{order.id.slice(-8).toUpperCase()}</p>
                   </div>
                   <div className="space-y-1">
-                    <p className="text-xs font-black text-gray-400 uppercase tracking-widest">Date</p>
-                    <p className="text-lg font-black text-gray-900">{new Date(order.createdAt).toLocaleDateString('en-BD', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Date</p>
+                    <p className="text-lg font-bold text-gray-900">{new Date(order.createdAt).toLocaleDateString('en-BD', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
                   </div>
                   <div className="space-y-1">
-                    <p className="text-xs font-black text-gray-400 uppercase tracking-widest">Status</p>
+                    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Status</p>
                     <div className={cn(
                       "flex items-center space-x-2 px-4 py-1.5 rounded-full border font-bold text-sm capitalize",
                       getStatusColor(order.status)
@@ -151,8 +151,8 @@ export default function OrderHistory() {
                     </div>
                   </div>
                   <div className="space-y-1">
-                    <p className="text-xs font-black text-gray-400 uppercase tracking-widest">Total</p>
-                    <p className="text-2xl font-black text-orange-600">{formatPrice(order.total)}</p>
+                    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Total</p>
+                    <p className="text-2xl font-bold tracking-tight text-orange-600">{formatPrice(order.total)}</p>
                   </div>
                 </div>
 
@@ -164,7 +164,7 @@ export default function OrderHistory() {
                       </div>
                     ))}
                     {order.items.length > 4 && (
-                      <div className="relative w-20 h-20 rounded-2xl border-4 border-white bg-gray-900 flex items-center justify-center text-white font-black shadow-sm">
+                      <div className="relative w-20 h-20 rounded-2xl border-4 border-white bg-gray-900 flex items-center justify-center text-white font-bold shadow-sm">
                         +{order.items.length - 4}
                       </div>
                     )}
@@ -173,7 +173,7 @@ export default function OrderHistory() {
                     <div className="flex flex-col sm:flex-row gap-4 items-center">
                       <Link
                         to={`/order-confirmation/${order.id}`}
-                        className="w-full sm:w-auto flex items-center justify-center space-x-2 bg-gray-900 text-white px-8 py-4 rounded-2xl font-black hover:bg-gray-800 transition-all shadow-lg"
+                        className="w-full sm:w-auto flex items-center justify-center space-x-2 bg-gray-900 text-white px-8 py-4 rounded-2xl font-bold hover:bg-gray-800 transition-all shadow-lg"
                       >
                         <span>View Details</span>
                         <ChevronRight className="h-5 w-5" />
@@ -183,7 +183,7 @@ export default function OrderHistory() {
                       {order.paymentMethod !== 'cod' && order.status !== 'delivered' && order.status !== 'refunded' && order.status !== 'cancelled' && !order.refundRequest && (
                         <button
                           onClick={() => setShowRefundModal(order.id)}
-                          className="w-full sm:w-auto flex items-center justify-center space-x-2 bg-red-50 text-red-600 border-2 border-red-100 px-8 py-4 rounded-2xl font-black hover:bg-red-100 transition-all"
+                          className="w-full sm:w-auto flex items-center justify-center space-x-2 bg-red-50 text-red-600 border-2 border-red-100 px-8 py-4 rounded-2xl font-bold hover:bg-red-100 transition-all"
                         >
                           <RefreshCcw className="h-5 w-5" />
                           <span>Request Refund</span>
@@ -204,7 +204,7 @@ export default function OrderHistory() {
                               }
                             }
                           }}
-                          className="w-full sm:w-auto flex items-center justify-center space-x-2 bg-gray-50 text-gray-600 border-2 border-gray-100 px-8 py-4 rounded-2xl font-black hover:bg-gray-100 transition-all"
+                          className="w-full sm:w-auto flex items-center justify-center space-x-2 bg-gray-50 text-gray-600 border-2 border-gray-100 px-8 py-4 rounded-2xl font-bold hover:bg-gray-100 transition-all"
                         >
                           <XCircle className="h-5 w-5" />
                           <span>Cancel Order</span>
@@ -212,7 +212,7 @@ export default function OrderHistory() {
                       )}
 
                       {order.refundRequest && (
-                        <div className="flex items-center space-x-2 px-6 py-4 rounded-2xl bg-orange-50 text-orange-700 font-black text-sm uppercase tracking-widest border border-orange-100">
+                        <div className="flex items-center space-x-2 px-6 py-4 rounded-2xl bg-orange-50 text-orange-700 font-bold text-sm uppercase tracking-widest border border-orange-100">
                           <Clock className="h-5 w-5" />
                           <span>Refund: {order.refundRequest.status}</span>
                         </div>
@@ -228,13 +228,13 @@ export default function OrderHistory() {
           <div className="bg-white w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-8 shadow-sm">
             <Package className="h-12 w-12 text-gray-300" />
           </div>
-          <h2 className="text-3xl font-black text-gray-900 mb-4">No orders yet</h2>
+          <h2 className="text-3xl font-bold tracking-tight text-gray-900 mb-4">No orders yet</h2>
           <p className="text-gray-500 text-lg mb-10 max-w-md mx-auto">
             You haven't placed any orders yet. Start shopping and discover our amazing products!
           </p>
           <Link
             to="/products"
-            className="bg-orange-600 text-white px-10 py-4 rounded-2xl font-black text-lg shadow-xl hover:bg-orange-700 transition-all"
+            className="bg-orange-600 text-white px-10 py-4 rounded-2xl font-bold text-lg shadow-xl hover:bg-orange-700 transition-all"
           >
             Start Shopping
           </Link>
@@ -254,7 +254,7 @@ export default function OrderHistory() {
                 <div className="bg-red-100 p-3 rounded-2xl">
                   <AlertCircle className="h-6 w-6 text-red-600" />
                 </div>
-                <h3 className="text-2xl font-black text-gray-900">Refund Request</h3>
+                <h3 className="text-2xl font-bold tracking-tight text-gray-900">Refund Request</h3>
               </div>
               
               <p className="text-gray-600 mb-6 font-bold">
@@ -274,13 +274,13 @@ export default function OrderHistory() {
                     setShowRefundModal(null);
                     setRefundReason('');
                   }}
-                  className="flex-1 px-6 py-4 rounded-2xl font-black text-gray-500 hover:bg-gray-100 transition-all"
+                  className="flex-1 px-6 py-4 rounded-2xl font-bold text-gray-500 hover:bg-gray-100 transition-all"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={() => handleRefundRequest(showRefundModal)}
-                  className="flex-1 bg-red-600 text-white px-6 py-4 rounded-2xl font-black hover:bg-red-700 transition-all shadow-lg shadow-red-100"
+                  className="flex-1 bg-red-600 text-white px-6 py-4 rounded-2xl font-bold hover:bg-red-700 transition-all shadow-lg shadow-red-100"
                 >
                   Submit
                 </button>

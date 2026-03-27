@@ -48,12 +48,12 @@ export default function AdminProducts() {
     <div className="p-4 sm:p-8 bg-[#0a0a0a] min-h-screen text-white space-y-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-black tracking-tight mb-2">Inventory</h1>
+          <h1 className="text-3xl font-bold tracking-tight mb-2">Inventory</h1>
           <p className="text-gray-400 font-bold">Manage your products and stock levels</p>
         </div>
         <Link
           to="/admin/products/new"
-          className="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-4 rounded-xl font-black transition-all shadow-lg shadow-emerald-600/20 flex items-center gap-2"
+          className="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-4 rounded-xl font-bold transition-all shadow-lg shadow-emerald-600/20 flex items-center gap-2"
         >
           <Plus className="h-5 w-5" />
           <span>Add New Product</span>
@@ -82,7 +82,7 @@ export default function AdminProducts() {
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
-              <tr className="text-gray-500 text-[10px] uppercase tracking-widest font-black border-b border-white/10">
+              <tr className="text-gray-500 text-[10px] uppercase tracking-widest font-bold border-b border-white/10">
                 <th className="px-8 py-6">Product</th>
                 <th className="px-8 py-6">Category</th>
                 <th className="px-8 py-6">Price</th>
@@ -105,18 +105,18 @@ export default function AdminProducts() {
                         <img src={product.images[0]} alt="" className="w-full h-full object-cover" />
                       </div>
                       <div>
-                        <p className="font-black text-white group-hover:text-emerald-500 transition-colors line-clamp-1">{product.name}</p>
-                        <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest">ID: #{product.id.slice(-6).toUpperCase()}</p>
+                        <p className="font-bold tracking-tight text-white group-hover:text-emerald-500 transition-colors line-clamp-1">{product.name}</p>
+                        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">ID: #{product.id.slice(-6).toUpperCase()}</p>
                       </div>
                     </div>
                   </td>
                   <td className="px-8 py-6">
-                    <span className="bg-emerald-500/10 text-emerald-500 px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest">
+                    <span className="bg-emerald-500/10 text-emerald-500 px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest">
                       {product.category}
                     </span>
                   </td>
                   <td className="px-8 py-6">
-                    <p className="font-black text-white">{formatPrice(product.discountPrice || product.price)}</p>
+                    <p className="font-bold tracking-tight text-white">{formatPrice(product.discountPrice || product.price)}</p>
                     {product.discountPrice && <p className="text-[10px] text-gray-500 line-through">{formatPrice(product.price)}</p>}
                   </td>
                   <td className="px-8 py-6">

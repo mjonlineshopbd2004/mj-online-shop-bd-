@@ -127,7 +127,7 @@ export default function AdminDashboard() {
     <div className="p-4 sm:p-8 bg-[#0a0a0a] min-h-screen text-white space-y-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-black tracking-tight mb-2">Dashboard Overview</h1>
+          <h1 className="text-3xl font-bold tracking-tight mb-2">Dashboard Overview</h1>
           <p className="text-gray-400 font-bold">Welcome back! Here's what's happening with your store today.</p>
         </div>
         <div className="flex items-center gap-4">
@@ -139,7 +139,7 @@ export default function AdminDashboard() {
           </button>
           <Link 
             to="/admin/products/new"
-            className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl font-black transition-all shadow-lg shadow-emerald-600/20"
+            className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg shadow-emerald-600/20"
           >
             <Plus className="h-5 w-5" />
             Add Product
@@ -164,7 +164,7 @@ export default function AdminDashboard() {
               <TrendingUp className="h-4 w-4 text-emerald-500 opacity-50" />
             </div>
             <p className="text-gray-400 font-bold uppercase tracking-widest text-[10px] mb-1">{card.label}</p>
-            <h3 className="text-2xl font-black">{card.value}</h3>
+            <h3 className="text-2xl font-bold tracking-tight">{card.value}</h3>
           </motion.div>
         ))}
       </div>
@@ -172,7 +172,7 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Detailed Revenue Breakdown */}
         <div className="lg:col-span-2 bg-white/5 border border-white/10 rounded-[2rem] p-8">
-          <h2 className="text-xl font-black mb-8 flex items-center gap-3">
+          <h2 className="text-xl font-bold tracking-tight mb-8 flex items-center gap-3">
             <DollarSign className="h-5 w-5 text-emerald-500" />
             Revenue Breakdown
           </h2>
@@ -181,7 +181,7 @@ export default function AdminDashboard() {
               <div key={item.label} className="bg-white/5 p-6 rounded-2xl border border-white/5 flex justify-between items-center">
                 <div>
                   <p className="text-gray-400 font-bold text-xs mb-1 uppercase tracking-wider">{item.label}</p>
-                  <p className="text-xl font-black text-white">{formatPrice(item.rev)}</p>
+                  <p className="text-xl font-bold tracking-tight text-white">{formatPrice(item.rev)}</p>
                   <p className="text-xs text-gray-500 font-bold">{item.ord} Orders</p>
                 </div>
                 <div className="h-10 w-10 bg-emerald-500/10 rounded-xl flex items-center justify-center">
@@ -194,7 +194,7 @@ export default function AdminDashboard() {
 
         {/* Order Status Summary */}
         <div className="bg-white/5 border border-white/10 rounded-[2rem] p-8">
-          <h2 className="text-xl font-black mb-8 flex items-center gap-3">
+          <h2 className="text-xl font-bold tracking-tight mb-8 flex items-center gap-3">
             <Package className="h-5 w-5 text-emerald-500" />
             Order Status
           </h2>
@@ -209,7 +209,7 @@ export default function AdminDashboard() {
                   <div className={`h-2 w-2 rounded-full ${status.color.replace('text', 'bg')}`} />
                   <span className="font-bold text-gray-300 text-sm">{status.label}</span>
                 </div>
-                <span className={`text-lg font-black ${status.color}`}>{status.value}</span>
+                <span className={`text-lg font-bold tracking-tight ${status.color}`}>{status.value}</span>
               </div>
             ))}
           </div>
@@ -220,7 +220,7 @@ export default function AdminDashboard() {
         {/* Recent Orders Table */}
         <div className="lg:col-span-2 bg-white/5 border border-white/10 rounded-[2rem] overflow-hidden">
           <div className="p-8 flex items-center justify-between border-b border-white/10">
-            <h2 className="text-xl font-black">Recent Orders</h2>
+            <h2 className="text-xl font-bold tracking-tight">Recent Orders</h2>
             <Link to="/admin/orders" className="text-emerald-500 font-bold hover:underline flex items-center gap-2 text-sm">
               View All <ArrowRight className="h-4 w-4" />
             </Link>
@@ -228,7 +228,7 @@ export default function AdminDashboard() {
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead>
-                <tr className="text-gray-500 text-[10px] uppercase tracking-widest font-black border-b border-white/10">
+                <tr className="text-gray-500 text-[10px] uppercase tracking-widest font-bold border-b border-white/10">
                   <th className="px-8 py-6">Order ID</th>
                   <th className="px-8 py-6">Customer</th>
                   <th className="px-8 py-6">Total</th>
@@ -243,10 +243,10 @@ export default function AdminDashboard() {
                       <p className="font-bold text-white group-hover:text-emerald-500 transition-colors text-sm">{order.customerName}</p>
                       <p className="text-[10px] text-gray-500">{order.phone}</p>
                     </td>
-                    <td className="px-8 py-6 font-black text-white text-sm">{formatPrice(order.total)}</td>
+                    <td className="px-8 py-6 font-bold tracking-tight text-white text-sm">{formatPrice(order.total)}</td>
                     <td className="px-8 py-6">
                       <span className={cn(
-                        "px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider",
+                        "px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider",
                         order.status === 'delivered' ? "bg-emerald-500/10 text-emerald-500" :
                         order.status === 'processing' ? "bg-blue-500/10 text-blue-500" :
                         "bg-orange-500/10 text-orange-500"
@@ -264,7 +264,7 @@ export default function AdminDashboard() {
         {/* Quick Actions */}
         <div className="space-y-6">
           <div className="bg-white/5 border border-white/10 rounded-[2rem] p-8">
-            <h2 className="text-xl font-black mb-8">Quick Actions</h2>
+            <h2 className="text-xl font-bold tracking-tight mb-8">Quick Actions</h2>
             <div className="grid grid-cols-2 gap-4">
               {[
                 { label: 'Products', icon: Package, link: '/admin/products', color: 'bg-blue-500' },
@@ -290,9 +290,9 @@ export default function AdminDashboard() {
 
           <div className="bg-emerald-600 rounded-[2rem] p-8 text-white relative overflow-hidden group">
             <div className="relative z-10">
-              <h3 className="text-xl font-black mb-2">Need Help?</h3>
+              <h3 className="text-xl font-bold tracking-tight mb-2">Need Help?</h3>
               <p className="text-emerald-100 font-bold text-xs mb-6">Check out our documentation or contact support.</p>
-              <button className="bg-white text-emerald-600 px-6 py-3 rounded-xl font-black hover:bg-emerald-50 transition-all text-sm">
+              <button className="bg-white text-emerald-600 px-6 py-3 rounded-xl font-bold hover:bg-emerald-50 transition-all text-sm">
                 Contact Support
               </button>
             </div>

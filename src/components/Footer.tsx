@@ -35,8 +35,8 @@ export default function Footer() {
 
           {/* Quick Links */}
           <div>
-            <h3 className="text-white font-bold text-lg mb-6">Quick Links</h3>
-            <ul className="space-y-4">
+            <h3 className="text-white font-bold text-lg mb-6 font-display uppercase tracking-wider">Quick Links</h3>
+            <ul className="space-y-4 font-sans">
               <li><Link to="/products" className="hover:text-primary transition-colors">Shop All</Link></li>
               {(settings.categories || []).slice(0, 4).map(category => {
                 const name = typeof category === 'string' ? category : category.name;
@@ -53,8 +53,8 @@ export default function Footer() {
 
           {/* Information */}
           <div>
-            <h3 className="text-white font-bold text-lg mb-6">Information</h3>
-            <ul className="space-y-4">
+            <h3 className="text-white font-bold text-lg mb-6 font-display uppercase tracking-wider">Information</h3>
+            <ul className="space-y-4 font-sans">
               <li><Link to="/about" className="hover:text-primary transition-colors">About Us</Link></li>
               <li><Link to="/contact" className="hover:text-primary transition-colors">Contact Us</Link></li>
               <li><Link to="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link></li>
@@ -67,8 +67,8 @@ export default function Footer() {
 
           {/* Contact */}
           <div>
-            <h3 className="text-white font-bold text-lg mb-6">Contact Us</h3>
-            <ul className="space-y-4">
+            <h3 className="text-white font-bold text-lg mb-6 font-display uppercase tracking-wider">Contact Us</h3>
+            <ul className="space-y-4 font-sans">
               <li className="flex items-start space-x-3">
                 <MapPin className="h-5 w-5 text-primary mt-1" />
                 <span>{settings.address}</span>

@@ -126,13 +126,13 @@ export default function Home() {
       <section className="container-custom">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
           <div>
-            <h2 className="text-4xl font-black text-gray-900 mb-2">Shop by Category</h2>
-            <p className="text-gray-500 font-medium italic">Explore our wide range of premium products</p>
+            <h2 className="section-title">Shop by Category</h2>
+            <p className="section-subtitle italic">Explore our wide range of premium products</p>
           </div>
           <div className="h-1 w-24 bg-primary rounded-full"></div>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-          {(settings.categories || []).map((category, idx) => {
+          {(settings.categories && settings.categories.length > 0 ? settings.categories : CATEGORIES).map((category, idx) => {
             const name = typeof category === 'string' ? category : category.name;
             const image = typeof category === 'string' ? `https://picsum.photos/seed/${category}/600/800` : category.image;
             
@@ -140,7 +140,7 @@ export default function Home() {
               <Link
                 key={name}
                 to={`/products?category=${encodeURIComponent(name)}`}
-                className="group relative h-64 md:h-80 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 rounded-none"
+                className="group relative h-64 md:h-80 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 rounded-[2rem]"
               >
                 <img
                   src={image || `https://picsum.photos/seed/${name}/600/800`}
@@ -150,7 +150,7 @@ export default function Home() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-gray-900/80 via-transparent to-transparent opacity-60 group-hover:opacity-90 transition-opacity"></div>
                 <div className="absolute bottom-6 left-6 right-6">
-                  <h3 className="text-xl md:text-2xl font-black text-white mb-2 group-hover:translate-x-1 transition-transform">{name}</h3>
+                  <h3 className="text-xl md:text-2xl font-bold text-white mb-2 group-hover:translate-x-1 transition-transform tracking-tight">{name}</h3>
                   <div className="h-1 w-12 bg-primary group-hover:w-full transition-all duration-500"></div>
                 </div>
               </Link>
@@ -163,8 +163,8 @@ export default function Home() {
       <section className="container-custom">
         <div className="flex justify-between items-end mb-12">
           <div>
-            <h2 className="text-3xl font-black text-gray-900 mb-2">Our Collection</h2>
-            <p className="text-gray-500 font-medium">Explore all our products</p>
+            <h2 className="section-title">Our Collection</h2>
+            <p className="section-subtitle">Explore all our products</p>
           </div>
           <Link to="/products" className="text-orange-600 font-bold flex items-center hover:underline">
             View All <ArrowRight className="ml-2 h-5 w-5" />
@@ -188,8 +188,8 @@ export default function Home() {
         <div className="container-custom">
           <div className="flex justify-between items-end mb-12">
             <div>
-              <h2 className="text-3xl font-black text-gray-900 mb-2">Featured Products</h2>
-              <p className="text-gray-500 font-medium">Handpicked items for you</p>
+              <h2 className="section-title">Featured Products</h2>
+              <p className="section-subtitle">Handpicked items for you</p>
             </div>
             <Link to="/products" className="text-orange-600 font-bold flex items-center hover:underline">
               View All <ArrowRight className="ml-2 h-5 w-5" />
@@ -213,8 +213,8 @@ export default function Home() {
       <section className="container-custom">
         <div className="flex justify-between items-end mb-12">
           <div>
-            <h2 className="text-3xl font-black text-gray-900 mb-2">Trending Now</h2>
-            <p className="text-gray-500 font-medium">What everyone is buying right now</p>
+            <h2 className="section-title">Trending Now</h2>
+            <p className="section-subtitle">What everyone is buying right now</p>
           </div>
           <Link to="/products" className="text-orange-600 font-bold flex items-center hover:underline">
             View All <ArrowRight className="ml-2 h-5 w-5" />
@@ -241,7 +241,7 @@ export default function Home() {
         </div>
         <div className="container-custom relative z-10">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-black text-white mb-4">What Our Customers Say</h2>
+            <h2 className="text-4xl font-bold text-white mb-4 tracking-tight font-display">What Our Customers Say</h2>
             <div className="flex justify-center space-x-1">
               {[...Array(5)].map((_, i) => <Star key={i} className="h-6 w-6 text-yellow-400 fill-current" />)}
             </div>
@@ -255,7 +255,7 @@ export default function Home() {
               <div key={i} className="bg-white/10 backdrop-blur-md p-8 rounded-3xl border border-white/20 text-white">
                 <p className="text-lg italic mb-6 leading-relaxed">"{review.text}"</p>
                 <div>
-                  <p className="font-black text-xl">{review.name}</p>
+                  <p className="font-bold text-xl tracking-tight">{review.name}</p>
                   <p className="text-orange-200 text-sm font-bold uppercase tracking-widest">{review.role}</p>
                 </div>
               </div>
@@ -268,7 +268,7 @@ export default function Home() {
       <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-gray-900 rounded-[3rem] p-12 md:p-20 text-center relative overflow-hidden">
           <div className="relative z-10">
-            <h2 className="text-3xl md:text-5xl font-black text-white mb-6">Join Our Newsletter</h2>
+            <h2 className="text-3xl md:text-5xl font-bold text-white mb-6 tracking-tight">Join Our Newsletter</h2>
             <p className="text-gray-400 text-lg mb-10 max-w-2xl mx-auto">
               Subscribe to get special offers, free giveaways, and once-in-a-lifetime deals.
             </p>

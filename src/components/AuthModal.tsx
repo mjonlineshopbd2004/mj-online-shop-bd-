@@ -42,7 +42,7 @@ export default function AuthModal() {
 
           <div className="p-8 md:p-10">
             <div className="text-center mb-8">
-              <h2 className="text-3xl font-black text-gray-900 mb-2">
+              <h2 className="text-3xl font-bold tracking-tight text-gray-900 mb-2">
                 {isLogin ? 'Welcome Back' : 'Create Account'}
               </h2>
               <p className="text-gray-500 font-medium">

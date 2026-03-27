@@ -27,7 +27,10 @@ export default function Products() {
         const productsRef = collection(db, 'products');
         let q = query(productsRef);
 
-        if (categoryFilter) {
+        // If searching, we want to search across all categories by default
+        // unless the user specifically filtered by category AND search query manually
+        // But for image search, we definitely want all categories.
+        if (categoryFilter && !searchQuery) {
           q = query(productsRef, where('category', '==', categoryFilter));
         }
 
@@ -36,10 +39,33 @@ export default function Products() {
 
         // Client-side search and sort
         if (searchQuery) {
-          results = results.filter(p => 
-            p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            p.description.toLowerCase().includes(searchQuery.toLowerCase())
-          );
+          const queryLower = searchQuery.toLowerCase();
+          const searchTerms = queryLower.split(/[\s,]+/).filter(term => term.length > 1);
+          
+          results = results.map(p => {
+            const name = p.name.toLowerCase();
+            const desc = p.description.toLowerCase();
+            const cat = p.category.toLowerCase();
+            
+            let score = 0;
+            
+            // Exact full query match (highest weight)
+            if (name.includes(queryLower)) score += 100;
+            if (desc.includes(queryLower)) score += 50;
+            if (cat.includes(queryLower)) score += 30;
+            
+            // Individual term matches
+            searchTerms.forEach(term => {
+              if (name.includes(term)) score += 20;
+              if (desc.includes(term)) score += 10;
+              if (cat.includes(term)) score += 5;
+            });
+            
+            return { product: p, score };
+          })
+          .filter(item => item.score > 0)
+          .sort((a, b) => b.score - a.score)
+          .map(item => item.product);
         }
 
         if (sortBy === 'price-low') {
@@ -77,7 +103,7 @@ export default function Products() {
     <div className="container-custom py-12">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
         <div>
-          <h1 className="text-4xl font-black text-gray-900 mb-2">
+          <h1 className="text-4xl font-bold text-gray-900 mb-2 tracking-tight">
             {categoryFilter ? `${categoryFilter} Collection` : searchQuery ? `Search: ${searchQuery}` : 'All Products'}
           </h1>
           <p className="text-gray-500 font-medium">{products.length} products found</p>
@@ -119,13 +145,13 @@ export default function Products() {
         )}>
           {showFilters && (
             <div className="flex justify-between items-center mb-8 lg:hidden">
-              <h2 className="text-2xl font-black">Filters</h2>
+              <h2 className="text-2xl font-bold tracking-tight">Filters</h2>
               <button onClick={() => setShowFilters(false)}><X className="h-8 w-8" /></button>
             </div>
           )}
 
           <div>
-            <h3 className="text-lg font-black text-gray-900 mb-6 uppercase tracking-wider">Categories</h3>
+            <h3 className="text-lg font-bold text-gray-900 mb-6 uppercase tracking-wider">Categories</h3>
             <div className="space-y-3">
               {settings.categories.map(category => {
                 const name = typeof category === 'string' ? category : category.name;
@@ -147,7 +173,7 @@ export default function Products() {
           </div>
 
           <div>
-            <h3 className="text-lg font-black text-gray-900 mb-6 uppercase tracking-wider">Price Range</h3>
+            <h3 className="text-lg font-bold text-gray-900 mb-6 uppercase tracking-wider">Price Range</h3>
             <div className="space-y-4">
               <div className="flex items-center space-x-4">
                 <input type="number" placeholder="Min" className="w-full bg-gray-50 border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-orange-500" />
@@ -161,7 +187,7 @@ export default function Products() {
           {showFilters && (
             <button
               onClick={() => setShowFilters(false)}
-              className="w-full bg-orange-600 text-white py-4 rounded-2xl font-black text-lg shadow-xl lg:hidden"
+              className="w-full bg-orange-600 text-white py-4 rounded-2xl font-bold text-lg shadow-xl lg:hidden"
             >
               Show {products.length} Results
             </button>
@@ -187,7 +213,7 @@ export default function Products() {
               <div className="bg-white w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm">
                 <Search className="h-10 w-10 text-gray-300" />
               </div>
-              <h3 className="text-2xl font-black text-gray-900 mb-2">No products found</h3>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2 tracking-tight">No products found</h3>
               <p className="text-gray-500 mb-8">Try adjusting your filters or search query</p>
               <button
                 onClick={() => setSearchParams({})}

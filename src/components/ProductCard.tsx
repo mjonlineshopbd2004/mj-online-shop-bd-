@@ -56,12 +56,12 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         {/* Badges */}
         <div className="absolute top-3 left-3 flex flex-col gap-2">
           {discount > 0 && (
-            <span className="bg-red-500 text-white text-[10px] font-black px-2 py-1 rounded-lg uppercase tracking-wider">
+            <span className="bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-lg uppercase tracking-wider">
               -{discount}%
             </span>
           )}
           {product.featured && (
-            <span className="bg-orange-600 text-white text-[10px] font-black px-2 py-1 rounded-lg uppercase tracking-wider">
+            <span className="bg-orange-600 text-white text-[10px] font-bold px-2 py-1 rounded-lg uppercase tracking-wider">
               Featured
             </span>
           )}
@@ -107,8 +107,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       </div>
 
       <div className="p-4 flex flex-col flex-1">
-        <p className="text-xs font-bold text-orange-600 uppercase tracking-widest mb-1">{product.category}</p>
-        <h3 className="text-gray-900 font-bold line-clamp-2 mb-2 group-hover:text-orange-600 transition-colors">
+        <p className="text-[10px] font-bold text-primary uppercase tracking-[0.2em] mb-1.5 font-sans">{product.category}</p>
+        <h3 className="text-gray-900 font-bold line-clamp-2 mb-2 group-hover:text-primary transition-colors font-display tracking-tight leading-snug">
           {product.name}
         </h3>
         
@@ -118,15 +118,15 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               <Star key={i} className={cn("h-3 w-3 fill-current", i >= Math.floor(product.rating) && "text-gray-200")} />
             ))}
           </div>
-          <span className="text-[10px] font-bold text-gray-400">({product.reviewsCount})</span>
+          <span className="text-[10px] font-bold text-gray-400 font-sans">({product.reviewsCount})</span>
         </div>
 
         <div className="mt-auto flex items-center space-x-2">
-          <span className="text-lg font-black text-gray-900">
+          <span className="text-xl font-bold text-gray-900 font-display tracking-tight">
             {formatPrice(product.discountPrice || product.price)}
           </span>
           {product.discountPrice && (
-            <span className="text-sm text-gray-400 line-through font-medium">
+            <span className="text-sm text-gray-400 line-through font-medium font-sans">
               {formatPrice(product.price)}
             </span>
           )}

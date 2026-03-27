@@ -23,15 +23,15 @@ export default function PromoBanner() {
             <span className="inline-block px-4 py-1.5 bg-orange-600 text-white rounded-full text-xs font-bold mb-4 tracking-widest uppercase">
               Limited Time Offer
             </span>
-            <h2 className="text-3xl md:text-5xl font-black text-white mb-4 leading-tight">
+            <h2 className="text-3xl md:text-5xl font-bold text-white mb-4 leading-tight font-display tracking-tight">
               Summer Sale is <span className="text-orange-500">LIVE!</span>
             </h2>
-            <p className="text-gray-200 text-lg mb-8 font-medium">
+            <p className="text-gray-200 text-lg mb-8 font-medium font-sans">
               Get up to 70% off on all summer essentials. Don't miss out on our biggest sale of the year.
             </p>
             <Link 
               to="/products"
-              className="inline-flex items-center px-8 py-4 bg-white text-gray-900 rounded-xl font-bold text-lg hover:bg-orange-600 hover:text-white transition-all shadow-lg transform hover:-translate-y-1"
+              className="inline-flex items-center px-8 py-4 bg-white text-gray-900 rounded-xl font-bold text-lg hover:bg-orange-600 hover:text-white transition-all shadow-lg transform hover:-translate-y-1 font-sans"
             >
               Shop the Sale
               <ArrowRight className="ml-2 h-5 w-5" />
@@ -41,7 +41,7 @@ export default function PromoBanner() {
         
         {/* Decorative badge */}
         <div className="absolute top-8 right-8 bg-white/10 backdrop-blur-md border border-white/20 p-6 rounded-full w-32 h-32 flex flex-col items-center justify-center text-white transform rotate-12 group-hover:rotate-0 transition-transform duration-500">
-          <span className="text-3xl font-black">70%</span>
+          <span className="text-3xl font-bold tracking-tight">70%</span>
           <span className="text-[10px] font-bold uppercase tracking-widest">OFF</span>
         </div>
       </motion.div>

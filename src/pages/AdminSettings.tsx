@@ -24,6 +24,8 @@ interface SiteSettings {
   shopTagline: string;
   logoUrl: string;
   phone: string;
+  whatsappNumber: string;
+  paymentNumber: string;
   email: string;
   address: string;
   facebook: string;
@@ -49,6 +51,8 @@ export default function AdminSettings() {
     shopTagline: 'Premium Online Shop',
     logoUrl: '',
     phone: '01810580592',
+    whatsappNumber: '01810580592',
+    paymentNumber: '01810580592',
     email: 'mjonlineshopbd@gmail.com',
     address: 'Dhaka, Bangladesh',
     facebook: '',
@@ -65,7 +69,7 @@ export default function AdminSettings() {
     banners: [
       {
         topText: 'Exclusive Offer',
-        title: 'Premium Collection 2024',
+        title: 'Premium Collection 2026',
         subtitle: 'Discover the latest trends in fashion and electronics with MJ ONLINE SHOP BD.',
         image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&q=80&w=1920',
         link: '/products',
@@ -240,6 +244,32 @@ export default function AdminSettings() {
                   type="text"
                   value={settings.phone}
                   onChange={(e) => setSettings({ ...settings, phone: e.target.value })}
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl pl-14 pr-6 py-4 outline-none focus:border-emerald-500 transition-all font-bold text-white"
+                  required
+                />
+              </div>
+            </div>
+            <div className="space-y-3">
+              <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-2">WhatsApp Number</label>
+              <div className="relative group">
+                <Phone className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 group-focus-within:text-emerald-500 transition-colors" />
+                <input
+                  type="text"
+                  value={settings.whatsappNumber}
+                  onChange={(e) => setSettings({ ...settings, whatsappNumber: e.target.value })}
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl pl-14 pr-6 py-4 outline-none focus:border-emerald-500 transition-all font-bold text-white"
+                  required
+                />
+              </div>
+            </div>
+            <div className="space-y-3">
+              <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-2">Payment Number (bKash/Nagad)</label>
+              <div className="relative group">
+                <Phone className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 group-focus-within:text-emerald-500 transition-colors" />
+                <input
+                  type="text"
+                  value={settings.paymentNumber}
+                  onChange={(e) => setSettings({ ...settings, paymentNumber: e.target.value })}
                   className="w-full bg-white/5 border border-white/10 rounded-2xl pl-14 pr-6 py-4 outline-none focus:border-emerald-500 transition-all font-bold text-white"
                   required
                 />

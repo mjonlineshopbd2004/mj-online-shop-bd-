@@ -74,7 +74,7 @@ export default function Profile() {
       >
         <div className="bg-gray-900 px-8 py-12 text-white relative overflow-hidden">
           <div className="relative z-10">
-            <h1 className="text-4xl font-black mb-2">Account Settings</h1>
+            <h1 className="text-4xl font-bold tracking-tight mb-2">Account Settings</h1>
             <p className="text-gray-400 font-bold uppercase tracking-widest text-sm">Manage your personal information</p>
           </div>
           <div className="absolute top-0 right-0 w-64 h-64 bg-orange-600/20 rounded-full blur-3xl -mr-32 -mt-32"></div>
@@ -88,7 +88,7 @@ export default function Profile() {
                   <Download className="h-6 w-6" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-black text-gray-900">Install MJ SHOP App</h3>
+                  <h3 className="text-lg font-bold tracking-tight text-gray-900">Install MJ SHOP App</h3>
                   <p className="text-sm text-gray-500 font-medium">Install our app for a better shopping experience!</p>
                 </div>
               </div>
@@ -105,7 +105,7 @@ export default function Profile() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {/* Name */}
               <div className="space-y-3">
-                <label className="text-sm font-black text-gray-400 uppercase tracking-widest flex items-center">
+                <label className="text-sm font-bold text-gray-400 uppercase tracking-widest flex items-center">
                   <User className="h-4 w-4 mr-2 text-orange-600" />
                   Full Name
                 </label>
@@ -120,7 +120,7 @@ export default function Profile() {
 
               {/* Email (Read-only) */}
               <div className="space-y-3">
-                <label className="text-sm font-black text-gray-400 uppercase tracking-widest flex items-center">
+                <label className="text-sm font-bold text-gray-400 uppercase tracking-widest flex items-center">
                   <Mail className="h-4 w-4 mr-2 text-gray-400" />
                   Email Address
                 </label>
@@ -135,7 +135,7 @@ export default function Profile() {
 
               {/* Phone */}
               <div className="space-y-3">
-                <label className="text-sm font-black text-gray-400 uppercase tracking-widest flex items-center">
+                <label className="text-sm font-bold text-gray-400 uppercase tracking-widest flex items-center">
                   <Phone className="h-4 w-4 mr-2 text-orange-600" />
                   Phone Number
                 </label>
@@ -150,11 +150,11 @@ export default function Profile() {
 
               {/* Role (Read-only) */}
               <div className="space-y-3">
-                <label className="text-sm font-black text-gray-400 uppercase tracking-widest flex items-center">
+                <label className="text-sm font-bold text-gray-400 uppercase tracking-widest flex items-center">
                   <User className="h-4 w-4 mr-2 text-gray-400" />
                   Account Type
                 </label>
-                <div className="w-full bg-gray-100 border-2 border-transparent rounded-2xl px-6 py-4 font-black text-gray-500 uppercase tracking-widest text-sm">
+                <div className="w-full bg-gray-100 border-2 border-transparent rounded-2xl px-6 py-4 font-bold text-gray-500 uppercase tracking-widest text-sm">
                   {profile.role}
                 </div>
               </div>
@@ -162,7 +162,7 @@ export default function Profile() {
 
             {/* Address */}
             <div className="space-y-3">
-              <label className="text-sm font-black text-gray-400 uppercase tracking-widest flex items-center">
+              <label className="text-sm font-bold text-gray-400 uppercase tracking-widest flex items-center">
                 <MapPin className="h-4 w-4 mr-2 text-orange-600" />
                 Shipping Address
               </label>
@@ -180,7 +180,7 @@ export default function Profile() {
               <button
                 type="button"
                 onClick={() => logout()}
-                className="bg-gray-100 text-gray-600 px-8 py-5 rounded-2xl font-black text-lg hover:bg-gray-200 transition-all flex items-center justify-center space-x-3"
+                className="bg-gray-100 text-gray-600 px-8 py-5 rounded-2xl font-bold text-lg hover:bg-gray-200 transition-all flex items-center justify-center space-x-3"
               >
                 <LogOut className="h-5 w-5" />
                 <span>Logout</span>
@@ -189,7 +189,7 @@ export default function Profile() {
               <button
                 type="submit"
                 disabled={isSaving}
-                className="bg-orange-600 text-white px-12 py-5 rounded-2xl font-black text-xl shadow-xl shadow-orange-100 hover:bg-orange-700 transition-all flex items-center justify-center space-x-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="bg-orange-600 text-white px-12 py-5 rounded-2xl font-bold text-xl shadow-xl shadow-orange-100 hover:bg-orange-700 transition-all flex items-center justify-center space-x-3 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSaving ? (
                   <>

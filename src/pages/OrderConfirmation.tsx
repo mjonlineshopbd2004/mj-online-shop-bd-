@@ -54,7 +54,7 @@ export default function OrderConfirmation() {
   if (!order) {
     return (
       <div className="container-custom py-24 text-center">
-        <h1 className="text-3xl font-black mb-4">Order Not Found</h1>
+        <h1 className="text-3xl font-bold tracking-tight mb-4">Order Not Found</h1>
         <Link to="/" className="bg-orange-600 text-white px-8 py-3 rounded-xl font-bold">Back to Home</Link>
       </div>
     );
@@ -79,7 +79,7 @@ export default function OrderConfirmation() {
                 <CheckCircle2 className="h-12 w-12 text-white" />
               )}
             </div>
-            <h1 className="text-4xl font-black mb-2">
+            <h1 className="text-4xl font-bold tracking-tight mb-2">
               {paymentStatus === 'failed' || paymentStatus === 'cancelled' ? 'Order Issue' : 'Thank You!'}
             </h1>
             <p className="text-orange-100 text-lg font-bold">
@@ -98,22 +98,22 @@ export default function OrderConfirmation() {
             <div className="flex items-center space-x-4">
               <div className="bg-orange-50 p-4 rounded-2xl"><Package className="h-8 w-8 text-orange-600" /></div>
               <div>
-                <p className="text-sm font-black text-gray-400 uppercase tracking-widest">Status</p>
-                <p className="text-xl font-black text-gray-900 capitalize">{order.status}</p>
+                <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">Status</p>
+                <p className="text-xl font-bold tracking-tight text-gray-900 capitalize">{order.status}</p>
               </div>
             </div>
             <div className="flex items-center space-x-4">
               <div className="bg-orange-50 p-4 rounded-2xl"><Truck className="h-8 w-8 text-orange-600" /></div>
               <div>
-                <p className="text-sm font-black text-gray-400 uppercase tracking-widest">Delivery</p>
-                <p className="text-xl font-black text-gray-900 capitalize">{order.deliveryArea.replace('-', ' ')}</p>
+                <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">Delivery</p>
+                <p className="text-xl font-bold tracking-tight text-gray-900 capitalize">{order.deliveryArea.replace('-', ' ')}</p>
               </div>
             </div>
             <div className="flex items-center space-x-4">
               <div className="bg-orange-50 p-4 rounded-2xl"><ShoppingBag className="h-8 w-8 text-orange-600" /></div>
               <div>
-                <p className="text-sm font-black text-gray-400 uppercase tracking-widest">Total Amount</p>
-                <p className="text-xl font-black text-gray-900">{formatPrice(order.total)}</p>
+                <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">Total Amount</p>
+                <p className="text-xl font-bold tracking-tight text-gray-900">{formatPrice(order.total)}</p>
               </div>
             </div>
           </div>
@@ -121,28 +121,28 @@ export default function OrderConfirmation() {
           {/* Customer Details */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
             <div className="space-y-6">
-              <h3 className="text-xl font-black text-gray-900 flex items-center">
+              <h3 className="text-xl font-bold tracking-tight text-gray-900 flex items-center">
                 <User className="mr-2 h-6 w-6 text-orange-600" />
                 Customer Details
               </h3>
               <div className="space-y-4 bg-gray-50 p-6 rounded-3xl">
                 <div>
-                  <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Name</p>
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Name</p>
                   <p className="font-bold text-gray-900">{order.customerName}</p>
                 </div>
                 <div>
-                  <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Phone</p>
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Phone</p>
                   <p className="font-bold text-gray-900">{order.phone}</p>
                 </div>
                 <div>
-                  <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Email</p>
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Email</p>
                   <p className="font-bold text-gray-900">{order.customerEmail}</p>
                 </div>
               </div>
             </div>
 
             <div className="space-y-6">
-              <h3 className="text-xl font-black text-gray-900 flex items-center">
+              <h3 className="text-xl font-bold tracking-tight text-gray-900 flex items-center">
                 <MapPin className="mr-2 h-6 w-6 text-orange-600" />
                 Shipping Address
               </h3>
@@ -154,7 +154,7 @@ export default function OrderConfirmation() {
 
           {/* Order Items */}
           <div className="space-y-6">
-            <h3 className="text-xl font-black text-gray-900">Order Items</h3>
+            <h3 className="text-xl font-bold tracking-tight text-gray-900">Order Items</h3>
             <div className="space-y-4">
               {order.items.map((item, idx) => (
                 <div key={idx} className="flex items-center space-x-6 bg-white border border-gray-100 p-4 rounded-2xl">
@@ -162,14 +162,14 @@ export default function OrderConfirmation() {
                     <img src={item.images[0]} alt="" className="w-full h-full object-cover" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-black text-gray-900 truncate">{item.name}</p>
+                    <p className="font-bold text-gray-900 truncate">{item.name}</p>
                     <p className="text-sm text-gray-500 font-bold">
                       {item.selectedSize && `Size: ${item.selectedSize}`} 
                       {item.selectedColor && ` | Color: ${item.selectedColor}`}
                     </p>
                     <p className="text-sm text-orange-600 font-bold">Qty: {item.quantity} × {formatPrice(item.discountPrice || item.price)}</p>
                   </div>
-                  <p className="font-black text-gray-900">{formatPrice((item.discountPrice || item.price) * item.quantity)}</p>
+                  <p className="font-bold text-gray-900">{formatPrice((item.discountPrice || item.price) * item.quantity)}</p>
                 </div>
               ))}
             </div>
@@ -186,21 +186,21 @@ export default function OrderConfirmation() {
               <span>{formatPrice(order.deliveryCharge)}</span>
             </div>
             <div className="border-t border-white/10 pt-4 flex justify-between items-center">
-              <span className="text-xl font-black">Total Paid</span>
-              <span className="text-3xl font-black text-orange-500">{formatPrice(order.total)}</span>
+              <span className="text-xl font-bold tracking-tight">Total Paid</span>
+              <span className="text-3xl font-bold tracking-tight text-orange-500">{formatPrice(order.total)}</span>
             </div>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 pt-8">
             <Link
               to="/orders"
-              className="flex-1 bg-gray-100 text-gray-900 py-4 rounded-2xl font-black text-center hover:bg-gray-200 transition-all"
+              className="flex-1 bg-gray-100 text-gray-900 py-4 rounded-2xl font-bold text-center hover:bg-gray-200 transition-all"
             >
               View Order History
             </Link>
             <Link
               to="/products"
-              className="flex-1 bg-orange-600 text-white py-4 rounded-2xl font-black text-center hover:bg-orange-700 transition-all flex items-center justify-center space-x-2"
+              className="flex-1 bg-orange-600 text-white py-4 rounded-2xl font-bold text-center hover:bg-orange-700 transition-all flex items-center justify-center space-x-2"
             >
               <span>Continue Shopping</span>
               <ArrowRight className="h-5 w-5" />

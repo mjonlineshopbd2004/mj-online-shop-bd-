@@ -44,6 +44,12 @@ export default function Navbar() {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      toast.error('Search API key is not configured. Please contact the administrator.');
+      return;
+    }
+
     setIsSearching(true);
     const toastId = toast.loading('Analyzing image for search...');
 
@@ -56,23 +62,22 @@ export default function Navbar() {
 
       const base64Data = await base64Promise;
 
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+      const ai = new GoogleGenAI({ apiKey });
       const response = await ai.models.generateContent({
         model: "gemini-3-flash-preview",
-        contents: [
-          {
-            parts: [
-              { text: "Describe this fashion item in 2-3 keywords for a search query. Only output the keywords separated by spaces." },
-              { inlineData: { mimeType: file.type, data: base64Data } }
-            ]
-          }
-        ],
+        contents: {
+          parts: [
+            { text: "Identify the fashion item in this image. Provide a list of 5-8 highly relevant English keywords that would likely appear in an e-commerce product title or description (e.g., 'leather handbag', 'blue denim jacket', 'silk saree'). Focus on specific attributes like color, material, and style. Output only the keywords separated by spaces, no punctuation." },
+            { inlineData: { mimeType: file.type, data: base64Data } }
+          ]
+        },
       });
 
       const keywords = response.text?.trim();
       if (keywords) {
         toast.success(`Searching for: ${keywords}`, { id: toastId });
         navigate(`/products?search=${encodeURIComponent(keywords)}`);
+        setIsMenuOpen(false);
       } else {
         toast.error('Could not identify item in image', { id: toastId });
       }
@@ -148,21 +153,21 @@ export default function Navbar() {
               )}
             </div>
             <div className="flex flex-col">
-              <h1 className="text-sm md:text-lg font-black tracking-tight text-gray-900 leading-none uppercase">
+              <h1 className="text-sm md:text-xl font-bold tracking-tight text-gray-900 leading-none uppercase font-display">
                 {settings.storeName}
               </h1>
-              <p className="hidden md:block text-[8px] font-bold text-gray-400 uppercase tracking-[0.2em] mt-0.5">{settings.shopTagline || 'Premium Online Shop'}</p>
+              <p className="hidden md:block text-[9px] font-semibold text-gray-500 uppercase tracking-[0.15em] mt-1 font-sans">{settings.shopTagline || 'Premium Online Shop'}</p>
             </div>
           </Link>
 
           {/* Hotline */}
-          <div className="hidden xl:flex items-center gap-3">
-            <div className="w-11 h-11 rounded-full border border-gray-100 flex items-center justify-center text-primary">
+          <div className="hidden xl:flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center text-primary shadow-sm border border-gray-100">
               <Phone className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider leading-none mb-1">Hotline Number</p>
-              <p className="text-lg font-bold text-gray-900 leading-none">{settings.phone}</p>
+              <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest leading-none mb-1.5 font-sans">Hotline Number</p>
+              <p className="text-xl font-bold text-gray-900 leading-none font-display tracking-tight">{settings.phone}</p>
             </div>
           </div>
 
@@ -389,9 +394,14 @@ export default function Navbar() {
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="absolute right-2 p-1.5 text-gray-400 hover:text-primary hover:bg-primary/10 rounded-full transition-all"
+              disabled={isSearching}
+              className="absolute right-2 p-1.5 text-gray-400 hover:text-primary hover:bg-primary/10 rounded-full transition-all disabled:opacity-50"
             >
-              <Camera className="h-4 w-4" />
+              {isSearching ? (
+                <Loader2 className="h-4 w-4 animate-spin text-primary" />
+              ) : (
+                <Camera className="h-4 w-4" />
+              )}
             </button>
           )}
         </form>

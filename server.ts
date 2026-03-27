@@ -19,6 +19,53 @@ async function startServer() {
   // API Routes
   app.use('/api', apiRoutes);
   
+  // PWA Direct Routes (Ensures PWABuilder can find them)
+  app.get('/manifest.json', (req, res) => {
+    res.setHeader('Content-Type', 'application/manifest+json');
+    res.send({
+      "name": "MJ ONLINE SHOP BD",
+      "short_name": "MJ SHOP",
+      "description": "Premium Online Shop in Bangladesh. Quality products, fast delivery, and secure payments.",
+      "theme_color": "#10b981",
+      "background_color": "#ffffff",
+      "display": "standalone",
+      "orientation": "portrait",
+      "scope": "/",
+      "start_url": "/",
+      "icons": [
+        {
+          "src": "https://picsum.photos/seed/mjshop/192/192",
+          "sizes": "192x192",
+          "type": "image/png",
+          "purpose": "any"
+        },
+        {
+          "src": "https://picsum.photos/seed/mjshop/512/512",
+          "sizes": "512x512",
+          "type": "image/png",
+          "purpose": "any"
+        },
+        {
+          "src": "https://picsum.photos/seed/mjshop/512/512",
+          "sizes": "512x512",
+          "type": "image/png",
+          "purpose": "maskable"
+        }
+      ]
+    });
+  });
+
+  app.get('/sw.js', (req, res) => {
+    res.setHeader('Content-Type', 'application/javascript');
+    res.send(`
+      self.addEventListener('install', (e) => { self.skipWaiting(); });
+      self.addEventListener('fetch', (e) => { e.respondWith(fetch(e.request)); });
+    `);
+  });
+  
+  // Serve Public Folder
+  app.use(express.static(path.join(process.cwd(), 'public')));
+  
   // 404 for API routes
   app.use('/api/*', (req, res) => {
     res.status(404).json({ message: `API route not found: ${req.originalUrl}` });

@@ -1,10 +1,13 @@
 import { Product, Order, UserProfile, AppConfig } from './types';
 
 export const CATEGORIES = [
-  'Bags',
   'Shoes',
+  'Bags',
   'Jewelry',
-  'Electronics'
+  'Women\'s Clothing',
+  'Watches',
+  'Electronics & Gadgets',
+  'Home & Kitchen'
 ];
 
 export const DELIVERY_AREAS = [
@@ -19,9 +22,6 @@ export const PAYMENT_METHODS = [
   { id: 'card', name: 'Bank or Card', icon: '💳' },
   { id: 'cod', name: 'Cash on Delivery', icon: '🚚' }
 ];
-
-export const PAYMENT_NUMBER = '01810580592';
-export const WHATSAPP_NUMBER = '01810580592';
 
 export const DEMO_PRODUCTS: Product[] = [
   {
