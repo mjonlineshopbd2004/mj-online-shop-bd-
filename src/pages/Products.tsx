@@ -35,7 +35,7 @@ export default function Products() {
         }
 
         const querySnapshot = await getDocs(q);
-        let results = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
+        let results = querySnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Product));
 
         // Client-side search and sort
         if (searchQuery) {
@@ -197,13 +197,13 @@ export default function Products() {
         {/* Product Grid */}
         <div className="flex-1">
           {loading ? (
-            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-              {[...Array(6)].map((_, i) => (
-                <div key={i} className="animate-pulse bg-gray-100 rounded-3xl h-[450px]"></div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 md:gap-3">
+              {[...Array(10)].map((_, i) => (
+                <div key={i} className="animate-pulse bg-gray-100 rounded-3xl h-[280px]"></div>
               ))}
             </div>
           ) : products.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 md:gap-3">
               {products.map(product => (
                 <ProductCard key={product.id} product={product} />
               ))}

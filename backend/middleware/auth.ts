@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { auth, db } from '../config/firebase';
+import firebaseConfig from '../../firebase-applet-config.json';
 
 export interface AuthRequest extends Request {
   user?: {
@@ -17,22 +18,69 @@ export const authenticate = async (req: AuthRequest, res: Response, next: NextFu
   }
 
   try {
-    const decodedToken = await auth.verifyIdToken(token);
+    // Verify the ID token first
+    console.log('Verifying token for project:', firebaseConfig.projectId);
+    console.log('Auth service project ID:', (auth as any).app?.options?.projectId);
     
-    // Get user role from Firestore
-    const userDoc = await db.collection('users').doc(decodedToken.uid).get();
-    const userData = userDoc.data();
+    let decodedToken;
+    try {
+      decodedToken = await auth.verifyIdToken(token);
+    } catch (verifyError: any) {
+      console.error('Token verification failed details:', verifyError);
+      if (verifyError.code === 'auth/argument-error' || verifyError.message?.includes('audience')) {
+        console.error('AUDIENCE MISMATCH DETECTED. Expected:', firebaseConfig.projectId);
+      }
+      throw verifyError;
+    }
+    
+    console.log('Token verified successfully for user:', decodedToken.uid);
+    
+    let role = 'customer';
+    
+    // Try to get user role from Firestore, but don't fail if it fails
+    try {
+      const userDoc = await db.collection('users').doc(decodedToken.uid).get();
+      if (userDoc.exists) {
+        role = userDoc.data()?.role || 'customer';
+      } else if (decodedToken.email === 'mjonlineshopbd@gmail.com') {
+        // Auto-grant admin role to the primary admin email if document doesn't exist
+        role = 'admin';
+        console.log('Auto-granting admin role to primary admin email:', decodedToken.email);
+      }
+    } catch (firestoreError: any) {
+      console.warn('Firestore role fetch failed with primary DB, trying default DB:', firestoreError.message);
+      
+      // Check email before trying fallback DB
+      if (decodedToken.email === 'mjonlineshopbd@gmail.com') {
+        role = 'admin';
+      } else {
+        try {
+          // Fallback to default database if primary fails
+          const { getFirestore: getAdminFirestore } = await import('firebase-admin/firestore');
+          const defaultDb = getAdminFirestore();
+          const userDoc = await defaultDb.collection('users').doc(decodedToken.uid).get();
+          if (userDoc.exists) {
+            role = userDoc.data()?.role || 'customer';
+          }
+        } catch (fallbackError: any) {
+          console.error('Firestore role fetch failed on both DBs:', fallbackError.message);
+        }
+      }
+    }
     
     req.user = {
       uid: decodedToken.uid,
       email: decodedToken.email || '',
-      role: userData?.role || 'customer'
+      role: role
     };
     
     next();
-  } catch (error) {
-    console.error('Auth middleware error:', error);
-    return res.status(401).json({ message: 'Invalid or expired token' });
+  } catch (error: any) {
+    console.error('Auth verification failed:', error.message);
+    return res.status(401).json({ 
+      message: 'Invalid or expired token',
+      error: error.message
+    });
   }
 };
 

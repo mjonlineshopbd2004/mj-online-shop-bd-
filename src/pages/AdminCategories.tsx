@@ -269,14 +269,14 @@ export default function AdminCategories() {
     <div className="p-4 sm:p-8 bg-[#0a0a0a] min-h-screen text-white space-y-8 max-w-5xl mx-auto">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h1 className="text-4xl font-black tracking-tight mb-2">Category Management</h1>
+          <h1 className="text-4xl font-black tracking-tight mb-2 text-white">Category Management</h1>
           <p className="text-gray-400 font-bold">Add, remove, and organize your store categories</p>
         </div>
       </div>
 
       <div className="bg-white/5 border border-white/10 rounded-[2.5rem] p-8 space-y-8">
         <div>
-          <h2 className="text-xl font-black tracking-tight mb-4">Quick Add Suggested Categories</h2>
+          <h2 className="text-xl font-black tracking-tight mb-4 text-white">Quick Add Suggested Categories</h2>
           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-4">
             {SUGGESTED_CATEGORIES.map((suggested) => (
               <button
@@ -489,7 +489,7 @@ export default function AdminCategories() {
                     )}
                   </div>
                   <div className="flex-1">
-                    <span className="font-black text-lg block">{category.name}</span>
+                    <span className="font-black text-lg block text-white">{category.name}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <button

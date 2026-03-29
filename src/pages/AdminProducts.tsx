@@ -1,23 +1,30 @@
 import React, { useEffect, useState } from 'react';
-import { collection, query, getDocs, deleteDoc, doc, orderBy } from 'firebase/firestore';
+import { collection, query, getDocs, deleteDoc, doc, orderBy, updateDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { Product } from '../types';
-import { formatPrice, cn } from '../lib/utils';
-import { Plus, Search, Edit2, Trash2, Package, ChevronRight, Filter } from 'lucide-react';
+import { formatPrice, cn, getProxyUrl } from '../lib/utils';
+import { Plus, Search, Edit2, Trash2, Package, ChevronRight, Filter, RefreshCw, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function AdminProducts() {
+  const { user } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [syncingId, setSyncingId] = useState<string | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   const fetchProducts = async () => {
     setLoading(true);
     try {
       const q = query(collection(db, 'products'), orderBy('createdAt', 'desc'));
       const querySnapshot = await getDocs(q);
-      setProducts(querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product)));
+      setProducts(querySnapshot.docs.map(doc => {
+        const data = doc.data();
+        return { ...data, id: doc.id } as Product;
+      }));
     } catch (error) {
       console.error("Error fetching products:", error);
     } finally {
@@ -31,11 +38,65 @@ export default function AdminProducts() {
 
   const handleDelete = async (id: string) => {
     try {
+      console.log("Starting deletion for ID:", id);
       await deleteDoc(doc(db, 'products', id));
-      setProducts(products.filter(p => p.id !== id));
+      setProducts(prev => prev.filter(p => p.id !== id));
       toast.success('Product deleted successfully');
-    } catch (error) {
-      toast.error('Failed to delete product');
+      setDeleteConfirmId(null);
+    } catch (error: any) {
+      console.error("Delete error details:", error);
+      toast.error(`Failed to delete product: ${error.message}`);
+    }
+  };
+
+  const handleSync = async (product: Product) => {
+    if (!product.sourceUrl) return;
+
+    setSyncingId(product.id);
+    try {
+      const idToken = await user?.getIdToken();
+      if (!idToken) throw new Error('Not authenticated');
+
+      const response = await fetch('/api/scraper/product', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${idToken}`
+        },
+        body: JSON.stringify({ url: product.sourceUrl })
+      });
+
+      let data;
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        data = await response.json();
+      } else {
+        const text = await response.text();
+        console.error('Non-JSON response received from /api/scraper/product:', text);
+        throw new Error(`Server returned non-JSON response: ${text.substring(0, 100)}...`);
+      }
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to fetch product data');
+      }
+
+      const updatedData = {
+        name: data.name || product.name,
+        price: data.price || product.price,
+        description: data.description || product.description,
+        images: data.images && data.images.length > 0 ? data.images : product.images,
+        updatedAt: new Date().toISOString(),
+      };
+
+      await updateDoc(doc(db, 'products', product.id), updatedData);
+      
+      setProducts(prev => prev.map(p => p.id === product.id ? { ...p, ...updatedData } : p));
+      toast.success(`Synced: ${product.name}`);
+    } catch (error: any) {
+      console.error('Sync error:', error);
+      toast.error(`Failed to sync ${product.name}: ${error.message}`);
+    } finally {
+      setSyncingId(null);
     }
   };
 
@@ -48,7 +109,7 @@ export default function AdminProducts() {
     <div className="p-4 sm:p-8 bg-[#0a0a0a] min-h-screen text-white space-y-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight mb-2">Inventory</h1>
+          <h1 className="text-3xl font-bold tracking-tight mb-2 text-white">Inventory</h1>
           <p className="text-gray-400 font-bold">Manage your products and stock levels</p>
         </div>
         <Link
@@ -102,7 +163,7 @@ export default function AdminProducts() {
                   <td className="px-8 py-6">
                     <div className="flex items-center gap-4">
                       <div className="w-14 h-14 rounded-xl overflow-hidden bg-white/5 flex-shrink-0 border border-white/5">
-                        <img src={product.images[0]} alt="" className="w-full h-full object-cover" />
+                        <img src={getProxyUrl(product.images[0])} alt="" className="w-full h-full object-cover" />
                       </div>
                       <div>
                         <p className="font-bold tracking-tight text-white group-hover:text-emerald-500 transition-colors line-clamp-1">{product.name}</p>
@@ -129,18 +190,30 @@ export default function AdminProducts() {
                     </div>
                   </td>
                   <td className="px-8 py-6 text-right">
-                    <div className="flex items-center justify-end gap-2">
+                    <div className="flex items-center justify-end gap-1">
+                      {product.sourceUrl && (
+                        <button
+                          onClick={() => handleSync(product)}
+                          disabled={syncingId === product.id}
+                          className="p-2 text-gray-400 hover:text-emerald-500 hover:bg-emerald-500/10 rounded-lg transition-all disabled:opacity-50"
+                          title="Sync with Source"
+                        >
+                          {syncingId === product.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+                        </button>
+                      )}
                       <Link
                         to={`/admin/products/edit/${product.id}`}
-                        className="p-3 text-gray-500 hover:text-emerald-500 hover:bg-emerald-500/10 rounded-xl transition-all"
+                        className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-500/10 rounded-lg transition-all"
+                        title="Edit Product"
                       >
-                        <Edit2 className="h-5 w-5" />
+                        <Edit2 className="h-4 w-4" />
                       </Link>
                       <button
-                        onClick={() => handleDelete(product.id)}
-                        className="p-3 text-gray-500 hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all"
+                        onClick={() => setDeleteConfirmId(product.id)}
+                        className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all"
+                        title="Delete Product"
                       >
-                        <Trash2 className="h-5 w-5" />
+                        <Trash2 className="h-4 w-4" />
                       </button>
                     </div>
                   </td>
@@ -150,6 +223,35 @@ export default function AdminProducts() {
           </table>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirmId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="bg-[#111111] border border-white/10 p-8 rounded-[2rem] max-w-md w-full space-y-6 shadow-2xl">
+            <div className="w-20 h-20 bg-red-500/20 rounded-full flex items-center justify-center mx-auto">
+              <Trash2 className="h-10 w-10 text-red-500" />
+            </div>
+            <div className="text-center space-y-2">
+              <h3 className="text-2xl font-bold text-white">Delete Product?</h3>
+              <p className="text-gray-400 font-bold">This action cannot be undone. Are you sure you want to delete this product?</p>
+            </div>
+            <div className="flex gap-4">
+              <button
+                onClick={() => setDeleteConfirmId(null)}
+                className="flex-1 px-6 py-4 bg-white/5 hover:bg-white/10 rounded-xl font-bold transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDelete(deleteConfirmId)}
+                className="flex-1 px-6 py-4 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold transition-all shadow-lg shadow-red-600/20"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

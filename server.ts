@@ -4,6 +4,10 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { createServer as createViteServer } from 'vite';
 import apiRoutes from './backend/routes';
+import firebaseConfig from './firebase-applet-config.json';
+
+// Set GOOGLE_CLOUD_PROJECT early to ensure Firebase Admin SDK uses the correct project ID
+process.env.GOOGLE_CLOUD_PROJECT = firebaseConfig.projectId;
 
 dotenv.config();
 
@@ -16,8 +20,87 @@ async function startServer() {
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
 
+  console.log('GEMINI_API_KEY present:', !!process.env.GEMINI_API_KEY);
+
   // API Routes
   app.use('/api', apiRoutes);
+
+  // Image Proxy (Bypass Referrer restrictions)
+  app.get('/api/proxy-image', async (req, res) => {
+    let imageUrl = req.query.url as string;
+    if (!imageUrl) {
+      return res.status(400).send('URL is required');
+    }
+
+    // Normalize URL
+    if (imageUrl.startsWith('//')) imageUrl = 'https:' + imageUrl;
+    if (!imageUrl.startsWith('http')) imageUrl = 'https://' + imageUrl;
+
+    try {
+      const axios = (await import('axios')).default;
+      
+      const fetchImage = async (url: string, referer: string = '') => {
+        return await axios.get(url, {
+          responseType: 'arraybuffer',
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.9',
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache',
+            'Referer': referer,
+          },
+          timeout: 15000,
+          validateStatus: (status) => status < 500, // Handle 404 manually
+        });
+      };
+
+      let referer = '';
+      if (imageUrl.includes('alicdn.com') || imageUrl.includes('1688.com')) {
+        referer = 'https://www.1688.com/';
+      } else if (imageUrl.includes('amazon.com')) {
+        referer = 'https://www.amazon.com/';
+      }
+
+      let response = await fetchImage(imageUrl, referer);
+
+      // If 404 and it's an alicdn URL, try different subdomains and patterns
+      if (response.status === 404 && imageUrl.includes('alicdn.com')) {
+        const subdomains = ['img.alicdn.com', 'cbu01.alicdn.com', 'gw.alicdn.com', 'ae01.alicdn.com'];
+        const currentSubdomain = subdomains.find(s => imageUrl.includes(s));
+        
+        for (const subdomain of subdomains) {
+          if (subdomain === currentSubdomain) continue;
+          const fallbackUrl = imageUrl.replace(currentSubdomain || 'cbu01.alicdn.com', subdomain);
+          console.log(`Proxy: 404 on ${currentSubdomain}, trying fallback: ${subdomain}`);
+          const fallbackResponse = await fetchImage(fallbackUrl, referer);
+          if (fallbackResponse.status === 200) {
+            response = fallbackResponse;
+            break;
+          }
+        }
+      }
+
+      if (response.status !== 200) {
+        console.error(`Image proxy error: Source returned ${response.status} for URL: ${imageUrl}`);
+        return res.status(response.status).send(`Source returned ${response.status}`);
+      }
+
+      const contentType = response.headers['content-type'] || 'image/jpeg';
+      res.setHeader('Content-Type', contentType);
+      res.setHeader('Cache-Control', 'public, max-age=86400'); // Cache for 24h
+      res.send(Buffer.from(response.data));
+    } catch (error: any) {
+      console.error('Image proxy error:', error.message, 'URL:', imageUrl);
+      res.status(500).send('Failed to fetch image');
+    }
+  });
+  
+  // 404 for API routes - Move this here to catch all unmatched /api/* routes
+  app.all('/api/*', (req, res) => {
+    console.warn(`API route not found: ${req.method} ${req.originalUrl}`);
+    res.status(404).json({ message: `API route not found: ${req.originalUrl}` });
+  });
   
   // PWA Direct Routes (Ensures PWABuilder can find them)
   app.get('/manifest.json', (req, res) => {
@@ -65,11 +148,6 @@ async function startServer() {
   
   // Serve Public Folder
   app.use(express.static(path.join(process.cwd(), 'public')));
-  
-  // 404 for API routes
-  app.use('/api/*', (req, res) => {
-    res.status(404).json({ message: `API route not found: ${req.originalUrl}` });
-  });
   
   // Serve Uploads
   app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));

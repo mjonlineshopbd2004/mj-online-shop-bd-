@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Heart, ShoppingCart, ShoppingBag, Star } from 'lucide-react';
 import { Product } from '../types';
-import { formatPrice, calculateDiscount, cn } from '../lib/utils';
+import { formatPrice, calculateDiscount, cn, getProxyUrl } from '../lib/utils';
 import { useCart } from '../contexts/CartContext';
 import { useWishlist } from '../contexts/WishlistContext';
 import { toast } from 'sonner';
@@ -45,9 +45,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       to={`/product/${product.id}`}
       className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 flex flex-col h-full"
     >
-      <div className="relative aspect-[3/4] overflow-hidden">
+      <div className="relative aspect-square overflow-hidden">
         <img
-          src={product.images[0]}
+          src={getProxyUrl(product.images[0])}
           alt={product.name}
           className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
           referrerPolicy="no-referrer"
@@ -106,27 +106,27 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         </button>
       </div>
 
-      <div className="p-4 flex flex-col flex-1">
-        <p className="text-[10px] font-bold text-primary uppercase tracking-[0.2em] mb-1.5 font-sans">{product.category}</p>
-        <h3 className="text-gray-900 font-bold line-clamp-2 mb-2 group-hover:text-primary transition-colors font-display tracking-tight leading-snug">
+      <div className="p-1.5 flex flex-col flex-1">
+        <p className="text-[7px] font-bold text-primary uppercase tracking-[0.1em] mb-0.5 font-sans">{product.category}</p>
+        <h3 className="text-gray-900 font-bold text-sm line-clamp-2 mb-0.5 group-hover:text-primary transition-colors font-display tracking-tight leading-tight">
           {product.name}
         </h3>
         
-        <div className="flex items-center space-x-1 mb-3">
+        <div className="flex items-center space-x-1 mb-0.5">
           <div className="flex text-yellow-400">
             {[...Array(5)].map((_, i) => (
-              <Star key={i} className={cn("h-3 w-3 fill-current", i >= Math.floor(product.rating) && "text-gray-200")} />
+              <Star key={i} className={cn("h-1.5 w-1.5 fill-current", i >= Math.floor(product.rating) && "text-gray-200")} />
             ))}
           </div>
-          <span className="text-[10px] font-bold text-gray-400 font-sans">({product.reviewsCount})</span>
+          <span className="text-[7px] font-bold text-gray-400 font-sans">({product.reviewsCount})</span>
         </div>
 
-        <div className="mt-auto flex items-center space-x-2">
-          <span className="text-xl font-bold text-gray-900 font-display tracking-tight">
+        <div className="mt-auto flex items-center space-x-1">
+          <span className="text-sm font-bold text-gray-900 font-display tracking-tight">
             {formatPrice(product.discountPrice || product.price)}
           </span>
           {product.discountPrice && (
-            <span className="text-sm text-gray-400 line-through font-medium font-sans">
+            <span className="text-[9px] text-gray-400 line-through font-medium font-sans">
               {formatPrice(product.price)}
             </span>
           )}

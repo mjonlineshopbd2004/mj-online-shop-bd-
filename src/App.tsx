@@ -34,6 +34,7 @@ import AdminCoupons from './pages/AdminCoupons';
 import AdminCategories from './pages/AdminCategories';
 import AdminTransactions from './pages/AdminTransactions';
 import AdminReviews from './pages/AdminReviews';
+import AdminProductImporter from './pages/AdminProductImporter';
 import SplashScreen from './components/SplashScreen';
 import { AnimatePresence, motion } from 'motion/react';
 import { useLocation } from 'react-router-dom';
@@ -89,6 +90,7 @@ function AnimatedRoutes() {
               <Route path="/admin/refunds" element={<AdminRefunds />} />
               <Route path="/admin/users" element={<AdminUsers />} />
               <Route path="/admin/coupons" element={<AdminCoupons />} />
+              <Route path="/admin/import" element={<AdminProductImporter />} />
               <Route path="/admin/settings" element={<AdminSettings />} />
             </Route>
           </Route>

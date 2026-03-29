@@ -88,7 +88,7 @@ export default function AdminOrders() {
     <div className="p-4 sm:p-8 bg-[#0a0a0a] min-h-screen text-white space-y-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-black tracking-tight mb-2">Orders</h1>
+          <h1 className="text-3xl font-black tracking-tight mb-2 text-white">Orders</h1>
           <p className="text-gray-400 font-bold">Manage customer orders and fulfillment</p>
         </div>
       </div>

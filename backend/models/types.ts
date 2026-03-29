@@ -20,6 +20,8 @@ export interface Product {
   discountPrice?: number;
   category: string;
   images: string[];
+  videoUrl?: string;
+  sourceUrl?: string;
   stock: number;
   rating: number;
   reviewsCount: number;

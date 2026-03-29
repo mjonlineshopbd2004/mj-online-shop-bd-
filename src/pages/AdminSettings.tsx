@@ -193,14 +193,14 @@ export default function AdminSettings() {
   return (
     <div className="container-custom py-8 sm:py-12 bg-[#0a0a0a] min-h-screen text-white space-y-12">
       <div>
-        <h1 className="text-3xl sm:text-4xl font-black tracking-tight mb-2">Settings</h1>
+        <h1 className="text-3xl sm:text-4xl font-black tracking-tight mb-2 text-white">Settings</h1>
         <p className="text-gray-400 font-bold">Configure your store information and preferences</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-12">
         {/* General Settings */}
         <div className="bg-white/5 border border-white/10 rounded-[2.5rem] p-8 space-y-8">
-          <h2 className="text-xl font-black flex items-center gap-3">
+          <h2 className="text-xl font-black flex items-center gap-3 text-white">
             <Globe className="h-6 w-6 text-emerald-500" />
             General Information
           </h2>
@@ -210,7 +210,7 @@ export default function AdminSettings() {
               <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-2">Store Name</label>
               <input
                 type="text"
-                value={settings.storeName}
+                value={settings.storeName || ''}
                 onChange={(e) => setSettings({ ...settings, storeName: e.target.value })}
                 className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-emerald-500 transition-all font-bold text-white"
                 required
@@ -220,7 +220,7 @@ export default function AdminSettings() {
               <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-2">Shop Tagline</label>
               <input
                 type="text"
-                value={settings.shopTagline}
+                value={settings.shopTagline || ''}
                 onChange={(e) => setSettings({ ...settings, shopTagline: e.target.value })}
                 className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-emerald-500 transition-all font-bold text-white"
                 placeholder="Premium Online Shop"
@@ -230,7 +230,7 @@ export default function AdminSettings() {
               <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-2">Logo URL (Optional)</label>
               <input
                 type="text"
-                value={settings.logoUrl}
+                value={settings.logoUrl || ''}
                 onChange={(e) => setSettings({ ...settings, logoUrl: e.target.value })}
                 className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-emerald-500 transition-all font-bold text-white"
                 placeholder="https://example.com/logo.png"
@@ -242,7 +242,7 @@ export default function AdminSettings() {
                 <Phone className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 group-focus-within:text-emerald-500 transition-colors" />
                 <input
                   type="text"
-                  value={settings.phone}
+                  value={settings.phone || ''}
                   onChange={(e) => setSettings({ ...settings, phone: e.target.value })}
                   className="w-full bg-white/5 border border-white/10 rounded-2xl pl-14 pr-6 py-4 outline-none focus:border-emerald-500 transition-all font-bold text-white"
                   required
@@ -255,7 +255,7 @@ export default function AdminSettings() {
                 <Phone className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 group-focus-within:text-emerald-500 transition-colors" />
                 <input
                   type="text"
-                  value={settings.whatsappNumber}
+                  value={settings.whatsappNumber || ''}
                   onChange={(e) => setSettings({ ...settings, whatsappNumber: e.target.value })}
                   className="w-full bg-white/5 border border-white/10 rounded-2xl pl-14 pr-6 py-4 outline-none focus:border-emerald-500 transition-all font-bold text-white"
                   required
@@ -268,7 +268,7 @@ export default function AdminSettings() {
                 <Phone className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 group-focus-within:text-emerald-500 transition-colors" />
                 <input
                   type="text"
-                  value={settings.paymentNumber}
+                  value={settings.paymentNumber || ''}
                   onChange={(e) => setSettings({ ...settings, paymentNumber: e.target.value })}
                   className="w-full bg-white/5 border border-white/10 rounded-2xl pl-14 pr-6 py-4 outline-none focus:border-emerald-500 transition-all font-bold text-white"
                   required
@@ -281,7 +281,7 @@ export default function AdminSettings() {
                 <Mail className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 group-focus-within:text-emerald-500 transition-colors" />
                 <input
                   type="email"
-                  value={settings.email}
+                  value={settings.email || ''}
                   onChange={(e) => setSettings({ ...settings, email: e.target.value })}
                   className="w-full bg-white/5 border border-white/10 rounded-2xl pl-14 pr-6 py-4 outline-none focus:border-emerald-500 transition-all font-bold text-white"
                   required
@@ -294,7 +294,7 @@ export default function AdminSettings() {
                 <MapPin className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 group-focus-within:text-emerald-500 transition-colors" />
                 <input
                   type="text"
-                  value={settings.address}
+                  value={settings.address || ''}
                   onChange={(e) => setSettings({ ...settings, address: e.target.value })}
                   className="w-full bg-white/5 border border-white/10 rounded-2xl pl-14 pr-6 py-4 outline-none focus:border-emerald-500 transition-all font-bold text-white"
                   required
@@ -306,7 +306,7 @@ export default function AdminSettings() {
 
         {/* Feature Controls */}
         <div className="bg-white/5 border border-white/10 rounded-[2.5rem] p-8 space-y-8">
-          <h2 className="text-xl font-black flex items-center gap-3">
+          <h2 className="text-xl font-black flex items-center gap-3 text-white">
             <Save className="h-6 w-6 text-emerald-500" />
             Feature Controls
           </h2>
@@ -349,7 +349,7 @@ export default function AdminSettings() {
 
         {/* Banner Settings */}
         <div className="bg-white/5 border border-white/10 rounded-[2.5rem] p-8 space-y-8">
-          <h2 className="text-xl font-black flex items-center gap-3">
+          <h2 className="text-xl font-black flex items-center gap-3 text-white">
             <ImageIcon className="h-6 w-6 text-emerald-500" />
             Banner & Promotions
           </h2>
@@ -360,7 +360,7 @@ export default function AdminSettings() {
                 <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-2">Top Banner Text</label>
                 <input
                   type="text"
-                  value={settings.topBannerText}
+                  value={settings.topBannerText || ''}
                   onChange={(e) => setSettings({ ...settings, topBannerText: e.target.value })}
                   className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-emerald-500 transition-all font-bold text-white"
                 />
@@ -369,7 +369,7 @@ export default function AdminSettings() {
                 <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-2">Top Banner Link</label>
                 <input
                   type="text"
-                  value={settings.topBannerLink}
+                  value={settings.topBannerLink || ''}
                   onChange={(e) => setSettings({ ...settings, topBannerLink: e.target.value })}
                   className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-emerald-500 transition-all font-bold text-white"
                   placeholder="/products"
@@ -384,7 +384,7 @@ export default function AdminSettings() {
                   />
                   <input
                     type="color"
-                    value={settings.bannerTextColor}
+                    value={settings.bannerTextColor || '#000000'}
                     onChange={(e) => setSettings({ ...settings, bannerTextColor: e.target.value })}
                     className="w-full h-10 bg-transparent border-none cursor-pointer"
                   />
@@ -394,7 +394,7 @@ export default function AdminSettings() {
 
             <div className="pt-8 border-t border-white/5 space-y-8">
               <div className="flex justify-between items-center">
-                <h3 className="text-lg font-black">Hero Banners</h3>
+                <h3 className="text-lg font-black text-white">Hero Banners</h3>
                 <button
                   type="button"
                   onClick={() => setSettings({
@@ -440,7 +440,7 @@ export default function AdminSettings() {
                         <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-2">Banner Title</label>
                         <input
                           type="text"
-                          value={banner.title}
+                          value={banner.title || ''}
                           onChange={(e) => {
                             const newBanners = [...settings.banners];
                             newBanners[index].title = e.target.value;
@@ -453,7 +453,7 @@ export default function AdminSettings() {
                         <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-2">Banner Subtitle</label>
                         <input
                           type="text"
-                          value={banner.subtitle}
+                          value={banner.subtitle || ''}
                           onChange={(e) => {
                             const newBanners = [...settings.banners];
                             newBanners[index].subtitle = e.target.value;
@@ -507,7 +507,7 @@ export default function AdminSettings() {
                         <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-2">Button Link</label>
                         <input
                           type="text"
-                          value={banner.link}
+                          value={banner.link || ''}
                           onChange={(e) => {
                             const newBanners = [...settings.banners];
                             newBanners[index].link = e.target.value;
@@ -525,7 +525,7 @@ export default function AdminSettings() {
               {/* Small Banners */}
               <div className="pt-8 border-t border-white/5 space-y-8">
                 <div className="flex justify-between items-center">
-                  <h3 className="text-lg font-black">Small Banners (Side)</h3>
+                  <h3 className="text-lg font-black text-white">Small Banners (Side)</h3>
                   <button
                     type="button"
                     onClick={() => setSettings({
@@ -571,7 +571,7 @@ export default function AdminSettings() {
                           <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-2">Banner Title</label>
                           <input
                             type="text"
-                            value={banner.title}
+                            value={banner.title || ''}
                             onChange={(e) => {
                               const newBanners = [...settings.smallBanners];
                               newBanners[index].title = e.target.value;
@@ -584,7 +584,7 @@ export default function AdminSettings() {
                           <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-2">Banner Subtitle</label>
                           <input
                             type="text"
-                            value={banner.subtitle}
+                            value={banner.subtitle || ''}
                             onChange={(e) => {
                               const newBanners = [...settings.smallBanners];
                               newBanners[index].subtitle = e.target.value;
@@ -638,7 +638,7 @@ export default function AdminSettings() {
                           <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-2">Button Link</label>
                           <input
                             type="text"
-                            value={banner.link}
+                            value={banner.link || ''}
                             onChange={(e) => {
                               const newBanners = [...settings.smallBanners];
                               newBanners[index].link = e.target.value;
@@ -659,7 +659,7 @@ export default function AdminSettings() {
 
         {/* Delivery Settings */}
         <div className="bg-white/5 border border-white/10 rounded-[2.5rem] p-8 space-y-8">
-          <h2 className="text-xl font-black flex items-center gap-3">
+          <h2 className="text-xl font-black flex items-center gap-3 text-white">
             <Truck className="h-6 w-6 text-emerald-500" />
             Delivery Charges
           </h2>
@@ -669,7 +669,7 @@ export default function AdminSettings() {
               <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-2">Inside Dhaka (৳)</label>
               <input
                 type="number"
-                value={settings.deliveryChargeInside}
+                value={settings.deliveryChargeInside ?? 0}
                 onChange={(e) => setSettings({ ...settings, deliveryChargeInside: Number(e.target.value) || 0 })}
                 className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-emerald-500 transition-all font-bold text-white"
                 required
@@ -679,7 +679,7 @@ export default function AdminSettings() {
               <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-2">Outside Dhaka (৳)</label>
               <input
                 type="number"
-                value={settings.deliveryChargeOutside}
+                value={settings.deliveryChargeOutside ?? 0}
                 onChange={(e) => setSettings({ ...settings, deliveryChargeOutside: Number(e.target.value) || 0 })}
                 className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-emerald-500 transition-all font-bold text-white"
                 required
@@ -690,7 +690,7 @@ export default function AdminSettings() {
 
         {/* Social Media */}
         <div className="bg-white/5 border border-white/10 rounded-[2.5rem] p-8 space-y-8">
-          <h2 className="text-xl font-black flex items-center gap-3">
+          <h2 className="text-xl font-black flex items-center gap-3 text-white">
             <Globe className="h-6 w-6 text-emerald-500" />
             Social Media Links
           </h2>
@@ -702,7 +702,7 @@ export default function AdminSettings() {
               </label>
               <input
                 type="url"
-                value={settings.facebook}
+                value={settings.facebook || ''}
                 onChange={(e) => setSettings({ ...settings, facebook: e.target.value })}
                 className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-emerald-500 transition-all font-bold text-white"
                 placeholder="https://facebook.com/yourpage"
@@ -714,7 +714,7 @@ export default function AdminSettings() {
               </label>
               <input
                 type="url"
-                value={settings.instagram}
+                value={settings.instagram || ''}
                 onChange={(e) => setSettings({ ...settings, instagram: e.target.value })}
                 className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-emerald-500 transition-all font-bold text-white"
                 placeholder="https://instagram.com/yourprofile"
@@ -726,7 +726,7 @@ export default function AdminSettings() {
               </label>
               <input
                 type="url"
-                value={settings.youtube}
+                value={settings.youtube || ''}
                 onChange={(e) => setSettings({ ...settings, youtube: e.target.value })}
                 className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-emerald-500 transition-all font-bold text-white"
                 placeholder="https://youtube.com/yourchannel"
@@ -738,7 +738,7 @@ export default function AdminSettings() {
               </label>
               <input
                 type="url"
-                value={settings.twitter}
+                value={settings.twitter || ''}
                 onChange={(e) => setSettings({ ...settings, twitter: e.target.value })}
                 className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-emerald-500 transition-all font-bold text-white"
                 placeholder="https://twitter.com/yourprofile"

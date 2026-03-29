@@ -4,7 +4,7 @@ import { doc, getDoc, collection, query, where, limit, getDocs, addDoc, orderBy,
 import { db } from '../lib/firebase';
 import { Product, Review } from '../types';
 import { DEMO_PRODUCTS } from '../constants';
-import { formatPrice, calculateDiscount, cn } from '../lib/utils';
+import { formatPrice, calculateDiscount, cn, getProxyUrl } from '../lib/utils';
 import { useCart } from '../contexts/CartContext';
 import { useWishlist } from '../contexts/WishlistContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -54,7 +54,7 @@ export default function ProductDetails() {
           );
           const relatedSnap = await getDocs(relatedQuery);
           const related = relatedSnap.docs
-            .map(doc => ({ id: doc.id, ...doc.data() } as Product))
+            .map(doc => ({ ...doc.data(), id: doc.id } as Product))
             .filter(p => p.id !== id);
           
           if (related.length === 0) {
@@ -88,7 +88,7 @@ export default function ProductDetails() {
           orderBy('createdAt', 'desc')
         );
         const reviewsSnap = await getDocs(reviewsQuery);
-        const reviewsData = reviewsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Review));
+        const reviewsData = reviewsSnap.docs.map(doc => ({ ...doc.data(), id: doc.id } as Review));
         setReviews(reviewsData);
       } catch (error) {
         console.error("Error fetching reviews:", error);
@@ -187,7 +187,7 @@ export default function ProductDetails() {
         <div className="lg:w-1/2 space-y-4">
           <div className="relative aspect-[4/5] rounded-[2rem] overflow-hidden bg-gray-50 border border-gray-100 group">
             <img
-              src={product.images[activeImage]}
+              src={getProxyUrl(product.images[activeImage])}
               alt={product.name}
               className="w-full h-full object-cover"
               referrerPolicy="no-referrer"
@@ -224,7 +224,7 @@ export default function ProductDetails() {
                   activeImage === idx ? "border-orange-600 shadow-lg" : "border-transparent opacity-60 hover:opacity-100"
                 )}
               >
-                <img src={img} alt="" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                <img src={getProxyUrl(img)} alt="" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
               </button>
             ))}
           </div>
@@ -266,6 +266,21 @@ export default function ProductDetails() {
           <p className="text-gray-600 text-lg leading-relaxed mb-10 border-b border-gray-100 pb-10">
             {product.description}
           </p>
+
+          {/* Specifications */}
+          {product.specifications && product.specifications.length > 0 && (
+            <div className="mb-10 pb-10 border-b border-gray-100">
+              <h3 className="text-sm font-bold text-gray-900 uppercase tracking-widest mb-6">Product Specifications</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {product.specifications.map((spec, idx) => (
+                  <div key={idx} className="flex justify-between items-center p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                    <span className="text-gray-500 font-bold text-sm">{spec.key}</span>
+                    <span className="text-gray-900 font-black text-sm">{spec.value}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="space-y-8 mb-10">
             {/* Size Selection */}

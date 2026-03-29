@@ -35,7 +35,8 @@ service cloud.firestore {
 
     function isAdmin() {
       return isAuthenticated() && 
-        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+        ((exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin') ||
          (request.auth.token.email == "mjonlineshopbd@gmail.com" && request.auth.token.email_verified == true));
     }
 
@@ -62,7 +63,12 @@ service cloud.firestore {
       return data.name is string && data.name.size() > 0 &&
              data.price is number && data.price >= 0 &&
              data.category is string &&
-             data.stock is int && data.stock >= 0;
+             data.stock is number && data.stock >= 0;
+    }
+
+    function isValidCategory(data) {
+      return data.name is string && data.name.size() > 0 &&
+             (!('image' in data) || data.image is string);
     }
 
     function isValidOrder(data) {
@@ -116,7 +122,13 @@ service cloud.firestore {
 
     match /products/{productId} {
       allow read: if true;
-      allow write: if isAdmin() && isValidProduct(request.resource.data);
+      allow create, update: if isAdmin() && isValidProduct(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow write: if isAdmin() && isValidCategory(request.resource.data);
     }
 
     match /orders/{orderId} {

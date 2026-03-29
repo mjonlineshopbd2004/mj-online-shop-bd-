@@ -32,6 +32,9 @@ export default function AdminDashboard() {
     deliveredOrders: 0,
     totalProducts: 0,
     totalUsers: 0,
+    totalCategories: 0,
+    totalCoupons: 0,
+    totalReviews: 0,
   });
   const [recentOrders, setRecentOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -39,9 +42,14 @@ export default function AdminDashboard() {
   const fetchStats = async () => {
     setLoading(true);
     try {
-      const ordersSnap = await getDocs(collection(db, 'orders'));
-      const productsSnap = await getDocs(collection(db, 'products'));
-      const usersSnap = await getDocs(collection(db, 'users'));
+      const [ordersSnap, productsSnap, usersSnap, categoriesSnap, couponsSnap, reviewsSnap] = await Promise.all([
+        getDocs(collection(db, 'orders')).catch(e => { throw new Error(`Orders fetch failed: ${e.message}`); }),
+        getDocs(collection(db, 'products')).catch(e => { throw new Error(`Products fetch failed: ${e.message}`); }),
+        getDocs(collection(db, 'users')).catch(e => { throw new Error(`Users fetch failed: ${e.message}`); }),
+        getDocs(collection(db, 'categories')).catch(e => { throw new Error(`Categories fetch failed: ${e.message}`); }),
+        getDocs(collection(db, 'coupons')).catch(e => { throw new Error(`Coupons fetch failed: ${e.message}`); }),
+        getDocs(collection(db, 'reviews')).catch(e => { throw new Error(`Reviews fetch failed: ${e.message}`); }),
+      ]);
 
       const orders = ordersSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order));
       
@@ -85,6 +93,9 @@ export default function AdminDashboard() {
         deliveredOrders: orders.filter(o => o.status === 'delivered').length,
         totalProducts: productsSnap.size,
         totalUsers: usersSnap.size,
+        totalCategories: categoriesSnap.size,
+        totalCoupons: couponsSnap.size,
+        totalReviews: reviewsSnap.size,
       });
 
       const recentQuery = query(collection(db, 'orders'), orderBy('createdAt', 'desc'), limit(5));
@@ -127,7 +138,7 @@ export default function AdminDashboard() {
     <div className="p-4 sm:p-8 bg-[#0a0a0a] min-h-screen text-white space-y-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight mb-2">Dashboard Overview</h1>
+          <h1 className="text-3xl font-bold tracking-tight mb-2 text-white">Dashboard Overview</h1>
           <p className="text-gray-400 font-bold">Welcome back! Here's what's happening with your store today.</p>
         </div>
         <div className="flex items-center gap-4">
@@ -164,7 +175,7 @@ export default function AdminDashboard() {
               <TrendingUp className="h-4 w-4 text-emerald-500 opacity-50" />
             </div>
             <p className="text-gray-400 font-bold uppercase tracking-widest text-[10px] mb-1">{card.label}</p>
-            <h3 className="text-2xl font-bold tracking-tight">{card.value}</h3>
+            <h3 className="text-2xl font-bold tracking-tight text-white">{card.value}</h3>
           </motion.div>
         ))}
       </div>
@@ -172,7 +183,7 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Detailed Revenue Breakdown */}
         <div className="lg:col-span-2 bg-white/5 border border-white/10 rounded-[2rem] p-8">
-          <h2 className="text-xl font-bold tracking-tight mb-8 flex items-center gap-3">
+          <h2 className="text-xl font-bold tracking-tight mb-8 flex items-center gap-3 text-white">
             <DollarSign className="h-5 w-5 text-emerald-500" />
             Revenue Breakdown
           </h2>
@@ -194,7 +205,7 @@ export default function AdminDashboard() {
 
         {/* Order Status Summary */}
         <div className="bg-white/5 border border-white/10 rounded-[2rem] p-8">
-          <h2 className="text-xl font-bold tracking-tight mb-8 flex items-center gap-3">
+          <h2 className="text-xl font-bold tracking-tight mb-8 flex items-center gap-3 text-white">
             <Package className="h-5 w-5 text-emerald-500" />
             Order Status
           </h2>
@@ -220,7 +231,7 @@ export default function AdminDashboard() {
         {/* Recent Orders Table */}
         <div className="lg:col-span-2 bg-white/5 border border-white/10 rounded-[2rem] overflow-hidden">
           <div className="p-8 flex items-center justify-between border-b border-white/10">
-            <h2 className="text-xl font-bold tracking-tight">Recent Orders</h2>
+            <h2 className="text-xl font-bold tracking-tight text-white">Recent Orders</h2>
             <Link to="/admin/orders" className="text-emerald-500 font-bold hover:underline flex items-center gap-2 text-sm">
               View All <ArrowRight className="h-4 w-4" />
             </Link>
@@ -264,7 +275,7 @@ export default function AdminDashboard() {
         {/* Quick Actions */}
         <div className="space-y-6">
           <div className="bg-white/5 border border-white/10 rounded-[2rem] p-8">
-            <h2 className="text-xl font-bold tracking-tight mb-8">Quick Actions</h2>
+            <h2 className="text-xl font-bold tracking-tight mb-8 text-white">Quick Actions</h2>
             <div className="grid grid-cols-2 gap-4">
               {[
                 { label: 'Products', icon: Package, link: '/admin/products', color: 'bg-blue-500' },
@@ -290,7 +301,7 @@ export default function AdminDashboard() {
 
           <div className="bg-emerald-600 rounded-[2rem] p-8 text-white relative overflow-hidden group">
             <div className="relative z-10">
-              <h3 className="text-xl font-bold tracking-tight mb-2">Need Help?</h3>
+              <h3 className="text-xl font-bold tracking-tight mb-2 text-white">Need Help?</h3>
               <p className="text-emerald-100 font-bold text-xs mb-6">Check out our documentation or contact support.</p>
               <button className="bg-white text-emerald-600 px-6 py-3 rounded-xl font-bold hover:bg-emerald-50 transition-all text-sm">
                 Contact Support
@@ -298,6 +309,97 @@ export default function AdminDashboard() {
             </div>
             <div className="absolute -right-8 -bottom-8 opacity-10 group-hover:scale-110 transition-transform">
               <Settings className="h-32 w-32" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* System Usage Overview */}
+      <div className="bg-white/5 border border-white/10 rounded-[2rem] p-8">
+        <div className="flex items-center justify-between mb-8">
+          <h2 className="text-xl font-bold tracking-tight flex items-center gap-3 text-white">
+            <Layers className="h-5 w-5 text-emerald-500" />
+            System Usage & Storage
+          </h2>
+          <div className="flex gap-4">
+            <a 
+              href="https://console.firebase.google.com/project/_/firestore/usage" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-xs font-bold text-emerald-500 hover:underline flex items-center gap-1"
+            >
+              Firestore Console <ArrowRight className="h-3 w-3" />
+            </a>
+            <a 
+              href="https://console.firebase.google.com/project/_/storage/usage" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-xs font-bold text-emerald-500 hover:underline flex items-center gap-1"
+            >
+              Storage Console <ArrowRight className="h-3 w-3" />
+            </a>
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+          {[
+            { label: 'Products', value: stats.totalProducts, icon: Package, color: 'text-blue-500' },
+            { label: 'Orders', value: stats.allTimeOrders, icon: ShoppingBag, color: 'text-orange-500' },
+            { label: 'Users', value: stats.totalUsers, icon: Users, color: 'text-purple-500' },
+            { label: 'Categories', value: stats.totalCategories, icon: Layers, color: 'text-emerald-500' },
+            { label: 'Coupons', value: stats.totalCoupons, icon: CreditCard, color: 'text-pink-500' },
+            { label: 'Reviews', value: stats.totalReviews, icon: Star, color: 'text-yellow-500' },
+          ].map((item) => (
+            <div key={item.label} className="bg-white/5 p-4 rounded-2xl border border-white/5 text-center">
+              <div className="flex justify-center mb-2">
+                <item.icon className={cn("h-5 w-5", item.color)} />
+              </div>
+              <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">{item.label}</p>
+              <p className="text-lg font-bold text-white tracking-tight">{item.value}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-white/5 p-6 rounded-2xl border border-white/5">
+            <h3 className="text-sm font-bold text-gray-300 mb-4 flex items-center gap-2">
+              <div className="h-2 w-2 rounded-full bg-emerald-500" />
+              Database Health
+            </h3>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center text-xs">
+                <span className="text-gray-500 font-bold">Total Documents</span>
+                <span className="text-white font-bold">
+                  {stats.totalProducts + stats.allTimeOrders + stats.totalUsers + stats.totalCategories + stats.totalCoupons + stats.totalReviews}
+                </span>
+              </div>
+              <div className="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
+                <div className="bg-emerald-500 h-full w-[15%]" />
+              </div>
+              <p className="text-[10px] text-gray-400 font-bold italic">
+                * Firestore free tier allows up to 1GB of data storage.
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-white/5 p-6 rounded-2xl border border-white/5">
+            <h3 className="text-sm font-bold text-gray-300 mb-4 flex items-center gap-2">
+              <div className="h-2 w-2 rounded-full bg-blue-500" />
+              Storage Estimate
+            </h3>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center text-xs">
+                <span className="text-gray-500 font-bold">Estimated Image Usage</span>
+                <span className="text-white font-bold">
+                  ~{((stats.totalProducts * 3 * 0.5)).toFixed(1)} MB
+                </span>
+              </div>
+              <div className="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
+                <div className="bg-blue-500 h-full w-[5%]" />
+              </div>
+              <p className="text-[10px] text-gray-400 font-bold italic">
+                * Estimated based on 3 images per product (avg 500KB each).
+              </p>
             </div>
           </div>
         </div>

@@ -25,17 +25,17 @@ export default function Home() {
         // Featured
         const featuredQuery = query(productsRef, where('featured', '==', true), limit(4));
         const featuredSnap = await getDocs(featuredQuery);
-        const featured = featuredSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
+        const featured = featuredSnap.docs.map(doc => ({ ...doc.data(), id: doc.id } as Product));
         
         // Trending
         const trendingQuery = query(productsRef, where('trending', '==', true), limit(8));
         const trendingSnap = await getDocs(trendingQuery);
-        const trending = trendingSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
+        const trending = trendingSnap.docs.map(doc => ({ ...doc.data(), id: doc.id } as Product));
 
         // All Products
         const allQuery = query(productsRef, orderBy('createdAt', 'desc'), limit(12));
         const allSnap = await getDocs(allQuery);
-        const all = allSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
+        const all = allSnap.docs.map(doc => ({ ...doc.data(), id: doc.id } as Product));
 
         if (featured.length === 0) {
           setFeaturedProducts(DEMO_PRODUCTS.filter(p => p.featured).slice(0, 4));
@@ -131,7 +131,7 @@ export default function Home() {
           </div>
           <div className="h-1 w-24 bg-primary rounded-full"></div>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+        <div className="grid grid-cols-3 md:grid-cols-6 gap-3 md:gap-4">
           {(settings.categories && settings.categories.length > 0 ? settings.categories : CATEGORIES).map((category, idx) => {
             const name = typeof category === 'string' ? category : category.name;
             const image = typeof category === 'string' ? `https://picsum.photos/seed/${category}/600/800` : category.image;
@@ -140,7 +140,7 @@ export default function Home() {
               <Link
                 key={name}
                 to={`/products?category=${encodeURIComponent(name)}`}
-                className="group relative h-64 md:h-80 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 rounded-[2rem]"
+                className="group relative h-40 md:h-48 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 rounded-2xl md:rounded-[1.5rem]"
               >
                 <img
                   src={image || `https://picsum.photos/seed/${name}/600/800`}
@@ -148,10 +148,10 @@ export default function Home() {
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000"
                   referrerPolicy="no-referrer"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-gray-900/80 via-transparent to-transparent opacity-60 group-hover:opacity-90 transition-opacity"></div>
-                <div className="absolute bottom-6 left-6 right-6">
-                  <h3 className="text-xl md:text-2xl font-bold text-white mb-2 group-hover:translate-x-1 transition-transform tracking-tight">{name}</h3>
-                  <div className="h-1 w-12 bg-primary group-hover:w-full transition-all duration-500"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-gray-900/80 via-transparent to-transparent opacity-40 group-hover:opacity-70 transition-opacity"></div>
+                <div className="absolute bottom-3 left-3 right-3 md:bottom-4 md:left-4 md:right-4">
+                  <h3 className="text-xs md:text-base font-bold text-white mb-1 group-hover:translate-x-1 transition-transform tracking-tight leading-tight">{name}</h3>
+                  <div className="h-0.5 w-6 bg-primary group-hover:w-full transition-all duration-500"></div>
                 </div>
               </Link>
             );
@@ -170,10 +170,10 @@ export default function Home() {
             View All <ArrowRight className="ml-2 h-5 w-5" />
           </Link>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-2 md:gap-3">
           {loading ? (
-            [...Array(8)].map((_, i) => (
-              <div key={i} className="animate-pulse bg-white rounded-2xl h-[450px]"></div>
+            [...Array(12)].map((_, i) => (
+              <div key={i} className="animate-pulse bg-white rounded-2xl h-[280px]"></div>
             ))
           ) : (
             allProducts.map(product => (
@@ -195,10 +195,10 @@ export default function Home() {
               View All <ArrowRight className="ml-2 h-5 w-5" />
             </Link>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-2 md:gap-3">
             {loading ? (
-              [...Array(4)].map((_, i) => (
-                <div key={i} className="animate-pulse bg-white rounded-2xl h-[450px]"></div>
+              [...Array(6)].map((_, i) => (
+                <div key={i} className="animate-pulse bg-white rounded-2xl h-[280px]"></div>
               ))
             ) : (
               featuredProducts.map(product => (
@@ -220,10 +220,10 @@ export default function Home() {
             View All <ArrowRight className="ml-2 h-5 w-5" />
           </Link>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-2 md:gap-3">
           {loading ? (
-            [...Array(8)].map((_, i) => (
-              <div key={i} className="animate-pulse bg-white rounded-2xl h-[450px]"></div>
+            [...Array(12)].map((_, i) => (
+              <div key={i} className="animate-pulse bg-white rounded-2xl h-[280px]"></div>
             ))
           ) : (
             trendingProducts.map(product => (

@@ -1,11 +1,11 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { doc, getDoc, addDoc, collection, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, addDoc, collection, updateDoc, getDocFromServer } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { Product } from '../types';
 import { toast } from 'sonner';
 import { ArrowLeft, Save, Image as ImageIcon, Plus, X, Loader2, Upload, Video, Trash2, DollarSign, Settings } from 'lucide-react';
-import { cn } from '../lib/utils';
+import { cn, getProxyUrl } from '../lib/utils';
 import { uploadFile, uploadMultipleFiles } from '../lib/upload';
 import { useAuth } from '../contexts/AuthContext';
 import { useSettings } from '../contexts/SettingsContext';
@@ -20,6 +20,8 @@ export default function AdminProductForm() {
   const [loading, setLoading] = useState(isEditing);
   const [submitting, setSubmitting] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [fetching, setFetching] = useState(false);
+  const [sourceUrl, setSourceUrl] = useState('');
   const [formData, setFormData] = useState<Partial<Product>>({
     name: '',
     description: '',
@@ -29,12 +31,14 @@ export default function AdminProductForm() {
     stock: 0,
     images: [],
     videoUrl: '',
+    sourceUrl: '',
     sizes: [],
     colors: [],
     featured: false,
     trending: false,
     rating: 5,
     reviewsCount: 0,
+    specifications: [],
     createdAt: new Date().toISOString(),
   });
 
@@ -42,24 +46,46 @@ export default function AdminProductForm() {
   const videoInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (isEditing) {
+    if (isEditing && id) {
       const fetchProduct = async () => {
         try {
+          console.log("Fetching product with ID:", id);
           const docRef = doc(db, 'products', id);
-          const docSnap = await getDoc(docRef);
+          console.log("Full document path:", docRef.path);
+          
+          // Try server first to avoid cache issues
+          let docSnap = await getDocFromServer(docRef).catch((err) => {
+            console.warn("getDocFromServer failed:", err);
+            return null;
+          });
+          
+          if (!docSnap || !docSnap.exists()) {
+            console.log("Server fetch failed or not found, trying cache...");
+            docSnap = await getDoc(docRef);
+          }
+
           if (docSnap.exists()) {
-            setFormData({ id: docSnap.id, ...docSnap.data() } as Product);
+            const data = docSnap.data();
+            console.log("Product found successfully:", data);
+            setFormData({ id: docSnap.id, ...data } as Product);
           } else {
-            toast.error('Product not found');
+            console.error("Product NOT found in Firestore for ID:", id);
+            console.log("Attempted ID string length:", id.length);
+            console.log("ID characters:", Array.from(id).map(c => c.charCodeAt(0)));
+            toast.error(`Product not found (ID: ${id})`);
             navigate('/admin/products');
           }
-        } catch (error) {
-          console.error("Error fetching product:", error);
+        } catch (error: any) {
+          console.error("Error fetching product details:", error);
+          toast.error(`Error loading product: ${error.message}`);
+          navigate('/admin/products');
         } finally {
           setLoading(false);
         }
       };
       fetchProduct();
+    } else {
+      setLoading(false);
     }
   }, [id, isEditing, navigate]);
 
@@ -116,6 +142,62 @@ export default function AdminProductForm() {
     }
   };
 
+  const handleFetchFromUrl = async () => {
+    if (!sourceUrl) {
+      toast.error('Please enter a product URL');
+      return;
+    }
+
+    setFetching(true);
+    try {
+      const idToken = await user?.getIdToken();
+      if (!idToken) throw new Error('Not authenticated');
+
+      const response = await fetch('/api/scraper/product', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${idToken}`
+        },
+        body: JSON.stringify({ url: sourceUrl })
+      });
+
+      let data;
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        data = await response.json();
+      } else {
+        const text = await response.text();
+        console.error('Non-JSON response received from /api/scraper/product:', text);
+        if (response.status === 403) {
+          throw new Error('The server is blocking our request (403 Forbidden). Please try again later or manually add the product.');
+        }
+        throw new Error(`Server returned an unexpected response format (${response.status}).`);
+      }
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to fetch product data');
+      }
+
+      setFormData(prev => ({
+        ...prev,
+        name: data.name || prev.name,
+        price: data.price || prev.price,
+        description: data.description || prev.description,
+        images: data.images && data.images.length > 0 ? data.images : prev.images,
+        sourceUrl: data.sourceUrl || prev.sourceUrl,
+        specifications: data.specifications && data.specifications.length > 0 ? data.specifications : prev.specifications
+      }));
+
+      toast.success('Product data fetched successfully');
+    } catch (error: any) {
+      console.error('Fetch error:', error);
+      toast.error(error.message || 'Failed to fetch product data');
+    } finally {
+      setFetching(false);
+    }
+  };
+
   const removeImage = (index: number) => {
     setFormData(prev => ({
       ...prev,
@@ -127,8 +209,31 @@ export default function AdminProductForm() {
     setFormData(prev => ({ ...prev, videoUrl: '' }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const addSpecification = () => {
+    setFormData(prev => ({
+      ...prev,
+      specifications: [...(prev.specifications || []), { key: '', value: '' }]
+    }));
+  };
+
+  const updateSpecification = (index: number, field: 'key' | 'value', value: string) => {
+    setFormData(prev => {
+      const newSpecs = [...(prev.specifications || [])];
+      newSpecs[index] = { ...newSpecs[index], [field]: value };
+      return { ...prev, specifications: newSpecs };
+    });
+  };
+
+  const removeSpecification = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      specifications: prev.specifications?.filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleSubmit = async (e?: React.FormEvent | React.MouseEvent) => {
+    if (e) e.preventDefault();
+    
     if (!formData.images || formData.images.length === 0) {
       toast.error('At least one product image is required');
       return;
@@ -136,15 +241,16 @@ export default function AdminProductForm() {
 
     setSubmitting(true);
     try {
+      const { id: _, ...restData } = formData;
       const data = {
-        ...formData,
+        ...restData,
         price: Number(formData.price),
         discountPrice: formData.discountPrice ? Number(formData.discountPrice) : undefined,
         stock: Number(formData.stock),
         updatedAt: new Date().toISOString(),
       };
 
-      if (isEditing) {
+      if (isEditing && id) {
         await updateDoc(doc(db, 'products', id), data as any);
         toast.success('Product updated successfully');
       } else {
@@ -179,7 +285,7 @@ export default function AdminProductForm() {
             <ArrowLeft className="h-5 w-5" />
           </button>
           <div>
-            <h1 className="text-3xl font-black tracking-tight mb-1">
+            <h1 className="text-3xl font-black tracking-tight mb-1 text-white">
               {isEditing ? 'Edit Product' : 'Add New Product'}
             </h1>
             <p className="text-gray-400 font-bold text-sm">Fill in the details below to {isEditing ? 'update' : 'create'} your product.</p>
@@ -198,21 +304,72 @@ export default function AdminProductForm() {
       <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Main Info */}
         <div className="lg:col-span-2 space-y-8">
+          {/* Fetch from URL Section */}
+          {!isEditing && (
+            <div className="bg-emerald-500/5 border border-emerald-500/20 p-8 rounded-[2rem] space-y-6">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-emerald-500/20 rounded-lg">
+                  <Upload className="h-5 w-5 text-emerald-500" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-black text-white">Import from URL</h2>
+                  <p className="text-xs text-gray-400 font-bold">Paste a product URL to automatically fill the form.</p>
+                </div>
+              </div>
+              
+              <div className="flex gap-4">
+                <input
+                  type="url"
+                  placeholder="https://chinaonlinebd.com/product/..."
+                  className="flex-1 bg-white/5 border border-white/10 rounded-xl px-6 py-4 focus:outline-none focus:border-emerald-500 transition-all font-bold text-white"
+                  value={sourceUrl}
+                  onChange={(e) => setSourceUrl(e.target.value)}
+                />
+                <button
+                  type="button"
+                  onClick={handleFetchFromUrl}
+                  disabled={fetching}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-4 rounded-xl font-black transition-all flex items-center gap-2 disabled:opacity-50"
+                >
+                  {fetching ? <Loader2 className="h-5 w-5 animate-spin" /> : <Plus className="h-5 w-5" />}
+                  <span>Fetch</span>
+                </button>
+              </div>
+            </div>
+          )}
+
           <div className="bg-white/5 border border-white/10 p-8 rounded-[2rem] space-y-6">
-            <h2 className="text-xl font-black flex items-center gap-3">
+            <h2 className="text-xl font-black flex items-center gap-3 text-white">
               <Plus className="h-5 w-5 text-emerald-500" />
               Basic Information
             </h2>
             
             <div className="space-y-2">
               <label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Product Name</label>
-              <input
-                type="text"
-                required
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-6 py-4 focus:outline-none focus:border-emerald-500 transition-all font-bold text-white"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              />
+              <div className="flex gap-4">
+                <input
+                  type="text"
+                  required
+                  className="flex-1 bg-white/5 border border-white/10 rounded-xl px-6 py-4 focus:outline-none focus:border-emerald-500 transition-all font-bold text-white"
+                  value={formData.name || ''}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                />
+                {isEditing && formData.sourceUrl && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSourceUrl(formData.sourceUrl || '');
+                      handleFetchFromUrl();
+                    }}
+                    disabled={fetching}
+                    className="bg-white/5 border border-white/10 hover:bg-white/10 text-emerald-500 px-6 py-4 rounded-xl font-black transition-all flex items-center gap-2 disabled:opacity-50"
+                    title="Sync with Source"
+                  >
+                    {fetching ? <Loader2 className="h-5 w-5 animate-spin" /> : <Settings className="h-5 w-5" />}
+                    <span className="hidden md:inline">Sync</span>
+                  </button>
+                )}
+              </div>
             </div>
 
             <div className="space-y-2">
@@ -221,7 +378,7 @@ export default function AdminProductForm() {
                 required
                 rows={6}
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-6 py-4 focus:outline-none focus:border-emerald-500 transition-all font-bold text-white resize-none"
-                value={formData.description}
+                value={formData.description || ''}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               />
             </div>
@@ -231,7 +388,7 @@ export default function AdminProductForm() {
                 <label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Category</label>
                 <select
                   className="w-full bg-[#111111] border border-white/10 rounded-xl px-6 py-4 focus:outline-none focus:border-emerald-500 transition-all font-bold text-white"
-                  value={formData.category}
+                  value={formData.category || ''}
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                 >
                   {settings.categories.map(category => {
@@ -246,7 +403,7 @@ export default function AdminProductForm() {
                   type="number"
                   required
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-6 py-4 focus:outline-none focus:border-emerald-500 transition-all font-bold text-white"
-                  value={formData.stock}
+                  value={formData.stock ?? 0}
                   onChange={(e) => setFormData({ ...formData, stock: Number(e.target.value) })}
                 />
               </div>
@@ -254,7 +411,7 @@ export default function AdminProductForm() {
           </div>
 
           <div className="bg-white/5 border border-white/10 p-8 rounded-[2rem] space-y-6">
-            <h2 className="text-xl font-black flex items-center gap-3">
+            <h2 className="text-xl font-black flex items-center gap-3 text-white">
               <DollarSign className="h-5 w-5 text-emerald-500" />
               Pricing
             </h2>
@@ -265,7 +422,7 @@ export default function AdminProductForm() {
                   type="number"
                   required
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-6 py-4 focus:outline-none focus:border-emerald-500 transition-all font-bold text-white"
-                  value={formData.price}
+                  value={formData.price ?? 0}
                   onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
                 />
               </div>
@@ -280,13 +437,70 @@ export default function AdminProductForm() {
               </div>
             </div>
           </div>
+
+          <div className="bg-white/5 border border-white/10 p-8 rounded-[2rem] space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-black flex items-center gap-3 text-white">
+                <Settings className="h-5 w-5 text-emerald-500" />
+                Specifications
+              </h2>
+              <button
+                type="button"
+                onClick={addSpecification}
+                className="p-2 bg-emerald-500/10 text-emerald-500 rounded-lg hover:bg-emerald-500/20 transition-all"
+              >
+                <Plus className="h-5 w-5" />
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              {formData.specifications?.map((spec, idx) => (
+                <div key={idx} className="flex gap-4 items-start">
+                  <div className="flex-1 grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Key</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Material"
+                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-emerald-500 transition-all font-bold text-white text-sm"
+                        value={spec.key}
+                        onChange={(e) => updateSpecification(idx, 'key', e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Value</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Leather"
+                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-emerald-500 transition-all font-bold text-white text-sm"
+                        value={spec.value}
+                        onChange={(e) => updateSpecification(idx, 'value', e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => removeSpecification(idx)}
+                    className="mt-7 p-3 bg-red-500/10 text-red-500 rounded-xl hover:bg-red-500/20 transition-all"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
+              ))}
+              {(!formData.specifications || formData.specifications.length === 0) && (
+                <p className="text-center py-8 text-gray-500 font-bold text-sm border-2 border-dashed border-white/5 rounded-2xl">
+                  No specifications added yet.
+                </p>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Sidebar Options */}
         <div className="space-y-8">
           <div className="bg-white/5 border border-white/10 p-8 rounded-[2rem] space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-black flex items-center gap-3">
+              <h2 className="text-xl font-black flex items-center gap-3 text-white">
                 <ImageIcon className="h-5 w-5 text-emerald-500" />
                 Images
               </h2>
@@ -298,7 +512,7 @@ export default function AdminProductForm() {
             <div className="grid grid-cols-2 gap-4">
               {formData.images?.map((img, idx) => (
                 <div key={idx} className="relative aspect-square rounded-2xl overflow-hidden border border-white/10 group">
-                  <img src={img} alt="" className="w-full h-full object-cover" />
+                  <img src={getProxyUrl(img)} alt="" className="w-full h-full object-cover" />
                   <button
                     type="button"
                     onClick={() => removeImage(idx)}
@@ -332,7 +546,7 @@ export default function AdminProductForm() {
           </div>
 
           <div className="bg-white/5 border border-white/10 p-8 rounded-[2rem] space-y-6">
-            <h2 className="text-xl font-black flex items-center gap-3">
+            <h2 className="text-xl font-black flex items-center gap-3 text-white">
               <Video className="h-5 w-5 text-emerald-500" />
               Product Video
             </h2>
@@ -369,7 +583,7 @@ export default function AdminProductForm() {
           </div>
 
           <div className="bg-white/5 border border-white/10 p-8 rounded-[2rem] space-y-6">
-            <h2 className="text-xl font-black flex items-center gap-3">
+            <h2 className="text-xl font-black flex items-center gap-3 text-white">
               <Settings className="h-5 w-5 text-emerald-500" />
               Visibility
             </h2>

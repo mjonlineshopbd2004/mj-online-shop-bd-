@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Package, ShoppingBag, Tag, Settings, LogOut, Home, Menu, X, Users, RefreshCcw, Layers, CreditCard, Star } from 'lucide-react';
+import { LayoutDashboard, Package, ShoppingBag, Tag, Settings, LogOut, Home, Menu, X, Users, RefreshCcw, Layers, CreditCard, Star, Globe } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { cn } from '../lib/utils';
 
@@ -18,6 +18,7 @@ export default function AdminLayout() {
     { label: 'Reviews', icon: Star, path: '/admin/reviews' },
     { label: 'Categories', icon: Layers, path: '/admin/categories' },
     { label: 'Refunds', icon: RefreshCcw, path: '/admin/refunds' },
+    { label: 'Product Importer', icon: Globe, path: '/admin/import' },
     { label: 'Users', icon: Users, path: '/admin/users' },
     { label: 'Coupons', icon: Tag, path: '/admin/coupons' },
     { label: 'Settings', icon: Settings, path: '/admin/settings' },

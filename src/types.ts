@@ -11,6 +11,11 @@ export interface UserProfile {
   createdAt: string;
 }
 
+export interface ProductSpecification {
+  key: string;
+  value: string;
+}
+
 export interface Product {
   id: string;
   name: string;
@@ -20,6 +25,7 @@ export interface Product {
   category: string;
   images: string[];
   videoUrl?: string;
+  sourceUrl?: string;
   stock: number;
   sizes?: string[];
   colors?: string[];
@@ -27,6 +33,7 @@ export interface Product {
   reviewsCount: number;
   featured?: boolean;
   trending?: boolean;
+  specifications?: ProductSpecification[];
   createdAt: string;
   updatedAt?: string;
 }

@@ -6,6 +6,7 @@ import * as adminController from '../controllers/adminController';
 import * as couponController from '../controllers/couponController';
 import * as paymentController from '../controllers/paymentController';
 import * as uploadController from '../controllers/uploadController';
+import * as scraperController from '../controllers/scraperController';
 import { authenticate, authorize } from '../middleware/auth';
 import { upload } from '../middleware/upload';
 
@@ -22,6 +23,9 @@ router.get('/products/:id', productController.getSingleProduct);
 router.post('/products', authenticate, authorize(['admin']), productController.createProduct);
 router.put('/products/:id', authenticate, authorize(['admin']), productController.updateProduct);
 router.delete('/products/:id', authenticate, authorize(['admin']), productController.deleteProduct);
+
+// Import Routes
+router.post('/import/product', authenticate, scraperController.scrapeProduct);
 
 // Order Routes
 router.post('/orders', authenticate, orderController.createOrder);
