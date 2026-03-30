@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { GoogleGenAI, Type } from "@google/genai";
 import { collection, addDoc, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../lib/firebase';
+import { useAuth } from '../contexts/AuthContext';
 import { 
   Globe, 
   Search, 
@@ -36,6 +36,7 @@ interface ImportedProduct {
 }
 
 export default function AdminProductImporter() {
+  const { user } = useAuth();
   const [url, setUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [importing, setImporting] = useState(false);
@@ -53,72 +54,48 @@ export default function AdminProductImporter() {
     setCurrentImageIndex(0);
 
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-      
-      const prompt = `Extract product details from this URL: ${url}. 
-      Provide the response in JSON format including: 
-      - title: The name of the product.
-      - price: The price in BDT (Bangladeshi Taka). If the original price is in another currency (like CNY, USD, etc.), convert it to BDT. 
-        Conversion rates to use: 1 CNY = 16 BDT, 1 USD = 110 BDT.
-      - originalPrice: The price as seen on the website (e.g., "¥15.00").
-      - description: A clear, summarized description of the product in English.
-      - images: An array of high-quality image URLs for the product.
-      - category: A suitable category name for the product.
-      - sizes: An array of available sizes (e.g., ["S", "M", "L"] or ["38", "40"]).
-      - colors: An array of available colors (e.g., ["Red", "Blue"]).
-      
-      If you cannot find specific details, provide your best estimate based on the page content.`;
-
-      const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: prompt,
-        config: {
-          tools: [{ urlContext: {} }],
-          responseMimeType: "application/json",
-          responseSchema: {
-            type: Type.OBJECT,
-            properties: {
-              title: { type: Type.STRING },
-              price: { type: Type.NUMBER },
-              originalPrice: { type: Type.STRING },
-              description: { type: Type.STRING },
-              images: { 
-                type: Type.ARRAY,
-                items: { type: Type.STRING }
-              },
-              category: { type: Type.STRING },
-              sizes: {
-                type: Type.ARRAY,
-                items: { type: Type.STRING }
-              },
-              colors: {
-                type: Type.ARRAY,
-                items: { type: Type.STRING }
-              }
-            },
-            required: ["title", "price", "description", "images", "category"]
-          }
-        }
-      });
-
-      const data = JSON.parse(response.text);
-      
-      // Fix image URLs (handle // protocol-relative URLs)
-      if (data.images && Array.isArray(data.images)) {
-        data.images = data.images.map((img: string) => {
-          if (typeof img !== 'string') return img;
-          let cleanUrl = img.trim();
-          if (cleanUrl.startsWith('//')) return `https:${cleanUrl}`;
-          if (!cleanUrl.startsWith('http')) return `https://${cleanUrl}`;
-          return cleanUrl;
-        });
+      const idToken = await user?.getIdToken();
+      if (!idToken) {
+        toast.error('Please login as admin to use this feature');
+        setLoading(false);
+        return;
       }
 
-      setProduct({ ...data, sourceUrl: url });
+      const response = await fetch('/api/scraper/product', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${idToken}`
+        },
+        body: JSON.stringify({ url })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to fetch product data');
+      }
+
+      const data = await response.json();
+      
+      // Map backend fields to frontend fields
+      const importedProduct: ImportedProduct = {
+        title: data.name,
+        price: data.price,
+        originalPrice: data.originalPrice,
+        description: data.description,
+        images: data.images,
+        category: data.category,
+        sourceUrl: url,
+        sizes: data.sizes,
+        colors: data.colors,
+        specifications: data.specifications
+      };
+
+      setProduct(importedProduct);
       toast.success('Product details extracted successfully!');
     } catch (error: any) {
       console.error('Extraction error:', error);
-      toast.error('Failed to extract product details. Please check the URL and try again.');
+      toast.error(error.message || 'Failed to extract product details. Please check the URL and try again.');
     } finally {
       setLoading(false);
     }

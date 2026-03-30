@@ -41,6 +41,13 @@ async function startServer() {
       const https = await import('https');
       
       const fetchImage = async (url: string, referer: string = '') => {
+        let origin = '';
+        try {
+          origin = new URL(url).origin;
+        } catch (e) {
+          origin = '';
+        }
+
         return await axios.get(url, {
           responseType: 'arraybuffer',
           httpsAgent: new https.Agent({ rejectUnauthorized: false }),
@@ -50,7 +57,7 @@ async function startServer() {
             'Accept-Language': 'en-US,en;q=0.9',
             'Cache-Control': 'no-cache',
             'Pragma': 'no-cache',
-            'Referer': referer || new URL(url).origin,
+            'Referer': referer || origin,
           },
           timeout: 20000,
           maxRedirects: 5,
@@ -59,21 +66,26 @@ async function startServer() {
       };
 
       let referer = '';
-      const urlObj = new URL(imageUrl);
-      if (imageUrl.includes('alicdn.com') || imageUrl.includes('1688.com')) {
-        referer = 'https://www.1688.com/';
-      } else if (imageUrl.includes('amazon.com')) {
-        referer = 'https://www.amazon.com/';
-      } else if (imageUrl.includes('daraz.com')) {
-        referer = 'https://www.daraz.com.bd/';
-      } else if (imageUrl.includes('slatic.net') || imageUrl.includes('laz-img')) {
-        referer = 'https://www.daraz.com.bd/';
-      } else if (imageUrl.includes('facebook.com') || imageUrl.includes('fbcdn.net')) {
-        referer = 'https://www.facebook.com/';
-      } else if (imageUrl.includes('googleusercontent.com')) {
-        referer = 'https://www.google.com/';
-      } else {
-        referer = urlObj.origin;
+      let urlObj;
+      try {
+        urlObj = new URL(imageUrl);
+        if (imageUrl.includes('alicdn.com') || imageUrl.includes('1688.com')) {
+          referer = 'https://www.1688.com/';
+        } else if (imageUrl.includes('amazon.com')) {
+          referer = 'https://www.amazon.com/';
+        } else if (imageUrl.includes('daraz.com')) {
+          referer = 'https://www.daraz.com.bd/';
+        } else if (imageUrl.includes('slatic.net') || imageUrl.includes('laz-img')) {
+          referer = 'https://www.daraz.com.bd/';
+        } else if (imageUrl.includes('facebook.com') || imageUrl.includes('fbcdn.net')) {
+          referer = 'https://www.facebook.com/';
+        } else if (imageUrl.includes('googleusercontent.com')) {
+          referer = 'https://www.google.com/';
+        } else {
+          referer = urlObj.origin;
+        }
+      } catch (e) {
+        referer = '';
       }
 
       let response = await fetchImage(imageUrl, referer);

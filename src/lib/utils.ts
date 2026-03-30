@@ -38,12 +38,6 @@ export function getProxyUrl(url: string) {
   // If it's not external, it's probably a local asset
   if (!isExternal) return normalizedUrl;
 
-  // Use absolute URL for the proxy if VITE_APP_URL is set, 
-  // otherwise fallback to current origin if in browser, or empty string
-  const baseUrl = import.meta.env.VITE_APP_URL || (typeof window !== 'undefined' ? window.location.origin : '');
-  
-  // Ensure baseUrl doesn't end with a slash if it's set
-  const cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
-  
-  return `${cleanBaseUrl}/api/proxy-image?url=${encodeURIComponent(normalizedUrl)}`;
+  // Use relative path for the proxy to avoid origin mismatches
+  return `/api/proxy-image?url=${encodeURIComponent(normalizedUrl)}`;
 }

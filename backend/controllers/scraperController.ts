@@ -62,6 +62,8 @@ export const scrapeProduct = async (req: Request, res: Response) => {
               properties: {
                 name: { type: Type.STRING },
                 price: { type: Type.NUMBER },
+                originalPrice: { type: Type.STRING },
+                category: { type: Type.STRING },
                 description: { type: Type.STRING },
                 images: {
                   type: Type.ARRAY,
@@ -76,7 +78,7 @@ export const scrapeProduct = async (req: Request, res: Response) => {
                   items: { type: Type.STRING }
                 }
               },
-              required: ["name", "price", "description", "images"]
+              required: ["name", "price", "description", "images", "category"]
             }
           }
         });
@@ -112,13 +114,15 @@ export const scrapeProduct = async (req: Request, res: Response) => {
         ${textContent}
         
         Return the data in JSON format with the following fields:
-        - name: string
-        - price: number (numeric value only)
-        - description: string (HTML or plain text)
+        - name: string (The product title)
+        - price: number (numeric value only, convert to BDT if needed. 1 CNY = 16 BDT, 1 USD = 110 BDT)
+        - originalPrice: string (The price as seen on the website, e.g. "¥15.00" or "$10.00")
+        - category: string (A suitable category name)
+        - description: string (HTML or plain text, summarized)
         - images: string[] (absolute URLs of product images)
-        - sizes: string[] (available sizes like S, M, L, XL or numeric sizes)
-        - colors: string[] (available colors like Red, Blue, Black)
-        - specifications: { key: string, value: string }[] (key-value pairs of product details like Material, Weight, etc.)`,
+        - sizes: string[] (available sizes)
+        - colors: string[] (available colors)
+        - specifications: { key: string, value: string }[] (key-value pairs of product details)`,
         config: {
           responseMimeType: "application/json",
           responseSchema: {
@@ -126,6 +130,8 @@ export const scrapeProduct = async (req: Request, res: Response) => {
             properties: {
               name: { type: Type.STRING },
               price: { type: Type.NUMBER },
+              originalPrice: { type: Type.STRING },
+              category: { type: Type.STRING },
               description: { type: Type.STRING },
               images: {
                 type: Type.ARRAY,
@@ -151,7 +157,7 @@ export const scrapeProduct = async (req: Request, res: Response) => {
                 }
               }
             },
-            required: ["name", "price", "description", "images"]
+            required: ["name", "price", "description", "images", "category"]
           }
         }
       });
