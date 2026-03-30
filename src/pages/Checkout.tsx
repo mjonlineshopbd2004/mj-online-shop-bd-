@@ -181,7 +181,8 @@ export default function Checkout() {
         
         if (formData.paymentMethod === 'card') {
           const idToken = await user.getIdToken();
-          const response = await fetch('/api/payment/init', {
+          const baseUrl = import.meta.env.VITE_APP_URL || '';
+          const response = await fetch(`${baseUrl}/api/payment/init`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

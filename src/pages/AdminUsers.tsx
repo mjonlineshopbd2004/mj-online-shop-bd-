@@ -4,7 +4,7 @@ import { db } from '../lib/firebase';
 import { UserProfile, UserRole } from '../types';
 import { Search, User, Shield, ShieldAlert, Mail, Phone, Calendar, ChevronDown } from 'lucide-react';
 import { toast } from 'sonner';
-import { cn } from '../lib/utils';
+import { cn, getProxyUrl } from '../lib/utils';
 
 export default function AdminUsers() {
   const [users, setUsers] = useState<UserProfile[]>([]);
@@ -91,7 +91,7 @@ export default function AdminUsers() {
                     <div className="flex items-center gap-4">
                       <div className="w-12 h-12 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center overflow-hidden">
                         {user.photoURL ? (
-                          <img src={user.photoURL} alt="" className="w-full h-full object-cover" />
+                          <img src={getProxyUrl(user.photoURL)} alt="" className="w-full h-full object-cover" />
                         ) : (
                           <User className="h-6 w-6 text-emerald-500" />
                         )}

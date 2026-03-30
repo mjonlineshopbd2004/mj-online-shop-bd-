@@ -4,7 +4,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { Order } from '../types';
 import { CheckCircle2, Package, Truck, ShoppingBag, ArrowRight, MapPin, Phone, User, XCircle } from 'lucide-react';
-import { formatPrice, cn } from '../lib/utils';
+import { formatPrice, cn, getProxyUrl } from '../lib/utils';
 import { motion } from 'motion/react';
 import { toast } from 'sonner';
 
@@ -159,7 +159,7 @@ export default function OrderConfirmation() {
               {order.items.map((item, idx) => (
                 <div key={idx} className="flex items-center space-x-6 bg-white border border-gray-100 p-4 rounded-2xl">
                   <div className="w-20 h-20 rounded-xl overflow-hidden bg-gray-50 flex-shrink-0">
-                    <img src={item.images[0]} alt="" className="w-full h-full object-cover" />
+                    <img src={getProxyUrl(item.images[0])} alt="" className="w-full h-full object-cover" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-bold text-gray-900 truncate">{item.name}</p>

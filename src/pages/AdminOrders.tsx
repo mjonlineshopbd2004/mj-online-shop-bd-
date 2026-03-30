@@ -280,7 +280,7 @@ export default function AdminOrders() {
                     </h3>
                     <div className="bg-white/5 p-4 rounded-3xl border border-white/5 max-w-sm">
                       <a href={selectedOrder.paymentScreenshot} target="_blank" rel="noopener noreferrer" className="block relative group overflow-hidden rounded-2xl">
-                        <img src={selectedOrder.paymentScreenshot} alt="Payment Screenshot" className="w-full h-auto object-cover transition-transform group-hover:scale-105" />
+                        <img src={getProxyUrl(selectedOrder.paymentScreenshot)} alt="Payment Screenshot" className="w-full h-auto object-cover transition-transform group-hover:scale-105" />
                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                           <span className="bg-white text-black px-4 py-2 rounded-xl font-black text-xs">View Full Size</span>
                         </div>

@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Facebook, Instagram, Twitter, Youtube, Phone, Mail, MapPin } from 'lucide-react';
 import { useSettings } from '../contexts/SettingsContext';
+import { getProxyUrl } from '../lib/utils';
 
 export default function Footer() {
   const { settings } = useSettings();
@@ -14,7 +15,7 @@ export default function Footer() {
           <div>
             <Link to="/" className="flex items-center mb-6">
               {settings.logoUrl ? (
-                <img src={settings.logoUrl} alt={settings.storeName} className="h-10 w-auto" />
+                <img src={getProxyUrl(settings.logoUrl)} alt={settings.storeName} className="h-10 w-auto" />
               ) : (
                 <>
                   <span className="text-2xl font-bold text-primary">{settings.storeName.split(' ')[0]}</span>
@@ -90,7 +91,7 @@ export default function Footer() {
             <p className="text-center text-sm font-bold text-gray-400 mb-4 uppercase tracking-widest">We Accept</p>
             <div className="bg-white/5 p-4 rounded-2xl flex justify-center items-center">
               <img 
-                src="https://securepay.sslcommerz.com/gw/images/SSLCommerz-Pay-With-logo-All-Size-01.png" 
+                src={getProxyUrl("https://securepay.sslcommerz.com/gw/images/SSLCommerz-Pay-With-logo-All-Size-03.png")} 
                 alt="Payment Methods" 
                 className="max-w-full h-auto"
                 referrerPolicy="no-referrer"

@@ -25,5 +25,6 @@ export function getProxyUrl(url: string) {
   // If it's already a proxy URL, don't proxy again
   if (url.includes('/api/proxy-image')) return url;
 
-  return `/api/proxy-image?url=${encodeURIComponent(url)}`;
+  const baseUrl = import.meta.env.VITE_APP_URL || '';
+  return `${baseUrl}/api/proxy-image?url=${encodeURIComponent(url)}`;
 }

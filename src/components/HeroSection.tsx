@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { ArrowRight, Plus } from 'lucide-react';
 import { useSettings } from '../contexts/SettingsContext';
+import { getProxyUrl } from '../lib/utils';
 
 export default function HeroSection() {
   const { settings } = useSettings();
@@ -16,7 +17,7 @@ export default function HeroSection() {
         <div className="lg:col-span-2 relative overflow-hidden bg-[#f3f9fb] group rounded-2xl md:rounded-none h-[350px] md:h-[500px] lg:h-full">
           <div className="absolute inset-0 z-0">
             <img
-              src={banners[0]?.image || "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=1000"}
+              src={getProxyUrl(banners[0]?.image || "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=1000")}
               alt={banners[0]?.title || "Grocery Deals"}
               className="w-full h-full object-cover object-right group-hover:scale-105 transition-transform duration-700"
               referrerPolicy="no-referrer"
@@ -63,7 +64,7 @@ export default function HeroSection() {
         <div className="relative overflow-hidden bg-[#fde1b6] p-8 md:p-10 flex flex-col justify-end group rounded-2xl md:rounded-none h-[250px] md:h-[500px] lg:h-full">
           <div className="absolute inset-0 z-0">
             <img
-              src={smallBanners[0]?.image || "https://images.unsplash.com/photo-1621939514649-280e2ee25f60?auto=format&fit=crop&q=80&w=600"}
+              src={getProxyUrl(smallBanners[0]?.image || "https://images.unsplash.com/photo-1621939514649-280e2ee25f60?auto=format&fit=crop&q=80&w=600")}
               alt={smallBanners[0]?.title || "Weekend Discount"}
               className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
               referrerPolicy="no-referrer"

@@ -24,8 +24,8 @@ router.post('/products', authenticate, authorize(['admin']), productController.c
 router.put('/products/:id', authenticate, authorize(['admin']), productController.updateProduct);
 router.delete('/products/:id', authenticate, authorize(['admin']), productController.deleteProduct);
 
-// Import Routes
-router.post('/import/product', authenticate, scraperController.scrapeProduct);
+// Scraper Routes
+router.post('/scraper/product', authenticate, scraperController.scrapeProduct);
 
 // Order Routes
 router.post('/orders', authenticate, orderController.createOrder);

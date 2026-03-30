@@ -7,6 +7,7 @@ import { motion } from 'motion/react';
 import { auth } from '../lib/firebase';
 import { uploadFile } from '../lib/upload';
 import { CATEGORIES } from '../constants';
+import { getProxyUrl } from '../lib/utils';
 
 enum OperationType {
   CREATE = 'create',
@@ -286,7 +287,7 @@ export default function AdminCategories() {
                 className="flex flex-col items-center gap-2 p-4 bg-white/5 border border-white/10 rounded-2xl hover:bg-emerald-500/10 hover:border-emerald-500/50 transition-all group disabled:opacity-50"
               >
                 <div className="h-12 w-12 rounded-xl overflow-hidden bg-white/5">
-                  <img src={suggested.image} alt="" className="h-full w-full object-cover group-hover:scale-110 transition-transform" />
+                  <img src={getProxyUrl(suggested.image)} alt="" className="h-full w-full object-cover group-hover:scale-110 transition-transform" />
                 </div>
                 <span className="text-[10px] font-black uppercase tracking-widest text-center">{suggested.name}</span>
               </button>
@@ -332,7 +333,7 @@ export default function AdminCategories() {
                   <div className="relative">
                     {editCategory.image ? (
                       <div className="relative aspect-video rounded-2xl overflow-hidden border border-white/10 group/img">
-                        <img src={editCategory.image} alt="" className="w-full h-full object-cover" />
+                        <img src={getProxyUrl(editCategory.image)} alt="" className="w-full h-full object-cover" />
                         <div className="absolute inset-0 bg-black/60 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center gap-4">
                           <label className="cursor-pointer bg-white text-black px-6 py-2 rounded-xl font-black text-xs hover:scale-105 transition-transform">
                             Change
@@ -416,7 +417,7 @@ export default function AdminCategories() {
                   <div className="relative">
                     {newCategory.image ? (
                       <div className="relative aspect-video rounded-2xl overflow-hidden border border-white/10 group/img">
-                        <img src={newCategory.image} alt="" className="w-full h-full object-cover" />
+                        <img src={getProxyUrl(newCategory.image)} alt="" className="w-full h-full object-cover" />
                         <div className="absolute inset-0 bg-black/60 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center gap-4">
                           <label className="cursor-pointer bg-white text-black px-6 py-2 rounded-xl font-black text-xs hover:scale-105 transition-transform">
                             Change
@@ -481,7 +482,7 @@ export default function AdminCategories() {
                 >
                   <div className="h-16 w-16 rounded-xl overflow-hidden bg-white/5 flex-shrink-0">
                     {category.image ? (
-                      <img src={category.image} alt={category.name} className="h-full w-full object-cover" />
+                      <img src={getProxyUrl(category.image)} alt={category.name} className="h-full w-full object-cover" />
                     ) : (
                       <div className="h-full w-full flex items-center justify-center">
                         <ImageIcon className="h-6 w-6 text-gray-600" />

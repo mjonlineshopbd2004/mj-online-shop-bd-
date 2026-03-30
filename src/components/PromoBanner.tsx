@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'motion/react';
 import { ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { getProxyUrl } from '../lib/utils';
 
 export default function PromoBanner() {
   return (
@@ -13,7 +14,7 @@ export default function PromoBanner() {
         className="relative h-[300px] md:h-[400px] rounded-[2rem] overflow-hidden shadow-2xl group"
       >
         <img 
-          src="https://picsum.photos/seed/promo/1920/600" 
+          src={getProxyUrl("https://picsum.photos/seed/promo/1920/600")} 
           alt="Promotional Banner" 
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000"
           referrerPolicy="no-referrer"

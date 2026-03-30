@@ -24,7 +24,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import { useWishlist } from '../contexts/WishlistContext';
 import { useSettings } from '../contexts/SettingsContext';
-import { cn } from '../lib/utils';
+import { cn, getProxyUrl } from '../lib/utils';
 import { toast } from 'sonner';
 import { GoogleGenAI } from "@google/genai";
 
@@ -145,7 +145,7 @@ export default function Navbar() {
           <Link to="/" className="flex items-center gap-3 flex-shrink-0 group">
             <div className="relative">
               {settings.logoUrl ? (
-                <img src={settings.logoUrl} alt={settings.storeName} className="h-10 md:h-12 w-auto transition-transform group-hover:scale-105" />
+                <img src={getProxyUrl(settings.logoUrl)} alt={settings.storeName} className="h-10 md:h-12 w-auto transition-transform group-hover:scale-105" />
               ) : (
                 <div className="w-10 h-10 md:w-12 md:h-12 bg-primary rounded-xl flex items-center justify-center text-white font-bold text-xl md:text-2xl shadow-lg shadow-primary/20">
                   {settings.storeName.charAt(0)}

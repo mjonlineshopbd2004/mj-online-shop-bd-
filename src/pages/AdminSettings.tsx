@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { Save, Globe, Phone, Mail, MapPin, Facebook, Instagram, Youtube, Twitter, Truck, Trash2, AlertTriangle, Upload, Image as ImageIcon, Loader2 } from 'lucide-react';
 import { uploadFile } from '../lib/upload';
 import { useAuth } from '../contexts/AuthContext';
+import { getProxyUrl } from '../lib/utils';
 
 interface Banner {
   topText?: string;
@@ -470,7 +471,7 @@ export default function AdminSettings() {
                         <div className="relative">
                           {banner.image ? (
                             <div className="relative aspect-[19/8] rounded-2xl overflow-hidden border border-white/10 group/img">
-                              <img src={banner.image} alt="" className="w-full h-full object-cover" />
+                              <img src={getProxyUrl(banner.image)} alt="" className="w-full h-full object-cover" />
                               <div className="absolute inset-0 bg-black/60 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center">
                                 <label className="cursor-pointer bg-white text-black px-6 py-2 rounded-xl font-black text-xs hover:scale-105 transition-transform">
                                   Change Image
@@ -601,7 +602,7 @@ export default function AdminSettings() {
                           <div className="relative">
                             {banner.image ? (
                               <div className="relative aspect-square rounded-2xl overflow-hidden border border-white/10 group/img">
-                                <img src={banner.image} alt="" className="w-full h-full object-cover" />
+                                <img src={getProxyUrl(banner.image)} alt="" className="w-full h-full object-cover" />
                                 <div className="absolute inset-0 bg-black/60 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center">
                                   <label className="cursor-pointer bg-white text-black px-6 py-2 rounded-xl font-black text-xs hover:scale-105 transition-transform">
                                     Change Image

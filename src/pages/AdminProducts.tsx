@@ -57,7 +57,8 @@ export default function AdminProducts() {
       const idToken = await user?.getIdToken();
       if (!idToken) throw new Error('Not authenticated');
 
-      const response = await fetch('/api/scraper/product', {
+      const baseUrl = import.meta.env.VITE_APP_URL || '';
+      const response = await fetch(`${baseUrl}/api/scraper/product`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

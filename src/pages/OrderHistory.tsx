@@ -3,7 +3,7 @@ import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useAuth } from '../contexts/AuthContext';
 import { Order } from '../types';
-import { formatPrice } from '../lib/utils';
+import { formatPrice, getProxyUrl } from '../lib/utils';
 import { Link } from 'react-router-dom';
 import { Package, ChevronRight, ShoppingBag, Clock, CheckCircle2, Truck, XCircle, RefreshCcw, AlertCircle } from 'lucide-react';
 import { cn } from '../lib/utils';
@@ -160,7 +160,7 @@ export default function OrderHistory() {
                   <div className="flex -space-x-4 overflow-hidden flex-1">
                     {order.items.slice(0, 4).map((item, idx) => (
                       <div key={idx} className="relative w-20 h-20 rounded-2xl border-4 border-white overflow-hidden bg-gray-50 shadow-sm">
-                        <img src={item.images[0]} alt="" className="w-full h-full object-cover" />
+                        <img src={getProxyUrl(item.images[0])} alt="" className="w-full h-full object-cover" />
                       </div>
                     ))}
                     {order.items.length > 4 && (

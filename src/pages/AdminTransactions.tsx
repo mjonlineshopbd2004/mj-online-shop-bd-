@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { collection, query, getDocs, orderBy, where } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { Order } from '../types';
-import { formatPrice } from '../lib/utils';
+import { formatPrice, getProxyUrl } from '../lib/utils';
 import { Search, Filter, Eye, CreditCard, Calendar, Loader2, ArrowRight } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
@@ -193,7 +193,7 @@ export default function AdminTransactions() {
                   <div className="space-y-4">
                     <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Payment Proof</p>
                     <div className="rounded-2xl overflow-hidden border border-white/10">
-                      <img src={selectedTransaction.paymentScreenshot} alt="Payment Proof" className="w-full h-auto" />
+                      <img src={getProxyUrl(selectedTransaction.paymentScreenshot)} alt="Payment Proof" className="w-full h-auto" />
                     </div>
                   </div>
                 )}

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useSettings } from '../contexts/SettingsContext';
+import { getProxyUrl } from '../lib/utils';
 
 export default function SplashScreen() {
   const { settings } = useSettings();
@@ -33,7 +34,7 @@ export default function SplashScreen() {
           >
             <div className="relative">
               {settings.logoUrl ? (
-                <img src={settings.logoUrl} alt={settings.storeName} className="h-24 w-auto" />
+                <img src={getProxyUrl(settings.logoUrl)} alt={settings.storeName} className="h-24 w-auto" />
               ) : (
                 <div className="w-24 h-24 bg-primary rounded-[2rem] flex items-center justify-center text-white font-bold text-5xl shadow-2xl shadow-primary/30">
                   {settings.storeName.charAt(0)}

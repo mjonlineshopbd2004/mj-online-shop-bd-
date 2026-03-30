@@ -4,7 +4,7 @@ import { db } from '../lib/firebase';
 import { Review, Product } from '../types';
 import { Search, Filter, Star, Trash2, Eye, Loader2, Package, User, Calendar, X } from 'lucide-react';
 import { toast } from 'sonner';
-import { cn } from '../lib/utils';
+import { cn, getProxyUrl } from '../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
 
 export default function AdminReviews() {
@@ -125,7 +125,7 @@ export default function AdminReviews() {
                       <div className="flex items-center gap-4">
                         {product?.images[0] && (
                           <div className="w-10 h-10 rounded-lg overflow-hidden bg-white/5 border border-white/5">
-                            <img src={product.images[0]} alt="" className="w-full h-full object-cover" />
+                            <img src={getProxyUrl(product.images[0])} alt="" className="w-full h-full object-cover" />
                           </div>
                         )}
                         <p className="font-bold text-white group-hover:text-emerald-500 transition-colors text-sm truncate max-w-[200px]">
@@ -201,7 +201,7 @@ export default function AdminReviews() {
               <div className="p-8 space-y-8">
                 <div className="flex items-start gap-6">
                   <div className="w-24 h-24 rounded-2xl overflow-hidden bg-white/5 border border-white/5 flex-shrink-0">
-                    <img src={products[selectedReview.productId]?.images[0]} alt="" className="w-full h-full object-cover" />
+                    <img src={getProxyUrl(products[selectedReview.productId]?.images[0])} alt="" className="w-full h-full object-cover" />
                   </div>
                   <div className="flex-1">
                     <h3 className="text-xl font-black text-white mb-2">{products[selectedReview.productId]?.name}</h3>
