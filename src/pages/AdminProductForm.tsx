@@ -154,8 +154,9 @@ export default function AdminProductForm() {
       const idToken = await user?.getIdToken();
       if (!idToken) throw new Error('Not authenticated');
 
-      const baseUrl = import.meta.env.VITE_APP_URL || '';
-      const response = await fetch(`${baseUrl}/api/scraper/product`, {
+      const baseUrl = import.meta.env.VITE_APP_URL || (typeof window !== 'undefined' ? window.location.origin : '');
+      const cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+      const response = await fetch(`${cleanBaseUrl}/api/scraper/product`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

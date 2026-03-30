@@ -68,6 +68,10 @@ async function startServer() {
         referer = 'https://www.daraz.com.bd/';
       } else if (imageUrl.includes('slatic.net') || imageUrl.includes('laz-img')) {
         referer = 'https://www.daraz.com.bd/';
+      } else if (imageUrl.includes('facebook.com') || imageUrl.includes('fbcdn.net')) {
+        referer = 'https://www.facebook.com/';
+      } else if (imageUrl.includes('googleusercontent.com')) {
+        referer = 'https://www.google.com/';
       } else {
         referer = urlObj.origin;
       }
