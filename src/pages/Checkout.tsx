@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useSettings } from '../contexts/SettingsContext';
-import { formatPrice } from '../lib/utils';
+import { formatPrice, getProxyUrl } from '../lib/utils';
 import { DELIVERY_AREAS, PAYMENT_METHODS } from '../constants';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
@@ -436,7 +436,7 @@ export default function Checkout() {
               {selectedItems.map((item) => (
                 <div key={`${item.id}-${item.selectedSize}-${item.selectedColor}`} className="flex items-center space-x-4">
                   <div className="w-16 h-16 rounded-xl overflow-hidden bg-white/10 flex-shrink-0">
-                    <img src={item.images[0]} alt="" className="w-full h-full object-cover" />
+                    <img src={getProxyUrl(item.images[0])} alt="" className="w-full h-full object-cover" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-bold truncate">{item.name}</p>

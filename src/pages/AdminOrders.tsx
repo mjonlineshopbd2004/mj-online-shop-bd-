@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { collection, query, getDocs, updateDoc, doc, orderBy } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { Order, OrderStatus } from '../types';
-import { formatPrice } from '../lib/utils';
+import { formatPrice, getProxyUrl } from '../lib/utils';
 import { Search, Filter, Eye, Clock, Package, Truck, CheckCircle2, XCircle, ChevronDown, X, MapPin, Phone, User, CreditCard, RefreshCcw, Image as ImageIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '../lib/utils';
@@ -155,7 +155,7 @@ export default function AdminOrders() {
                     <div className="flex items-center gap-4">
                       {order.items[0] && (
                         <div className="w-12 h-12 rounded-xl overflow-hidden bg-white/5 flex-shrink-0 border border-white/5">
-                          <img src={order.items[0].images[0]} alt="" className="w-full h-full object-cover" />
+                          <img src={getProxyUrl(order.items[0].images[0])} alt="" className="w-full h-full object-cover" />
                         </div>
                       )}
                       <div>
@@ -340,7 +340,7 @@ export default function AdminOrders() {
                     {selectedOrder.items.map((item, idx) => (
                       <div key={idx} className="flex items-center gap-6 bg-white/5 border border-white/5 p-6 rounded-3xl group">
                         <div className="w-20 h-20 rounded-2xl overflow-hidden bg-white/5 flex-shrink-0 border border-white/5">
-                          <img src={item.images[0]} alt="" className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
+                          <img src={getProxyUrl(item.images[0])} alt="" className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="font-black text-white text-lg truncate group-hover:text-emerald-500 transition-colors">{item.name}</p>

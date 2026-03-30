@@ -4,6 +4,7 @@ import { db } from '../lib/firebase';
 import { Product } from '../types';
 import { DEMO_PRODUCTS, CATEGORIES } from '../constants';
 import { useSettings } from '../contexts/SettingsContext';
+import { getProxyUrl } from '../lib/utils';
 import HeroSection from '../components/HeroSection';
 import ProductCard from '../components/ProductCard';
 import { Link } from 'react-router-dom';
@@ -143,7 +144,7 @@ export default function Home() {
                 className="group relative h-40 md:h-48 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 rounded-2xl md:rounded-[1.5rem]"
               >
                 <img
-                  src={image || `https://picsum.photos/seed/${name}/600/800`}
+                  src={getProxyUrl(image || `https://picsum.photos/seed/${name}/600/800`)}
                   alt={name}
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000"
                   referrerPolicy="no-referrer"

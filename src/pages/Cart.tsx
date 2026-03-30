@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../contexts/CartContext';
-import { formatPrice, cn } from '../lib/utils';
+import { formatPrice, cn, getProxyUrl } from '../lib/utils';
 import { Trash2, Plus, Minus, ArrowRight, ShoppingBag, Truck } from 'lucide-react';
 
 export default function Cart() {
@@ -67,7 +67,7 @@ export default function Cart() {
               </div>
 
               <div className="w-32 h-32 rounded-2xl overflow-hidden bg-gray-50 flex-shrink-0">
-                <img src={item.images[0]} alt={item.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                <img src={getProxyUrl(item.images[0])} alt={item.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
               </div>
               
               <div className="flex-1 text-center sm:text-left">

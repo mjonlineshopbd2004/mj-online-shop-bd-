@@ -38,28 +38,36 @@ async function startServer() {
 
     try {
       const axios = (await import('axios')).default;
+      const https = await import('https');
       
       const fetchImage = async (url: string, referer: string = '') => {
         return await axios.get(url, {
           responseType: 'arraybuffer',
+          httpsAgent: new https.Agent({ rejectUnauthorized: false }),
           headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
             'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
             'Accept-Language': 'en-US,en;q=0.9',
             'Cache-Control': 'no-cache',
             'Pragma': 'no-cache',
-            'Referer': referer,
+            'Referer': referer || new URL(url).origin,
           },
-          timeout: 15000,
-          validateStatus: (status) => status < 500, // Handle 404 manually
+          timeout: 20000,
+          maxRedirects: 5,
+          validateStatus: (status) => status < 500,
         });
       };
 
       let referer = '';
+      const urlObj = new URL(imageUrl);
       if (imageUrl.includes('alicdn.com') || imageUrl.includes('1688.com')) {
         referer = 'https://www.1688.com/';
       } else if (imageUrl.includes('amazon.com')) {
         referer = 'https://www.amazon.com/';
+      } else if (imageUrl.includes('daraz.com')) {
+        referer = 'https://www.daraz.com.bd/';
+      } else {
+        referer = urlObj.origin;
       }
 
       let response = await fetchImage(imageUrl, referer);
@@ -83,7 +91,7 @@ async function startServer() {
 
       if (response.status !== 200) {
         console.error(`Image proxy error: Source returned ${response.status} for URL: ${imageUrl}`);
-        return res.status(response.status).send(`Source returned ${response.status}`);
+        return res.redirect(`https://picsum.photos/seed/${encodeURIComponent(imageUrl.slice(-10))}/600/800`);
       }
 
       const contentType = response.headers['content-type'] || 'image/jpeg';
@@ -92,7 +100,7 @@ async function startServer() {
       res.send(Buffer.from(response.data));
     } catch (error: any) {
       console.error('Image proxy error:', error.message, 'URL:', imageUrl);
-      res.status(500).send('Failed to fetch image');
+      res.redirect(`https://picsum.photos/seed/${encodeURIComponent(imageUrl.slice(-10))}/600/800`);
     }
   });
   
