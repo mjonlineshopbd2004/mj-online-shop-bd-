@@ -6,6 +6,9 @@ import { createServer as createViteServer } from 'vite';
 import apiRoutes from './backend/routes';
 import firebaseConfig from './firebase-applet-config.json';
 
+import * as scraperController from './backend/controllers/scraperController';
+import { authenticate } from './backend/middleware/auth';
+
 // Set GOOGLE_CLOUD_PROJECT early to ensure Firebase Admin SDK uses the correct project ID
 process.env.GOOGLE_CLOUD_PROJECT = firebaseConfig.projectId;
 
@@ -24,6 +27,9 @@ async function startServer() {
 
   // API Routes
   app.use('/api', apiRoutes);
+
+  // Scraper Route (Directly in server.ts for priority and reliability)
+  app.post('/api/scraper/product', authenticate, scraperController.scrapeProduct);
 
   // Image Proxy (Bypass Referrer restrictions)
   app.get('/api/proxy-image', async (req, res) => {
