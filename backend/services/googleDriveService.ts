@@ -8,23 +8,34 @@ export class GoogleDriveService {
   private drive;
 
   constructor() {
-    const clientEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
-    const privateKey = process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY?.replace(/\\n/g, '\n');
+    try {
+      const clientEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
+      let privateKey = process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY;
 
-    if (!clientEmail || !privateKey) {
-      console.warn('Google Drive Service Account credentials not fully configured.');
+      if (!clientEmail || !privateKey) {
+        console.warn('Google Drive Service Account credentials not fully configured.');
+        this.drive = null;
+        return;
+      }
+
+      // Robust handling of private key for Vercel environment variables
+      // Remove any surrounding quotes that might have been added in the Vercel UI
+      privateKey = privateKey.trim().replace(/^["']|["']$/g, '');
+      // Handle both literal newlines and escaped \n strings
+      privateKey = privateKey.replace(/\\n/g, '\n');
+
+      const auth = new google.auth.JWT(
+        clientEmail,
+        undefined,
+        privateKey,
+        SCOPES
+      );
+
+      this.drive = google.drive({ version: 'v3', auth });
+    } catch (error) {
+      console.error('Failed to initialize Google Drive client:', error);
       this.drive = null;
-      return;
     }
-
-    const auth = new google.auth.JWT(
-      clientEmail,
-      undefined,
-      privateKey,
-      SCOPES
-    );
-
-    this.drive = google.drive({ version: 'v3', auth });
   }
 
   public isConfigured(): boolean {

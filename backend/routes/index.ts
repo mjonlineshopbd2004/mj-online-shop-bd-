@@ -45,6 +45,48 @@ router.get('/admin/settings/google-sheet', authenticate, authorize(['admin']), a
 router.put('/admin/settings/google-sheet', authenticate, authorize(['admin']), adminController.updateGoogleSheetSettings);
 router.post('/admin/settings/google-sheet/test', authenticate, authorize(['admin']), adminController.testGoogleSheetConnection);
 
+// Drive Debug Route
+router.get('/admin/test-drive', authenticate, authorize(['admin']), async (req, res) => {
+  try {
+    const { googleDriveService } = await import('../services/googleDriveService');
+    const { auth, db } = await import('../config/firebase');
+    
+    const isConfigured = googleDriveService.isConfigured();
+    
+    const envStatus = {
+      hasEmail: !!process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+      hasKey: !!process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY,
+      hasFolderId: !!process.env.GOOGLE_DRIVE_FOLDER_ID,
+      email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL ? `${process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL.substring(0, 5)}...` : 'missing',
+      folderId: process.env.GOOGLE_DRIVE_FOLDER_ID ? `${process.env.GOOGLE_DRIVE_FOLDER_ID.substring(0, 5)}...` : 'missing',
+      firebaseAuth: !!auth,
+      firebaseDb: !!db
+    };
+
+    if (!isConfigured) {
+      return res.status(400).json({ 
+        status: 'error', 
+        message: 'Google Drive is not configured. Check environment variables.',
+        env: envStatus
+      });
+    }
+
+    res.json({ 
+      status: 'success', 
+      message: 'Google Drive service is initialized.',
+      env: envStatus
+    });
+  } catch (error: any) {
+    console.error('Test drive route error:', error);
+    res.status(500).json({ 
+      status: 'error', 
+      message: 'Internal server error in test-drive route',
+      error: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
+  }
+});
+
 // Coupon Routes
 router.get('/coupons', authenticate, authorize(['admin']), couponController.getAllCoupons);
 router.post('/coupons', authenticate, authorize(['admin']), couponController.createCoupon);

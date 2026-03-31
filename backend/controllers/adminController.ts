@@ -205,9 +205,11 @@ export const testGoogleSheetConnection = async (req: Request, res: Response) => 
     const { GoogleSpreadsheet } = await import('google-spreadsheet');
     const { JWT } = await import('google-auth-library');
 
+    const formattedKey = privateKey.trim().replace(/^["']|["']$/g, '').replace(/\\n/g, '\n');
+
     const serviceAccountAuth = new JWT({
       email: clientEmail,
-      key: privateKey.replace(/\\n/g, '\n'),
+      key: formattedKey,
       scopes: ['https://www.googleapis.com/auth/spreadsheets'],
     });
 

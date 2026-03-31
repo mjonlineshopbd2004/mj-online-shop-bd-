@@ -28,9 +28,11 @@ export const syncOrderToSheet = async (order: any) => {
   }
 
   try {
+    const formattedKey = config.privateKey.trim().replace(/^["']|["']$/g, '').replace(/\\n/g, '\n');
+    
     const serviceAccountAuth = new JWT({
       email: config.clientEmail,
-      key: config.privateKey.replace(/\\n/g, '\n'),
+      key: formattedKey,
       scopes: ['https://www.googleapis.com/auth/spreadsheets'],
     });
 

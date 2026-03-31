@@ -11,16 +11,22 @@ export const uploadFile = async (req: Request, res: Response) => {
 
     // If Google Drive is configured, upload to Drive
     if (googleDriveService.isConfigured()) {
-      const driveUrl = await googleDriveService.uploadFile(
-        req.file.path,
-        req.file.filename,
-        req.file.mimetype
-      );
+      try {
+        const driveUrl = await googleDriveService.uploadFile(
+          req.file.path,
+          req.file.filename,
+          req.file.mimetype
+        );
 
-      if (driveUrl) {
-        // Delete local file after upload to Drive
-        fs.unlinkSync(req.file.path);
-        return res.status(200).json({ url: driveUrl });
+        if (driveUrl) {
+          // Delete local file after upload to Drive
+          if (fs.existsSync(req.file.path)) {
+            fs.unlinkSync(req.file.path);
+          }
+          return res.status(200).json({ url: driveUrl });
+        }
+      } catch (driveError) {
+        console.error('Google Drive upload failed:', driveError);
       }
     }
 
@@ -43,18 +49,24 @@ export const uploadMultipleFiles = async (req: Request, res: Response) => {
     const fileUrls = [];
 
     for (const file of files) {
-      if (googleDriveService.isConfigured()) {
-        const driveUrl = await googleDriveService.uploadFile(
-          file.path,
-          file.filename,
-          file.mimetype
-        );
+      try {
+        if (googleDriveService.isConfigured()) {
+          const driveUrl = await googleDriveService.uploadFile(
+            file.path,
+            file.filename,
+            file.mimetype
+          );
 
-        if (driveUrl) {
-          fs.unlinkSync(file.path);
-          fileUrls.push(driveUrl);
-          continue;
+          if (driveUrl) {
+            if (fs.existsSync(file.path)) {
+              fs.unlinkSync(file.path);
+            }
+            fileUrls.push(driveUrl);
+            continue;
+          }
         }
+      } catch (driveError) {
+        console.error('Google Drive upload failed for file:', file.filename, driveError);
       }
       
       fileUrls.push(`/uploads/${file.filename}`);

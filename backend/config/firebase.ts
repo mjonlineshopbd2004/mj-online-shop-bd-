@@ -12,20 +12,50 @@ process.env.FIREBASE_CONFIG = JSON.stringify({
 
 // Initialize Firebase Admin
 const initializeAdmin = () => {
-  const apps = getApps();
-  if (apps.length > 0) return apps[0];
-  
-  console.log('Initializing Firebase Admin with default credentials...');
-  // initializeApp() without arguments uses the environment's service account
-  return initializeApp();
+  try {
+    const apps = getApps();
+    if (apps.length > 0) return apps[0];
+    
+    console.log('Initializing Firebase Admin...');
+    
+    // Check if we have service account credentials in the environment
+    if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+      try {
+        const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+        return initializeApp({
+          credential: (await import('firebase-admin/app')).cert(serviceAccount),
+          projectId: serviceAccount.project_id
+        });
+      } catch (e) {
+        console.error('Failed to parse FIREBASE_SERVICE_ACCOUNT as JSON:', e);
+      }
+    }
+    
+    if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+      return initializeApp();
+    }
+    
+    // Fallback: Try to initialize with just the project ID if that's all we have
+    // This might work for some operations but verifyIdToken usually needs a service account
+    if (firebaseConfig.projectId) {
+      return initializeApp({
+        projectId: firebaseConfig.projectId,
+      });
+    }
+
+    return initializeApp();
+  } catch (error) {
+    console.error('CRITICAL: Firebase Admin initialization failed:', error);
+    // Return a dummy app or handle it gracefully to avoid crashing the whole server
+    return null as any;
+  }
 };
 
 const adminApp = initializeAdmin();
 
 // Initialize Firestore and Auth
-// Use the database ID from config if available, otherwise default
 const dbId = firebaseConfig.firestoreDatabaseId || '(default)';
 console.log('Using Firestore Database ID:', dbId);
 
-export const db = getFirestore(adminApp, dbId);
-export const auth = getAuth(adminApp);
+export const db = adminApp ? getFirestore(adminApp, dbId) : null as any;
+export const auth = adminApp ? getAuth(adminApp) : null as any;
