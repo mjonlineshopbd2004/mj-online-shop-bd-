@@ -37,6 +37,7 @@ export default function Navbar() {
   const [isSearching, setIsSearching] = useState(false);
   const [isCategoriesOpen, setIsCategoriesOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [logoError, setLogoError] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
 
@@ -147,8 +148,13 @@ export default function Navbar() {
           {/* Logo & Shop Name */}
           <Link to="/" className="flex items-center gap-3 flex-shrink-0 group">
             <div className="relative">
-              {settings.logoUrl ? (
-                <img src={getProxyUrl(settings.logoUrl)} alt={settings.storeName} className="h-10 md:h-12 w-auto transition-transform group-hover:scale-105" />
+              {settings.logoUrl && !logoError ? (
+                <img 
+                  src={getProxyUrl(settings.logoUrl)} 
+                  alt={settings.storeName} 
+                  className="h-10 md:h-12 w-auto transition-transform group-hover:scale-105" 
+                  onError={() => setLogoError(true)}
+                />
               ) : (
                 <div className="w-10 h-10 md:w-12 md:h-12 bg-primary rounded-xl flex items-center justify-center text-white font-bold text-xl md:text-2xl shadow-lg shadow-primary/20">
                   {settings.storeName.charAt(0)}

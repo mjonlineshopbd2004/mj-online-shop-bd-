@@ -19,7 +19,7 @@ export function calculateDiscount(price: number, discountPrice?: number) {
 }
 
 export function getProxyUrl(url: string) {
-  if (!url) return 'https://picsum.photos/seed/placeholder/600/800';
+  if (!url || url.trim() === '') return 'https://picsum.photos/seed/placeholder/600/800';
   
   // Normalize protocol-relative URLs
   const normalizedUrl = url.startsWith('//') ? `https:${url}` : url;
@@ -31,6 +31,24 @@ export function getProxyUrl(url: string) {
   
   // If it's already a proxy URL, don't proxy again
   if (normalizedUrl.includes('/api/proxy-image')) return normalizedUrl;
+
+  // Skip proxy for reliable CDNs that don't have referrer restrictions
+  const reliableCDNs = [
+    'images.unsplash.com',
+    'firebasestorage.googleapis.com',
+    'picsum.photos',
+    'cloudinary.com',
+    'imgbb.com'
+  ];
+
+  try {
+    const urlObj = new URL(normalizedUrl);
+    if (reliableCDNs.some(cdn => urlObj.hostname.includes(cdn))) {
+      return normalizedUrl;
+    }
+  } catch (e) {
+    // If URL parsing fails, just return as is or proxy
+  }
 
   // Check if it's an external URL
   const isExternal = normalizedUrl.startsWith('http');

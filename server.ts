@@ -42,10 +42,25 @@ async function startServer() {
     if (imageUrl.startsWith('//')) imageUrl = 'https:' + imageUrl;
     if (!imageUrl.startsWith('http')) imageUrl = 'https://' + imageUrl;
 
+    const axios = (await import('axios')).default;
+    const https = await import('https');
+
+    const serveFallback = async () => {
+      try {
+        const fallbackUrl = `https://picsum.photos/seed/${encodeURIComponent(imageUrl.slice(-10))}/600/800`;
+        const fallbackResponse = await axios.get(fallbackUrl, {
+          responseType: 'arraybuffer',
+          timeout: 10000
+        });
+        res.setHeader('Content-Type', 'image/jpeg');
+        res.setHeader('Cache-Control', 'public, max-age=86400');
+        res.send(Buffer.from(fallbackResponse.data));
+      } catch (e) {
+        res.status(404).send('Image not found and fallback failed');
+      }
+    };
+
     try {
-      const axios = (await import('axios')).default;
-      const https = await import('https');
-      
       const fetchImage = async (url: string, referer: string = '') => {
         let origin = '';
         try {
@@ -105,17 +120,21 @@ async function startServer() {
           if (subdomain === currentSubdomain) continue;
           const fallbackUrl = imageUrl.replace(currentSubdomain || 'cbu01.alicdn.com', subdomain);
           console.log(`Proxy: 404 on ${currentSubdomain}, trying fallback: ${subdomain}`);
-          const fallbackResponse = await fetchImage(fallbackUrl, referer);
-          if (fallbackResponse.status === 200) {
-            response = fallbackResponse;
-            break;
+          try {
+            const fallbackResponse = await fetchImage(fallbackUrl, referer);
+            if (fallbackResponse.status === 200) {
+              response = fallbackResponse;
+              break;
+            }
+          } catch (e) {
+            // Ignore fallback errors
           }
         }
       }
 
       if (response.status !== 200) {
         console.error(`Image proxy error: Source returned ${response.status} for URL: ${imageUrl}`);
-        return res.redirect(`https://picsum.photos/seed/${encodeURIComponent(imageUrl.slice(-10))}/600/800`);
+        return await serveFallback();
       }
 
       const contentType = response.headers['content-type'] || 'image/jpeg';
@@ -124,7 +143,7 @@ async function startServer() {
       res.send(Buffer.from(response.data));
     } catch (error: any) {
       console.error('Image proxy error:', error.message, 'URL:', imageUrl);
-      res.redirect(`https://picsum.photos/seed/${encodeURIComponent(imageUrl.slice(-10))}/600/800`);
+      await serveFallback();
     }
   });
   

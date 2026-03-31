@@ -7,6 +7,8 @@ import { getProxyUrl } from '../lib/utils';
 
 export default function HeroSection() {
   const { settings } = useSettings();
+  const [bannerError, setBannerError] = React.useState(false);
+  const [smallBannerError, setSmallBannerError] = React.useState(false);
   const banners = settings.banners || [];
   const smallBanners = settings.smallBanners || [];
 
@@ -17,10 +19,11 @@ export default function HeroSection() {
         <div className="lg:col-span-2 relative overflow-hidden bg-[#f3f9fb] group rounded-2xl md:rounded-none h-[350px] md:h-[500px] lg:h-full">
           <div className="absolute inset-0 z-0">
             <img
-              src={getProxyUrl(banners[0]?.image || "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=1000")}
+              src={getProxyUrl(banners[0]?.image && !bannerError ? banners[0].image : "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=1000")}
               alt={banners[0]?.title || "Grocery Deals"}
               className="w-full h-full object-cover object-right group-hover:scale-105 transition-transform duration-700"
               referrerPolicy="no-referrer"
+              onError={() => setBannerError(true)}
             />
             {/* Gradient Overlay for better readability */}
             <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent"></div>
@@ -64,10 +67,11 @@ export default function HeroSection() {
         <div className="relative overflow-hidden bg-[#fde1b6] p-8 md:p-10 flex flex-col justify-end group rounded-2xl md:rounded-none h-[250px] md:h-[500px] lg:h-full">
           <div className="absolute inset-0 z-0">
             <img
-              src={getProxyUrl(smallBanners[0]?.image || "https://images.unsplash.com/photo-1621939514649-280e2ee25f60?auto=format&fit=crop&q=80&w=600")}
+              src={getProxyUrl(smallBanners[0]?.image && !smallBannerError ? smallBanners[0].image : "https://images.unsplash.com/photo-1621939514649-280e2ee25f60?auto=format&fit=crop&q=80&w=600")}
               alt={smallBanners[0]?.title || "Weekend Discount"}
               className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
               referrerPolicy="no-referrer"
+              onError={() => setSmallBannerError(true)}
             />
             {/* Overlay for small banner */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>

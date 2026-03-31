@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { doc, getDoc, setDoc, collection, getDocs, writeBatch } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { toast } from 'sonner';
-import { Save, Globe, Phone, Mail, MapPin, Facebook, Instagram, Youtube, Twitter, Truck, Trash2, AlertTriangle, Upload, Image as ImageIcon, Loader2 } from 'lucide-react';
+import { Save, Globe, Phone, Mail, MapPin, Facebook, Instagram, Youtube, Twitter, Truck, Trash2, AlertTriangle, Upload, Image as ImageIcon, Loader2, RotateCcw } from 'lucide-react';
 import { uploadFile } from '../lib/upload';
 import { useAuth } from '../contexts/AuthContext';
 import { getProxyUrl } from '../lib/utils';
@@ -100,6 +100,8 @@ export default function AdminSettings() {
   const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
 
   const handleClearData = async () => {
+    if (!window.confirm('Are you sure you want to clear all store data? This will permanently delete all products, orders, and reviews. This action cannot be undone.')) return;
+    
     setClearing(true);
     try {
       const productsSnap = await getDocs(collection(db, 'products'));
@@ -118,6 +120,61 @@ export default function AdminSettings() {
     } catch (error) {
       console.error('Error clearing data:', error);
       toast.error('Failed to clear data');
+    } finally {
+      setClearing(false);
+    }
+  };
+
+  const handleResetSettings = async () => {
+    if (!window.confirm('Are you sure you want to reset all settings to defaults? This will overwrite your current configuration.')) return;
+    
+    setClearing(true);
+    try {
+      const defaultSettings = {
+        storeName: 'MJ Online Shop BD',
+        storeEmail: 'mjonlineshopbd@gmail.com',
+        storePhone: '+880123456789',
+        storeAddress: 'Dhaka, Bangladesh',
+        logoUrl: '',
+        primaryColor: '#22c55e',
+        enableImageSearch: true,
+        banners: [
+          {
+            id: '1',
+            image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&q=80&w=1920',
+            title: 'Fresh Grocery Delivery',
+            subtitle: 'Get up to 30% off on your first order',
+            link: '/products'
+          }
+        ],
+        smallBanners: [
+          {
+            id: '1',
+            image: 'https://images.unsplash.com/photo-1621939514649-280e2ee25f60?auto=format&fit=crop&q=80&w=600',
+            title: 'Weekend Special',
+            subtitle: 'Fresh organic vegetables',
+            link: '/products'
+          }
+        ],
+        deliveryCharges: {
+          insideDhaka: 60,
+          outsideDhaka: 120
+        },
+        socialLinks: {
+          facebook: '',
+          instagram: '',
+          youtube: '',
+          whatsapp: ''
+        }
+      };
+      
+      await setDoc(doc(db, 'settings', 'site'), defaultSettings);
+      setSettings(defaultSettings);
+      toast.success('Settings reset to defaults');
+      window.location.reload();
+    } catch (error) {
+      console.error('Error resetting settings:', error);
+      toast.error('Failed to reset settings');
     } finally {
       setClearing(false);
     }
@@ -831,6 +888,25 @@ export default function AdminSettings() {
               <Trash2 className="h-5 w-5" />
             )}
             <span>Clear All Data</span>
+          </button>
+        </div>
+
+        <div className="pt-8 border-t border-red-500/10 flex flex-col md:flex-row md:items-center justify-between gap-8">
+          <div>
+            <p className="font-black text-white text-lg mb-1">Reset Site Settings</p>
+            <p className="text-sm text-gray-400 font-bold">Restore all site settings (banners, logo, colors, etc.) to their default values.</p>
+          </div>
+          <button
+            onClick={handleResetSettings}
+            disabled={clearing}
+            className="bg-amber-500/10 text-amber-500 px-8 py-4 rounded-2xl font-black hover:bg-amber-500/20 transition-all border border-amber-500/20 flex items-center gap-3 disabled:opacity-50 whitespace-nowrap"
+          >
+            {clearing ? (
+              <Loader2 className="animate-spin h-5 w-5" />
+            ) : (
+              <RotateCcw className="h-5 w-5" />
+            )}
+            <span>Reset Settings</span>
           </button>
         </div>
       </div>
