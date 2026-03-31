@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { collection, addDoc, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useAuth } from '../contexts/AuthContext';
@@ -42,6 +42,31 @@ export default function AdminProductImporter() {
   const [importing, setImporting] = useState(false);
   const [product, setProduct] = useState<ImportedProduct | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [aiStatus, setAiStatus] = useState<'checking' | 'ready' | 'missing'>('checking');
+
+  useEffect(() => {
+    const checkStatus = async () => {
+      try {
+        const idToken = await user?.getIdToken();
+        if (!idToken) return;
+
+        const response = await fetch('/api/scraper/status', {
+          headers: {
+            'Authorization': `Bearer ${idToken}`
+          }
+        });
+        const data = await response.json();
+        setAiStatus(data.configured ? 'ready' : 'missing');
+      } catch (error) {
+        console.error('Failed to check AI status:', error);
+        setAiStatus('missing');
+      }
+    };
+
+    if (user) {
+      checkStatus();
+    }
+  }, [user]);
 
   const fetchProductDetails = async () => {
     if (!url) {
@@ -178,10 +203,10 @@ export default function AdminProductImporter() {
           <div className="flex items-center gap-3 bg-white/5 px-4 py-2 rounded-2xl border border-white/10">
             <div className={cn(
               "h-2 w-2 rounded-full animate-pulse",
-              import.meta.env.VITE_HAS_API_KEY === 'true' ? "bg-emerald-500" : "bg-amber-500"
+              aiStatus === 'ready' ? "bg-emerald-500" : aiStatus === 'checking' ? "bg-blue-500" : "bg-amber-500"
             )} />
             <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
-              AI Status: {import.meta.env.VITE_HAS_API_KEY === 'true' ? 'Ready' : 'Key Missing'}
+              AI Status: {aiStatus === 'ready' ? 'Ready' : aiStatus === 'checking' ? 'Checking...' : 'Key Missing'}
             </span>
           </div>
         </div>

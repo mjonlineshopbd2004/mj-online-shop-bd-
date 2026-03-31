@@ -374,40 +374,6 @@ export default function AdminProductForm() {
       <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Main Info */}
         <div className="lg:col-span-2 space-y-8">
-          {/* Fetch from URL Section */}
-          {!isEditing && (
-            <div className="bg-emerald-500/5 border border-emerald-500/20 p-8 rounded-[2rem] space-y-6">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-emerald-500/20 rounded-lg">
-                  <Upload className="h-5 w-5 text-emerald-500" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-black text-white">Import from URL</h2>
-                  <p className="text-xs text-gray-400 font-bold">Paste a product URL to automatically fill the form.</p>
-                </div>
-              </div>
-              
-              <div className="flex gap-4">
-                <input
-                  type="url"
-                  placeholder="https://chinaonlinebd.com/product/..."
-                  className="flex-1 bg-white/5 border border-white/10 rounded-xl px-6 py-4 focus:outline-none focus:border-emerald-500 transition-all font-bold text-white"
-                  value={sourceUrl}
-                  onChange={(e) => setSourceUrl(e.target.value)}
-                />
-                <button
-                  type="button"
-                  onClick={handleFetchFromUrl}
-                  disabled={fetching}
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-4 rounded-xl font-black transition-all flex items-center gap-2 disabled:opacity-50"
-                >
-                  {fetching ? <Loader2 className="h-5 w-5 animate-spin" /> : <Plus className="h-5 w-5" />}
-                  <span>Fetch</span>
-                </button>
-              </div>
-            </div>
-          )}
-
           <div className="bg-white/5 border border-white/10 p-8 rounded-[2rem] space-y-6">
             <h2 className="text-xl font-black flex items-center gap-3 text-white">
               <Plus className="h-5 w-5 text-emerald-500" />
@@ -753,6 +719,34 @@ export default function AdminProductForm() {
                 </button>
               )}
             </div>
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Or Add Image URL</label>
+              <input
+                type="text"
+                placeholder="Paste image URL and press Enter"
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-emerald-500 transition-all font-bold text-white text-sm"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const target = e.target as HTMLInputElement;
+                    const url = target.value.trim();
+                    if (url) {
+                      if ((formData.images?.length || 0) >= 10) {
+                        toast.error('Maximum 10 images allowed');
+                        return;
+                      }
+                      setFormData(prev => ({
+                        ...prev,
+                        images: [...(prev.images || []), url]
+                      }));
+                      target.value = '';
+                      toast.success('Image URL added');
+                    }
+                  }
+                }}
+              />
+            </div>
+
             <input
               type="file"
               ref={imageInputRef}
@@ -770,9 +764,21 @@ export default function AdminProductForm() {
               Product Video
             </h2>
             
-            {formData.videoUrl ? (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Video URL (YouTube, Drive, etc.)</label>
+                <input
+                  type="text"
+                  placeholder="Paste video URL"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-emerald-500 transition-all font-bold text-white text-sm"
+                  value={formData.videoUrl || ''}
+                  onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })}
+                />
+              </div>
+
+              {formData.videoUrl ? (
               <div className="relative aspect-video rounded-2xl overflow-hidden border border-white/10 group">
-                <video src={formData.videoUrl} className="w-full h-full object-cover" controls />
+                <video src={getProxyUrl(formData.videoUrl)} className="w-full h-full object-cover" controls />
                 <button
                   type="button"
                   onClick={removeVideo}
@@ -792,6 +798,7 @@ export default function AdminProductForm() {
                 <span className="text-[10px] font-black uppercase tracking-widest">Upload Video</span>
               </button>
             )}
+            </div>
             <input
               type="file"
               ref={videoInputRef}

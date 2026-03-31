@@ -92,7 +92,6 @@ function AnimatedRoutes() {
               <Route path="/admin/refunds" element={<AdminRefunds />} />
               <Route path="/admin/users" element={<AdminUsers />} />
               <Route path="/admin/coupons" element={<AdminCoupons />} />
-              <Route path="/admin/import" element={<AdminProductImporter />} />
               <Route path="/admin/settings/google-sheet" element={<AdminGoogleSheetSettings />} />
               <Route path="/admin/settings" element={<AdminSettings />} />
             </Route>

@@ -24,6 +24,16 @@ export function getProxyUrl(url: string) {
   // Normalize protocol-relative URLs
   const normalizedUrl = url.startsWith('//') ? `https:${url}` : url;
   
+  // Handle Google Drive Links
+  if (normalizedUrl.includes('drive.google.com')) {
+    const driveIdMatch = normalizedUrl.match(/\/d\/([a-zA-Z0-9_-]+)/) || normalizedUrl.match(/id=([a-zA-Z0-9_-]+)/);
+    if (driveIdMatch && driveIdMatch[1]) {
+      // For images, use the thumbnail/direct link
+      // For videos, the uc?id=... link is usually better for the <video> tag
+      return `https://drive.google.com/uc?export=view&id=${driveIdMatch[1]}`;
+    }
+  }
+
   // Don't proxy data URLs, blobs, or local URLs
   if (normalizedUrl.startsWith('data:') || normalizedUrl.startsWith('blob:') || normalizedUrl.startsWith('/') || normalizedUrl.startsWith('http://localhost') || normalizedUrl.startsWith('https://localhost')) {
     return normalizedUrl;

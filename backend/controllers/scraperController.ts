@@ -6,17 +6,13 @@ let aiClient: GoogleGenAI | null = null;
 
 const getAiClient = () => {
   if (!aiClient) {
-    // Try both GEMINI_API_KEY and API_KEY, and TRIM them to prevent whitespace errors
-    const rawKey = process.env.GEMINI_API_KEY || process.env.API_KEY || '';
-    const apiKey = rawKey.trim();
+    // Priority: GEMINI_API_KEY -> API_KEY -> process.env.API_KEY (injected by platform)
+    const apiKey = (process.env.GEMINI_API_KEY || process.env.API_KEY || '').trim();
     
-    if (!apiKey) {
-      console.error('CRITICAL: No Gemini API key found! Please set GEMINI_API_KEY in your environment variables.');
-    } else if (apiKey.includes('TODO') || apiKey.length < 10) {
-      console.error('CRITICAL: Gemini API key appears to be a placeholder or invalid:', apiKey.substring(0, 10) + '...');
+    if (!apiKey || apiKey.includes('TODO') || apiKey.length < 10) {
+      console.error('CRITICAL: No valid Gemini API key found in environment variables.');
     } else {
-      // Log key info safely for debugging
-      console.log(`Gemini AI Client initialized. Key Length: ${apiKey.length}, Prefix: ${apiKey.substring(0, 6)}..., Suffix: ...${apiKey.slice(-4)}`);
+      console.log(`Gemini AI Client initialized. Key Prefix: ${apiKey.substring(0, 6)}...`);
     }
     
     aiClient = new GoogleGenAI({ apiKey: apiKey });
@@ -24,18 +20,15 @@ const getAiClient = () => {
   return aiClient;
 };
 
+export const getScraperStatus = async (req: Request, res: Response) => {
+  const apiKey = (process.env.GEMINI_API_KEY || process.env.API_KEY || '').trim();
+  const isConfigured = !!(apiKey && !apiKey.includes('TODO') && apiKey.length > 10 && apiKey.startsWith('AIzaSy'));
+  res.json({ configured: isConfigured, prefix: apiKey.substring(0, 6) });
+};
+
 export const scrapeProduct = async (req: Request, res: Response) => {
   const { url } = req.body;
   console.log('Scraping request received for URL:', url);
-
-  const apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY;
-  if (!apiKey || apiKey.includes('TODO') || apiKey.length < 10) {
-    console.error('CRITICAL: Gemini API key is missing or invalid!');
-    return res.status(500).json({ 
-      message: 'Gemini API Key is missing or invalid. Please set GEMINI_API_KEY in your Vercel/Environment settings.',
-      error: 'API_KEY_MISSING'
-    });
-  }
 
   const ai = getAiClient();
 

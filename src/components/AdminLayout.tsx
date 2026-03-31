@@ -18,7 +18,6 @@ export default function AdminLayout() {
     { label: 'Reviews', icon: Star, path: '/admin/reviews' },
     { label: 'Categories', icon: Layers, path: '/admin/categories' },
     { label: 'Refunds', icon: RefreshCcw, path: '/admin/refunds' },
-    { label: 'Product Importer', icon: Globe, path: '/admin/import' },
     { label: 'Users', icon: Users, path: '/admin/users' },
     { label: 'Coupons', icon: Tag, path: '/admin/coupons' },
     { label: 'Google Sheet', icon: FileSpreadsheet, path: '/admin/settings/google-sheet' },

@@ -245,6 +245,21 @@ export default function ProductDetails() {
               </button>
             ))}
           </div>
+
+          {/* Product Video */}
+          {product.videoUrl && (
+            <div className="mt-8">
+              <h3 className="text-sm font-bold text-gray-900 uppercase tracking-widest mb-4">Product Video</h3>
+              <div className="relative aspect-video rounded-[2rem] overflow-hidden border border-gray-100 shadow-lg">
+                <video 
+                  src={getProxyUrl(product.videoUrl)} 
+                  className="w-full h-full object-cover" 
+                  controls 
+                  poster={getProxyUrl(product.images[0])}
+                />
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Product Info */}
