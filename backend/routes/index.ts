@@ -40,6 +40,9 @@ router.get('/admin/stats', authenticate, authorize(['admin']), adminController.g
 router.get('/admin/users', authenticate, authorize(['admin']), adminController.getAllUsers);
 router.put('/admin/users/:id/role', authenticate, authorize(['admin']), adminController.updateUserRole);
 router.delete('/admin/users/:id', authenticate, authorize(['admin']), adminController.deleteUser);
+router.get('/admin/settings/google-sheet', authenticate, authorize(['admin']), adminController.getGoogleSheetSettings);
+router.put('/admin/settings/google-sheet', authenticate, authorize(['admin']), adminController.updateGoogleSheetSettings);
+router.post('/admin/settings/google-sheet/test', authenticate, authorize(['admin']), adminController.testGoogleSheetConnection);
 
 // Coupon Routes
 router.get('/coupons', authenticate, authorize(['admin']), couponController.getAllCoupons);

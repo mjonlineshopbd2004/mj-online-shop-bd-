@@ -160,3 +160,93 @@ export const deleteUser = async (req: Request, res: Response) => {
     res.status(500).json({ message: 'Server error deleting user' });
   }
 };
+
+export const getGoogleSheetSettings = async (req: Request, res: Response) => {
+  try {
+    const settingsDoc = await db.collection('settings').doc('googleSheet').get();
+    if (!settingsDoc.exists) {
+      return res.json({
+        spreadsheetId: '',
+        clientEmail: '',
+        privateKey: '',
+        enabled: false
+      });
+    }
+    res.json(settingsDoc.data());
+  } catch (error) {
+    res.status(500).json({ message: 'Server error fetching Google Sheet settings' });
+  }
+};
+
+export const updateGoogleSheetSettings = async (req: Request, res: Response) => {
+  const { spreadsheetId, clientEmail, privateKey, enabled } = req.body;
+  try {
+    await db.collection('settings').doc('googleSheet').set({
+      spreadsheetId,
+      clientEmail,
+      privateKey,
+      enabled,
+      updatedAt: new Date().toISOString()
+    });
+    res.json({ message: 'Google Sheet settings updated successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error updating Google Sheet settings' });
+  }
+};
+
+export const testGoogleSheetConnection = async (req: Request, res: Response) => {
+  const { spreadsheetId, clientEmail, privateKey } = req.body;
+  
+  if (!spreadsheetId || !clientEmail || !privateKey) {
+    return res.status(400).json({ message: 'Missing credentials' });
+  }
+
+  try {
+    const { GoogleSpreadsheet } = await import('google-spreadsheet');
+    const { JWT } = await import('google-auth-library');
+
+    const serviceAccountAuth = new JWT({
+      email: clientEmail,
+      key: privateKey.replace(/\\n/g, '\n'),
+      scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+    });
+
+    const doc = new GoogleSpreadsheet(spreadsheetId, serviceAccountAuth);
+    await doc.loadInfo();
+
+    let sheet = doc.sheetsByTitle['Orders'];
+    if (!sheet) {
+      sheet = await doc.addSheet({ 
+        title: 'Orders', 
+        headerValues: [
+          'Order ID', 
+          'Date', 
+          'Customer Name', 
+          'Phone', 
+          'Address', 
+          'Total Amount', 
+          'Payment Status', 
+          'Order Status', 
+          'Items'
+        ] 
+      });
+    }
+
+    await sheet.addRow({
+      'Order ID': 'TEST-123',
+      'Date': new Date().toLocaleString(),
+      'Customer Name': 'Test User',
+      'Phone': '0123456789',
+      'Address': 'Test Address',
+      'Total Amount': 0,
+      'Payment Status': 'pending',
+      'Order Status': 'pending',
+      'Items': 'Test Item (x1)'
+    });
+
+    res.json({ message: 'Connection successful' });
+  } catch (error: any) {
+    console.error('Test connection error:', error);
+    res.status(500).json({ message: error.message || 'Failed to connect to Google Sheet' });
+  }
+};

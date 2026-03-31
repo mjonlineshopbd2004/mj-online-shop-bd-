@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { db } from '../config/firebase';
 import { Order, OrderStatus, PaymentMethod } from '../models/types';
+import { syncOrderToSheet } from '../services/googleSheetService';
 
 export const createOrder = async (req: any, res: Response) => {
   const { items, customerName, phone, address, paymentMethod, deliveryArea, discount, total, subtotal, deliveryCharge } = req.body;
@@ -29,6 +30,9 @@ export const createOrder = async (req: any, res: Response) => {
     };
 
     await db.collection('orders').doc(newOrder.id).set(newOrder);
+
+    // Sync to Google Sheet
+    syncOrderToSheet(newOrder).catch(err => console.error('Sheet sync error:', err));
 
     // Update product stock
     for (const item of items) {
@@ -84,7 +88,12 @@ export const updateOrderStatus = async (req: Request, res: Response) => {
 
     await orderRef.update(updates);
     const updatedDoc = await orderRef.get();
-    res.json({ id: updatedDoc.id, ...updatedDoc.data() });
+    const updatedOrder = { id: updatedDoc.id, ...updatedDoc.data() };
+
+    // Sync to Google Sheet on status update
+    syncOrderToSheet(updatedOrder).catch(err => console.error('Sheet sync error:', err));
+
+    res.json(updatedOrder);
   } catch (error) {
     res.status(500).json({ message: 'Server error updating order' });
   }

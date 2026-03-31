@@ -35,6 +35,7 @@ import AdminCategories from './pages/AdminCategories';
 import AdminTransactions from './pages/AdminTransactions';
 import AdminReviews from './pages/AdminReviews';
 import AdminProductImporter from './pages/AdminProductImporter';
+import AdminGoogleSheetSettings from './pages/AdminGoogleSheetSettings';
 import SplashScreen from './components/SplashScreen';
 import FaviconUpdater from './components/FaviconUpdater';
 import { AnimatePresence, motion } from 'motion/react';
@@ -92,6 +93,7 @@ function AnimatedRoutes() {
               <Route path="/admin/users" element={<AdminUsers />} />
               <Route path="/admin/coupons" element={<AdminCoupons />} />
               <Route path="/admin/import" element={<AdminProductImporter />} />
+              <Route path="/admin/settings/google-sheet" element={<AdminGoogleSheetSettings />} />
               <Route path="/admin/settings" element={<AdminSettings />} />
             </Route>
           </Route>
