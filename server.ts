@@ -2,7 +2,6 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
-import axios from 'axios';
 import https from 'https';
 import { createServer as createViteServer } from 'vite';
 import apiRoutes from './backend/routes';

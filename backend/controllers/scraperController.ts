@@ -1,5 +1,4 @@
 import { Request, Response } from 'express';
-import axios from 'axios';
 import * as cheerio from 'cheerio';
 import { GoogleGenAI, Type } from "@google/genai";
 
@@ -23,7 +22,7 @@ export const scrapeProduct = async (req: Request, res: Response) => {
     console.log('Fetching URL:', url);
     let html = '';
     try {
-      const response = await axios.get(url, {
+      const response = await fetch(url, {
         headers: {
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
           'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
@@ -40,9 +39,14 @@ export const scrapeProduct = async (req: Request, res: Response) => {
           'upgrade-insecure-requests': '1',
           'Referer': 'https://www.google.com/',
         },
-        timeout: 20000
+        signal: AbortSignal.timeout(8000),
       });
-      html = response.data;
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      html = await response.text();
     } catch (fetchError: any) {
       console.error('Direct fetch failed:', fetchError.message);
       
