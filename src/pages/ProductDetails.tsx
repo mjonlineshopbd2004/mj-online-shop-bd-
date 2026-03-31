@@ -191,6 +191,12 @@ export default function ProductDetails() {
               alt={product.name}
               className="w-full h-full object-cover"
               referrerPolicy="no-referrer"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                if (!target.src.includes('picsum.photos')) {
+                  target.src = `https://picsum.photos/seed/${product.id}-${activeImage}/600/800`;
+                }
+              }}
             />
             {product.images.length > 1 && (
               <>
@@ -224,7 +230,18 @@ export default function ProductDetails() {
                   activeImage === idx ? "border-orange-600 shadow-lg" : "border-transparent opacity-60 hover:opacity-100"
                 )}
               >
-                <img src={getProxyUrl(img)} alt="" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                <img 
+                  src={getProxyUrl(img)} 
+                  alt="" 
+                  className="w-full h-full object-cover" 
+                  referrerPolicy="no-referrer" 
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    if (!target.src.includes('picsum.photos')) {
+                      target.src = `https://picsum.photos/seed/${product.id}-thumb-${idx}/200/200`;
+                    }
+                  }}
+                />
               </button>
             ))}
           </div>
@@ -321,7 +338,18 @@ export default function ProductDetails() {
                       )}
                       title={variant.name}
                     >
-                      <img src={getProxyUrl(variant.image)} alt={variant.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                      <img 
+                        src={getProxyUrl(variant.image)} 
+                        alt={variant.name} 
+                        className="w-full h-full object-cover" 
+                        referrerPolicy="no-referrer" 
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          if (!target.src.includes('picsum.photos')) {
+                            target.src = `https://picsum.photos/seed/${product.id}-variant-${idx}/100/100`;
+                          }
+                        }}
+                      />
                       {selectedColor === variant.name && (
                         <div className="absolute bottom-0 right-0 bg-orange-500 text-white p-0.5 rounded-tl-lg">
                           <Check className="h-3 w-3" />

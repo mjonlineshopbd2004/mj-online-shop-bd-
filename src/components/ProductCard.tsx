@@ -51,6 +51,12 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           alt={product.name}
           className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
           referrerPolicy="no-referrer"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            if (!target.src.includes('picsum.photos')) {
+              target.src = `https://picsum.photos/seed/${product.id}/600/800`;
+            }
+          }}
         />
         
         {/* Badges */}

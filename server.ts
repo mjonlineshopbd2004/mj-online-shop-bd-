@@ -2,6 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
+import axios from 'axios';
+import https from 'https';
 import { createServer as createViteServer } from 'vite';
 import apiRoutes from './backend/routes';
 import firebaseConfig from './firebase-applet-config.json';
@@ -42,22 +44,9 @@ async function startServer() {
     if (imageUrl.startsWith('//')) imageUrl = 'https:' + imageUrl;
     if (!imageUrl.startsWith('http')) imageUrl = 'https://' + imageUrl;
 
-    const axios = (await import('axios')).default;
-    const https = await import('https');
-
-    const serveFallback = async () => {
-      try {
-        const fallbackUrl = `https://picsum.photos/seed/${encodeURIComponent(imageUrl.slice(-10))}/600/800`;
-        const fallbackResponse = await axios.get(fallbackUrl, {
-          responseType: 'arraybuffer',
-          timeout: 10000
-        });
-        res.setHeader('Content-Type', 'image/jpeg');
-        res.setHeader('Cache-Control', 'public, max-age=86400');
-        res.send(Buffer.from(fallbackResponse.data));
-      } catch (e) {
-        res.status(404).send('Image not found and fallback failed');
-      }
+    const serveFallback = () => {
+      const fallbackUrl = `https://picsum.photos/seed/${encodeURIComponent(imageUrl.slice(-10))}/600/800`;
+      res.redirect(fallbackUrl);
     };
 
     try {
@@ -69,44 +58,35 @@ async function startServer() {
           origin = '';
         }
 
-        return await axios.get(url, {
-          responseType: 'arraybuffer',
-          httpsAgent: new https.Agent({ rejectUnauthorized: false }),
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-            'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
-            'Accept-Language': 'en-US,en;q=0.9',
-            'Cache-Control': 'no-cache',
-            'Pragma': 'no-cache',
-            'Referer': referer || origin,
-          },
-          timeout: 20000,
-          maxRedirects: 5,
-          validateStatus: (status) => status < 500,
+        const headers: Record<string, string> = {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+          'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
+          'Accept-Language': 'en-US,en;q=0.9',
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache',
+          'Referer': referer || origin,
+        };
+
+        const response = await fetch(url, {
+          headers,
+          signal: AbortSignal.timeout(8000),
+          redirect: 'follow',
         });
+
+        return response;
       };
 
       let referer = '';
-      let urlObj;
-      try {
-        urlObj = new URL(imageUrl);
-        if (imageUrl.includes('alicdn.com') || imageUrl.includes('1688.com')) {
-          referer = 'https://www.1688.com/';
-        } else if (imageUrl.includes('amazon.com')) {
-          referer = 'https://www.amazon.com/';
-        } else if (imageUrl.includes('daraz.com')) {
-          referer = 'https://www.daraz.com.bd/';
-        } else if (imageUrl.includes('slatic.net') || imageUrl.includes('laz-img')) {
-          referer = 'https://www.daraz.com.bd/';
-        } else if (imageUrl.includes('facebook.com') || imageUrl.includes('fbcdn.net')) {
-          referer = 'https://www.facebook.com/';
-        } else if (imageUrl.includes('googleusercontent.com')) {
-          referer = 'https://www.google.com/';
-        } else {
-          referer = urlObj.origin;
-        }
-      } catch (e) {
-        referer = '';
+      if (imageUrl.includes('alicdn.com') || imageUrl.includes('1688.com')) {
+        referer = 'https://www.1688.com/';
+      } else if (imageUrl.includes('amazon.com')) {
+        referer = 'https://www.amazon.com/';
+      } else if (imageUrl.includes('daraz.com') || imageUrl.includes('slatic.net') || imageUrl.includes('laz-img')) {
+        referer = 'https://www.daraz.com.bd/';
+      } else if (imageUrl.includes('facebook.com') || imageUrl.includes('fbcdn.net')) {
+        referer = 'https://www.facebook.com/';
+      } else if (imageUrl.includes('googleusercontent.com')) {
+        referer = 'https://www.google.com/';
       }
 
       let response = await fetchImage(imageUrl, referer);
@@ -118,12 +98,11 @@ async function startServer() {
         
         for (const subdomain of subdomains) {
           if (subdomain === currentSubdomain) continue;
-          const fallbackUrl = imageUrl.replace(currentSubdomain || 'cbu01.alicdn.com', subdomain);
-          console.log(`Proxy: 404 on ${currentSubdomain}, trying fallback: ${subdomain}`);
+          const altUrl = imageUrl.replace(currentSubdomain || 'cbu01.alicdn.com', subdomain);
           try {
-            const fallbackResponse = await fetchImage(fallbackUrl, referer);
-            if (fallbackResponse.status === 200) {
-              response = fallbackResponse;
+            const altResponse = await fetchImage(altUrl, referer);
+            if (altResponse.ok) {
+              response = altResponse;
               break;
             }
           } catch (e) {
@@ -132,18 +111,20 @@ async function startServer() {
         }
       }
 
-      if (response.status !== 200) {
+      if (!response.ok) {
         console.error(`Image proxy error: Source returned ${response.status} for URL: ${imageUrl}`);
-        return await serveFallback();
+        return serveFallback();
       }
 
-      const contentType = response.headers['content-type'] || 'image/jpeg';
+      const contentType = response.headers.get('content-type') || 'image/jpeg';
       res.setHeader('Content-Type', contentType);
       res.setHeader('Cache-Control', 'public, max-age=86400'); // Cache for 24h
-      res.send(Buffer.from(response.data));
+      
+      const arrayBuffer = await response.arrayBuffer();
+      res.send(Buffer.from(arrayBuffer));
     } catch (error: any) {
       console.error('Image proxy error:', error.message, 'URL:', imageUrl);
-      await serveFallback();
+      serveFallback();
     }
   });
   
@@ -205,7 +186,11 @@ async function startServer() {
 
   // Health Check
   app.get('/api/health', (req, res) => {
-    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+    res.json({ status: 'ok', timestamp: new Date().toISOString(), vercel: !!process.env.VERCEL });
+  });
+
+  app.get('/api/test-proxy', (req, res) => {
+    res.json({ message: 'Proxy is reachable', env: process.env.NODE_ENV, vercel: !!process.env.VERCEL });
   });
 
   // Vite middleware for development
