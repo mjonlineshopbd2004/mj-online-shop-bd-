@@ -233,12 +233,18 @@ async function startServer() {
     });
   });
 
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-    console.log(`API documentation available at http://localhost:${PORT}/api/health`);
-  });
+  // Only listen if not in a serverless environment (like Vercel)
+  if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`Server running on http://localhost:${PORT}`);
+      console.log(`API documentation available at http://localhost:${PORT}/api/health`);
+    });
+  }
+  
+  return app;
 }
 
-startServer().catch((err) => {
-  console.error('Failed to start server:', err);
-});
+export const appPromise = startServer();
+
+// For Vercel, we need to export the app directly
+// Since startServer is async, we'll handle it in api/index.ts
