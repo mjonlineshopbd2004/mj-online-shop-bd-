@@ -6,9 +6,14 @@ import express from 'express';
 import cors from 'cors';
 import path from 'path';
 import https from 'https';
+import os from 'os';
 import { createServer as createViteServer } from 'vite';
 import apiRoutes from './backend/routes';
-import firebaseConfig from './firebase-applet-config.json';
+import fs from 'fs';
+
+// Load firebase config manually to avoid ESM import issues with JSON
+const firebaseConfigPath = path.join(process.cwd(), 'firebase-applet-config.json');
+const firebaseConfig = JSON.parse(fs.readFileSync(firebaseConfigPath, 'utf8'));
 
 import * as scraperController from './backend/controllers/scraperController';
 import { authenticate } from './backend/middleware/auth';
@@ -22,13 +27,29 @@ async function startServer() {
 
   // Standard Middlewares
   app.use(cors());
-  app.use(express.json());
-  app.use(express.urlencoded({ extended: true }));
+  app.use(express.json({ limit: '50mb' }));
+  app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+
+  // Log request details including size for debugging
+  app.use((req, res, next) => {
+    const contentLength = req.headers['content-length'];
+    if (contentLength) {
+      const sizeMB = (parseInt(contentLength) / (1024 * 1024)).toFixed(2);
+      if (req.url.includes('/upload')) {
+        console.log(`[${new Date().toISOString()}] ${req.method} ${req.url} - Size: ${sizeMB} MB`);
+      }
+    }
+    next();
+  });
 
   console.log('GEMINI_API_KEY present:', !!process.env.GEMINI_API_KEY);
 
   // API Routes
-  app.use('/api', apiRoutes);
+  console.log('Registering API routes...');
+  app.use('/api', (req, res, next) => {
+    console.log(`API Request: ${req.method} ${req.url}`);
+    next();
+  }, apiRoutes);
 
   // Scraper Route (Directly in server.ts for priority and reliability)
   app.post('/api/scraper/product', authenticate, scraperController.scrapeProduct);
@@ -182,7 +203,9 @@ async function startServer() {
   app.use(express.static(path.join(process.cwd(), 'public')));
   
   // Serve Uploads
-  app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
+  const isVercel = !!process.env.VERCEL;
+  const uploadDir = isVercel ? os.tmpdir() : path.join(process.cwd(), 'uploads');
+  app.use('/uploads', express.static(uploadDir));
 
   // Health Check
   app.get('/api/health', (req, res) => {
@@ -211,11 +234,30 @@ async function startServer() {
 
   // Error Handler
   app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-    console.error('Server error:', err);
-    res.status(err.status || 500).json({
-      message: err.message || 'Internal server error',
-      error: process.env.NODE_ENV === 'development' ? err : {}
-    });
+    console.error(`[${new Date().toISOString()}] Server error:`, err);
+    
+    // Always return JSON for API requests
+    if (req.path.startsWith('/api/')) {
+      const status = err.status || err.statusCode || 500;
+      
+      // Handle Multer errors specifically
+      if (err.name === 'MulterError') {
+        return res.status(400).json({
+          message: 'File upload error',
+          error: err.message,
+          code: err.code
+        });
+      }
+
+      return res.status(status).json({
+        message: err.message || 'Internal server error',
+        error: process.env.NODE_ENV === 'development' ? err : {},
+        path: req.path
+      });
+    }
+
+    // For non-API requests, let the default handler or Vite handle it
+    next(err);
   });
 
   // Only listen if not in a serverless environment (like Vercel)
@@ -229,7 +271,13 @@ async function startServer() {
   return app;
 }
 
-export const appPromise = startServer();
+let cachedApp: any = null;
+
+export const appPromise = (async () => {
+  if (cachedApp) return cachedApp;
+  cachedApp = await startServer();
+  return cachedApp;
+})();
 
 // For Vercel, we need to export the app directly
 // Since startServer is async, we'll handle it in api/index.ts

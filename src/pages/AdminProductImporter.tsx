@@ -162,10 +162,11 @@ export default function AdminProductImporter() {
 
       const newProduct = {
         name: product.title,
-        price: product.price,
-        description: product.description,
-        images: product.images,
-        category: product.category,
+        price: Number(product.price) || 0,
+        discountPrice: null,
+        description: product.description || '',
+        images: product.images || [],
+        category: product.category || '',
         stock: 100,
         isFeatured: false,
         isTrending: false,

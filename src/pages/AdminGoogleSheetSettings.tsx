@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Save, FileSpreadsheet, AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
+import { Save, FileSpreadsheet, AlertCircle, CheckCircle2, Loader2, RefreshCw, Copy, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
-import { auth } from '../lib/firebase';
+import { cn } from '../lib/utils';
+import { auth, db } from '../lib/firebase';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 interface GoogleSheetSettings {
   spreadsheetId: string;
   clientEmail: string;
   privateKey: string;
+  driveFolderId: string;
   enabled: boolean;
 }
 
@@ -16,11 +19,14 @@ const AdminGoogleSheetSettings: React.FC = () => {
     spreadsheetId: '',
     clientEmail: '',
     privateKey: '',
+    driveFolderId: '',
     enabled: false
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
 
   useEffect(() => {
     fetchSettings();
@@ -28,15 +34,10 @@ const AdminGoogleSheetSettings: React.FC = () => {
 
   const fetchSettings = async () => {
     try {
-      const idToken = await auth.currentUser?.getIdToken();
-      const response = await fetch('/api/admin/settings/google-sheet', {
-        headers: {
-          'Authorization': `Bearer ${idToken}`
-        }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setSettings(data);
+      const settingsRef = doc(db, 'settings', 'googleSheet');
+      const settingsDoc = await getDoc(settingsRef);
+      if (settingsDoc.exists()) {
+        setSettings(settingsDoc.data() as GoogleSheetSettings);
       }
     } catch (error) {
       console.error('Error fetching settings:', error);
@@ -78,28 +79,80 @@ const AdminGoogleSheetSettings: React.FC = () => {
     }
   };
 
+  const handleSyncProducts = async () => {
+    if (!settings.spreadsheetId || !settings.clientEmail || !settings.privateKey) {
+      toast.error('Please provide and save credentials before syncing');
+      return;
+    }
+
+    if (!window.confirm('This will update your products based on the data in the "Products" sheet. Continue?')) {
+      return;
+    }
+
+    setSyncing(true);
+    try {
+      const idToken = await auth.currentUser?.getIdToken();
+      const response = await fetch('/api/admin/settings/google-sheet/sync-products', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${idToken}`
+        }
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        toast.success(data.message);
+      } else {
+        throw new Error(data.message || 'Sync failed');
+      }
+    } catch (error: any) {
+      console.error('Sync error:', error);
+      toast.error(`Sync failed: ${error.message}`);
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  const handlePasteJson = (e: React.ClipboardEvent<HTMLTextAreaElement | HTMLInputElement>) => {
+    const text = e.clipboardData.getData('text');
+    try {
+      // Try to parse the text as JSON
+      const json = JSON.parse(text.trim());
+      
+      // Check for common Google Service Account fields
+      if (json.client_email || json.private_key || json.spreadsheetId) {
+        setSettings(prev => ({
+          ...prev,
+          clientEmail: json.client_email || prev.clientEmail,
+          privateKey: json.private_key || prev.privateKey,
+          spreadsheetId: json.spreadsheet_id || json.spreadsheetId || prev.spreadsheetId
+        }));
+        
+        if (json.client_email && json.private_key) {
+          toast.success('Credentials extracted from JSON');
+          e.preventDefault();
+        }
+      }
+    } catch (err) {
+      // Not a valid JSON, let it paste normally
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
     try {
-      const idToken = await auth.currentUser?.getIdToken();
-      const response = await fetch('/api/admin/settings/google-sheet', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${idToken}`
-        },
-        body: JSON.stringify(settings)
+      // Save directly to Firestore using client-side SDK to avoid backend permission issues
+      const settingsRef = doc(db, 'settings', 'googleSheet');
+      await setDoc(settingsRef, {
+        ...settings,
+        updatedAt: new Date().toISOString()
       });
-
-      if (response.ok) {
-        toast.success('Settings updated successfully');
-      } else {
-        throw new Error('Failed to update settings');
-      }
-    } catch (error) {
+      
+      toast.success('Settings updated successfully');
+    } catch (error: any) {
       console.error('Error updating settings:', error);
-      toast.error('Failed to update settings');
+      toast.error(`Failed to update settings: ${error.message}`);
     } finally {
       setSaving(false);
     }
@@ -150,85 +203,316 @@ const AdminGoogleSheetSettings: React.FC = () => {
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           <div className="grid grid-cols-1 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Spreadsheet ID
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-sm font-medium text-gray-700">
+                  Spreadsheet ID
+                </label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const helpText = `1. Open your Google Sheet.\n2. Look at the URL in your browser.\n3. Copy the long part between "/d/" and "/edit".\nExample: .../d/1aBcDeFgHiJkLmNoPqRsTuVwXyZ/edit\nID is: 1aBcDeFgHiJkLmNoPqRsTuVwXyZ`;
+                    alert(helpText);
+                  }}
+                  className="text-xs text-orange-600 hover:underline flex items-center gap-1"
+                >
+                  <AlertCircle className="w-3 h-3" />
+                  How to find ID?
+                </button>
+              </div>
               <input
                 type="text"
                 required
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                className={cn(
+                  "w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent",
+                  settings.spreadsheetId && settings.spreadsheetId.length < 40 ? "border-orange-300 bg-orange-50" : "border-gray-300"
+                )}
                 placeholder="e.g. 1aBcDeFgHiJkLmNoPqRsTuVwXyZ"
-                value={settings.spreadsheetId}
+                value={settings.spreadsheetId || ''}
                 onChange={(e) => setSettings({ ...settings, spreadsheetId: e.target.value })}
               />
+              {settings.spreadsheetId && settings.spreadsheetId.length < 40 && (
+                <p className="mt-1 text-xs text-orange-600 font-medium flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3" />
+                  This ID seems too short ({settings.spreadsheetId.length} chars). A standard ID is 44 characters.
+                </p>
+              )}
               <p className="mt-1 text-xs text-gray-500">
                 Found in the URL of your Google Sheet: docs.google.com/spreadsheets/d/<strong>[ID]</strong>/edit
               </p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Service Account Email (Client Email)
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-sm font-medium text-gray-700">
+                  Google Drive Folder ID (for Image/Video Uploads)
+                </label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const helpText = `1. Open your Google Drive folder.\n2. Look at the URL in your browser.\n3. Copy the long part after "/folders/".\nExample: .../folders/1aBcDeFgHiJkLmNoPqRsTuVwXyZ\nID is: 1aBcDeFgHiJkLmNoPqRsTuVwXyZ`;
+                    alert(helpText);
+                  }}
+                  className="text-xs text-orange-600 hover:underline flex items-center gap-1"
+                >
+                  <AlertCircle className="w-3 h-3" />
+                  How to find Folder ID?
+                </button>
+              </div>
+              <input
+                type="text"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                placeholder="e.g. 1aBcDeFgHiJkLmNoPqRsTuVwXyZ"
+                value={settings.driveFolderId || ''}
+                onChange={(e) => setSettings({ ...settings, driveFolderId: e.target.value })}
+              />
+              <p className="mt-1 text-xs text-gray-500">
+                Found in the URL of your Google Drive folder: drive.google.com/drive/folders/<strong>[ID]</strong>
+              </p>
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-sm font-medium text-gray-700">
+                  Service Account Email (Client Email)
+                </label>
+                {settings.clientEmail && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText(settings.clientEmail);
+                      toast.success('Email copied to clipboard');
+                    }}
+                    className="text-xs text-orange-600 hover:underline flex items-center gap-1"
+                  >
+                    <Copy className="w-3 h-3" />
+                    Copy Email
+                  </button>
+                )}
+              </div>
               <input
                 type="email"
                 required
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                 placeholder="your-service-account@project-id.iam.gserviceaccount.com"
-                value={settings.clientEmail}
+                value={settings.clientEmail || ''}
                 onChange={(e) => setSettings({ ...settings, clientEmail: e.target.value })}
+                onPaste={handlePasteJson}
               />
+              <p className="mt-1 text-xs text-gray-500">
+                This is the email address you must share your Google Sheet with.
+              </p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Private Key
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-sm font-medium text-gray-700">
+                  Private Key
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setShowHelp(true)}
+                  className="text-xs text-orange-600 hover:underline flex items-center gap-1"
+                >
+                  <AlertCircle className="w-3 h-3" />
+                  Where to find this?
+                </button>
+                {settings.privateKey && (
+                  <button
+                    type="button"
+                    onClick={() => setSettings({ ...settings, privateKey: '' })}
+                    className="text-xs text-red-600 hover:underline ml-auto mr-2"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
               <textarea
                 required
                 rows={5}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent font-mono text-xs"
                 placeholder="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----"
-                value={settings.privateKey}
+                value={settings.privateKey || ''}
                 onChange={(e) => setSettings({ ...settings, privateKey: e.target.value })}
+                onPaste={handlePasteJson}
               />
               <p className="mt-1 text-xs text-gray-500">
-                Include the full key including the BEGIN and END lines.
+                Include the full key including the BEGIN and END lines. You can also paste the <strong>entire JSON file</strong> content here.
               </p>
             </div>
           </div>
 
-          <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 flex gap-3">
-            <AlertCircle className="w-5 h-5 text-blue-600 shrink-0" />
-            <div className="text-sm text-blue-800">
-              <p className="font-semibold mb-1">Setup Instructions:</p>
-              <ol className="list-decimal ml-4 space-y-1">
-                <li>Create a project in Google Cloud Console.</li>
-                <li>Enable the Google Sheets API.</li>
-                <li>Create a Service Account and download the JSON key.</li>
-                <li>Copy the <code>client_email</code> and <code>private_key</code> from the JSON.</li>
-                <li><strong>Important:</strong> Share your Google Sheet with the Service Account email address with "Editor" permissions.</li>
+          {showHelp && (
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="bg-white rounded-xl max-w-2xl w-full p-6 shadow-xl"
+              >
+                <h3 className="text-xl font-bold mb-4">Finding your Private Key</h3>
+                <div className="space-y-4">
+                  <p className="text-gray-600">
+                    Open your downloaded Service Account JSON file. Look for the <code>"private_key"</code> field. It should look like this:
+                  </p>
+                  <div className="bg-gray-900 text-gray-300 p-4 rounded-lg font-mono text-xs overflow-x-auto">
+                    <pre>
+{`{
+  "type": "service_account",
+  "project_id": "your-project-id",
+  "private_key_id": "40-character-id",
+  "private_key": "-----BEGIN PRIVATE KEY-----\\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASC...\\n-----END PRIVATE KEY-----\\n",
+  "client_email": "your-service-account@...",
+  ...
+}`}
+                    </pre>
+                  </div>
+                  <div className="bg-orange-50 border border-orange-100 p-4 rounded-lg">
+                    <p className="text-sm text-orange-800 font-medium">
+                      Tip: You can copy the ENTIRE content of the JSON file and paste it into the "Private Key" or "Client Email" field above. The app will automatically extract the correct values for you!
+                    </p>
+                  </div>
+                  <div className="flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() => setShowHelp(false)}
+                      className="px-6 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors"
+                    >
+                      Got it
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          )}
+
+          <div className="bg-orange-50 border border-orange-200 rounded-xl p-6 space-y-4">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="w-6 h-6 text-orange-600 shrink-0 mt-0.5" />
+              <div>
+                <h3 className="font-bold text-orange-900">Critical: Permission Required</h3>
+                <p className="text-sm text-orange-800 mt-1">
+                  Google Sheets will block access unless you explicitly share your spreadsheet with the Service Account email.
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-white/50 rounded-lg p-4 space-y-3">
+              <p className="text-sm font-medium text-gray-800">Follow these steps to fix the "Access Denied" error:</p>
+              <ol className="list-decimal ml-5 text-sm text-gray-700 space-y-2">
+                <li>
+                  Open your Google Sheet: 
+                  {settings.spreadsheetId ? (
+                    <a 
+                      href={`https://docs.google.com/spreadsheets/d/${settings.spreadsheetId}`} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="ml-2 text-orange-600 hover:underline inline-flex items-center gap-1"
+                    >
+                      Open Sheet <ExternalLink className="w-3 h-3" />
+                    </a>
+                  ) : (
+                    <span className="ml-1 text-gray-400 italic">(Enter Spreadsheet ID first)</span>
+                  )}
+                </li>
+                <li>Click the <span className="font-bold text-blue-600">Share</span> button at the top right.</li>
+                <li>
+                  Paste this email into the "Add people and groups" box:
+                  <div className="mt-2 flex items-center gap-2">
+                    <code className="bg-gray-100 px-2 py-1 rounded text-xs border border-gray-200 break-all">
+                      {settings.clientEmail || 'your-service-account-email@...'}
+                    </code>
+                    {settings.clientEmail && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          navigator.clipboard.writeText(settings.clientEmail);
+                          toast.success('Email copied');
+                        }}
+                        className="p-1.5 bg-white border border-gray-200 rounded hover:bg-gray-50 text-gray-600 transition-colors"
+                        title="Copy Email"
+                      >
+                        <Copy className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+                </li>
+                <li>Ensure the role is set to <span className="font-bold text-gray-900">Editor</span>.</li>
+                <li>Uncheck "Notify people" and click <span className="font-bold text-blue-600">Send</span> or <span className="font-bold text-blue-600">Share</span>.</li>
+                <li>
+                  <span className="font-bold text-orange-900">For Google Drive:</span> Repeat the same sharing process for your Google Drive folder:
+                  {settings.driveFolderId ? (
+                    <a 
+                      href={`https://drive.google.com/drive/folders/${settings.driveFolderId}`} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="ml-2 text-orange-600 hover:underline inline-flex items-center gap-1"
+                    >
+                      Open Drive Folder <ExternalLink className="w-3 h-3" />
+                    </a>
+                  ) : (
+                    <span className="ml-1 text-gray-400 italic">(Enter Folder ID first)</span>
+                  )}
+                </li>
+                <li>Also, ensure the <span className="font-bold">Google Sheets API</span> and <span className="font-bold">Google Drive API</span> are enabled in your Google Cloud Console.</li>
               </ol>
             </div>
           </div>
 
           <div className="flex justify-between items-center pt-4">
-            <button
-              type="button"
-              onClick={handleTestConnection}
-              disabled={testing || saving}
-              className="flex items-center gap-2 px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 transition-colors"
-            >
-              {testing ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
-              ) : (
-                <CheckCircle2 className="w-5 h-5 text-green-600" />
-              )}
-              Test Connection
-            </button>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={async () => {
+                  try {
+                    const text = await navigator.clipboard.readText();
+                    const json = JSON.parse(text.trim());
+                    if (json.client_email && json.private_key) {
+                      setSettings(prev => ({
+                        ...prev,
+                        clientEmail: json.client_email,
+                        privateKey: json.private_key
+                      }));
+                      toast.success('Credentials extracted from JSON');
+                    } else {
+                      toast.error('Clipboard does not contain valid Service Account JSON');
+                    }
+                  } catch (err) {
+                    toast.error('Clipboard does not contain valid JSON');
+                  }
+                }}
+                className="text-xs px-3 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
+              >
+                Paste Entire JSON
+              </button>
+              <button
+                type="button"
+                onClick={handleTestConnection}
+                disabled={testing || saving || syncing}
+                className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 transition-colors"
+              >
+                {testing ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <CheckCircle2 className="w-5 h-5 text-green-600" />
+                )}
+                Test Connection
+              </button>
+              <button
+                type="button"
+                onClick={handleSyncProducts}
+                disabled={syncing || testing || saving}
+                className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 transition-colors"
+              >
+                {syncing ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <RefreshCw className="w-5 h-5 text-blue-600" />
+                )}
+                Sync Products
+              </button>
+            </div>
             <button
               type="submit"
-              disabled={saving || testing}
+              disabled={saving || testing || syncing}
               className="flex items-center gap-2 px-6 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:opacity-50 transition-colors"
             >
               {saving ? (

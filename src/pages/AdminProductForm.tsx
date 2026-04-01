@@ -314,9 +314,9 @@ export default function AdminProductForm() {
       const { id: _, ...restData } = formData;
       const data = {
         ...restData,
-        price: Number(formData.price),
-        discountPrice: formData.discountPrice ? Number(formData.discountPrice) : undefined,
-        stock: Number(formData.stock),
+        price: Number(formData.price) || 0,
+        discountPrice: (formData.discountPrice !== undefined && formData.discountPrice !== null && formData.discountPrice !== '') ? Number(formData.discountPrice) : null,
+        stock: Number(formData.stock) || 0,
         updatedAt: new Date().toISOString(),
       };
 
@@ -467,8 +467,8 @@ export default function AdminProductForm() {
                 <input
                   type="number"
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-6 py-4 focus:outline-none focus:border-emerald-500 transition-all font-bold text-white"
-                  value={formData.discountPrice || ''}
-                  onChange={(e) => setFormData({ ...formData, discountPrice: e.target.value ? Number(e.target.value) : undefined })}
+                  value={formData.discountPrice ?? ''}
+                  onChange={(e) => setFormData({ ...formData, discountPrice: e.target.value ? Number(e.target.value) : null })}
                 />
               </div>
             </div>
@@ -502,7 +502,7 @@ export default function AdminProductForm() {
                         type="text"
                         placeholder="Size"
                         className="w-20 bg-white/5 border border-white/10 rounded-xl px-3 py-2 focus:outline-none focus:border-emerald-500 transition-all font-bold text-white text-xs"
-                        value={size}
+                        value={size || ''}
                         onChange={(e) => updateSize(idx, e.target.value)}
                       />
                       <button
@@ -539,7 +539,7 @@ export default function AdminProductForm() {
                         type="text"
                         placeholder="Color"
                         className="w-24 bg-white/5 border border-white/10 rounded-xl px-3 py-2 focus:outline-none focus:border-emerald-500 transition-all font-bold text-white text-xs"
-                        value={color}
+                        value={color || ''}
                         onChange={(e) => updateColor(idx, e.target.value)}
                       />
                       <button
@@ -586,7 +586,7 @@ export default function AdminProductForm() {
                           type="text"
                           placeholder="e.g. Midnight Black"
                           className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 focus:outline-none focus:border-emerald-500 transition-all font-bold text-white text-sm"
-                          value={variant.name}
+                          value={variant.name || ''}
                           onChange={(e) => updateColorVariant(idx, 'name', e.target.value)}
                         />
                       </div>
@@ -612,7 +612,7 @@ export default function AdminProductForm() {
                           type="text"
                           placeholder="Or paste image URL"
                           className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 focus:outline-none focus:border-emerald-500 transition-all font-bold text-white text-xs"
-                          value={variant.image}
+                          value={variant.image || ''}
                           onChange={(e) => updateColorVariant(idx, 'image', e.target.value)}
                         />
                       </div>
@@ -648,7 +648,7 @@ export default function AdminProductForm() {
                         type="text"
                         placeholder="e.g. Material"
                         className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-emerald-500 transition-all font-bold text-white text-sm"
-                        value={spec.key}
+                        value={spec.key || ''}
                         onChange={(e) => updateSpecification(idx, 'key', e.target.value)}
                       />
                     </div>
@@ -658,7 +658,7 @@ export default function AdminProductForm() {
                         type="text"
                         placeholder="e.g. Leather"
                         className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-emerald-500 transition-all font-bold text-white text-sm"
-                        value={spec.value}
+                        value={spec.value || ''}
                         onChange={(e) => updateSpecification(idx, 'value', e.target.value)}
                       />
                     </div>

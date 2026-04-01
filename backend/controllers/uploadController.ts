@@ -2,12 +2,59 @@ import { Request, Response } from 'express';
 import path from 'path';
 import fs from 'fs';
 import { googleDriveService } from '../services/googleDriveService';
+import { db } from '../config/firebase';
+
+let lastConfigFetch = 0;
+const CONFIG_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+const ensureDriveConfigured = async () => {
+  try {
+    const now = Date.now();
+    if (googleDriveService.isConfigured() && (now - lastConfigFetch < CONFIG_CACHE_TTL)) {
+      return;
+    }
+
+    const settingsDoc = await db.collection('settings').doc('googleSheet').get().catch(async (err: any) => {
+      console.warn('Primary Firestore fetch failed, trying fallback to default database:', err.message);
+      try {
+        const { getFirestore: getAdminFirestore } = await import('firebase-admin/firestore');
+        const defaultDb = getAdminFirestore();
+        return await defaultDb.collection('settings').doc('googleSheet').get();
+      } catch (fallbackErr: any) {
+        console.error('Fallback Firestore fetch also failed:', fallbackErr.message);
+        return { exists: false } as any;
+      }
+    });
+
+    if (settingsDoc.exists) {
+      const { clientEmail, privateKey, driveFolderId } = settingsDoc.data() || {};
+      if (clientEmail && privateKey) {
+        googleDriveService.setConfig(clientEmail, privateKey, driveFolderId || '');
+        lastConfigFetch = now;
+      }
+    } else {
+      // If Firestore fetch failed or doc doesn't exist, ensure we're at least using env vars
+      console.log('Google Drive settings not found in Firestore, ensuring environment variables are used');
+      if (!googleDriveService.isConfigured()) {
+        // The service constructor already calls initializeFromEnv, but we can trigger it again or log status
+        console.log('Google Drive service is not configured via env either.');
+      }
+    }
+  } catch (error) {
+    console.error('Error fetching Google Drive settings for upload:', error);
+  }
+};
 
 export const uploadFile = async (req: Request, res: Response) => {
+  console.log('uploadFile controller reached');
   try {
     if (!req.file) {
+      console.warn('No file in request');
       return res.status(400).json({ message: 'No file uploaded' });
     }
+    console.log('File received:', req.file.originalname, 'Size:', req.file.size);
+
+    await ensureDriveConfigured();
 
     // If Google Drive is configured, upload to Drive
     if (googleDriveService.isConfigured()) {
@@ -40,11 +87,16 @@ export const uploadFile = async (req: Request, res: Response) => {
 };
 
 export const uploadMultipleFiles = async (req: Request, res: Response) => {
+  console.log('uploadMultipleFiles controller reached');
   try {
     const files = req.files as Express.Multer.File[];
     if (!files || files.length === 0) {
+      console.warn('No files in request');
       return res.status(400).json({ message: 'No files uploaded' });
     }
+    console.log('Files received:', files.length, 'Total size:', files.reduce((acc, f) => acc + f.size, 0));
+
+    await ensureDriveConfigured();
 
     const fileUrls = [];
 

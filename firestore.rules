@@ -35,9 +35,9 @@ service cloud.firestore {
 
     function isAdmin() {
       return isAuthenticated() && 
-        ((exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin') ||
-         (request.auth.token.email == "mjonlineshopbd@gmail.com" && request.auth.token.email_verified == true));
+        (request.auth.token.email == "mjonlineshopbd@gmail.com" ||
+         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'));
     }
 
     function isOwner(userId) {
@@ -112,6 +112,14 @@ service cloud.firestore {
              (!('smallBanners' in data) || data.smallBanners == null || data.smallBanners is list);
     }
 
+    function isValidGoogleSheetSettings(data) {
+      return (!('spreadsheetId' in data) || data.spreadsheetId is string) &&
+             (!('clientEmail' in data) || data.clientEmail is string) &&
+             (!('privateKey' in data) || data.privateKey is string) &&
+             (!('enabled' in data) || data.enabled is bool) &&
+             (!('updatedAt' in data) || data.updatedAt is string);
+    }
+
     // Rules
     match /users/{userId} {
       allow read: if isOwner(userId) || isAdmin();
@@ -155,8 +163,12 @@ service cloud.firestore {
     }
 
     match /settings/{docId} {
-      allow read: if true;
-      allow write: if isAdmin() && isValidSiteSettings(request.resource.data);
+      allow read: if docId == 'site' || isAdmin();
+      allow write: if isAdmin() && (
+        (docId == 'site' && isValidSiteSettings(request.resource.data)) ||
+        (docId == 'googleSheet' && isValidGoogleSheetSettings(request.resource.data)) ||
+        (docId != 'site' && docId != 'googleSheet')
+      );
     }
     
     match /test/connection {

@@ -144,8 +144,9 @@ export const scrapeProduct = async (req: Request, res: Response) => {
     
     // Remove empty elements
     $('*').each((i, el) => {
-      if ($(el).children().length === 0 && !$(el).text().trim() && el.tagName !== 'img') {
-        $(el).remove();
+      const $el = $(el);
+      if ($el.children().length === 0 && !$el.text().trim() && !$el.is('img')) {
+        $el.remove();
       }
     });
 

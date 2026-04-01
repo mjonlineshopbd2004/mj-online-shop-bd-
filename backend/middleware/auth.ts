@@ -1,6 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
 import { auth, db } from '../config/firebase';
-import firebaseConfig from '../../firebase-applet-config.json';
+import fs from 'fs';
+import path from 'path';
+
+// Load firebase config manually to avoid ESM import issues with JSON
+const firebaseConfigPath = path.join(process.cwd(), 'firebase-applet-config.json');
+const firebaseConfig = JSON.parse(fs.readFileSync(firebaseConfigPath, 'utf8'));
 
 export interface AuthRequest extends Request {
   user?: {
@@ -19,6 +24,11 @@ export const authenticate = async (req: AuthRequest, res: Response, next: NextFu
 
   try {
     // Verify the ID token first
+    if (!auth) {
+      console.error('Firebase Auth is not initialized. Check server logs.');
+      return res.status(500).json({ message: 'Authentication service unavailable' });
+    }
+
     console.log('Verifying token for project:', firebaseConfig.projectId);
     console.log('Auth service project ID:', (auth as any).app?.options?.projectId);
     

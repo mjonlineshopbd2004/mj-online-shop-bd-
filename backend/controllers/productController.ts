@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { db } from '../config/firebase';
 import { Product } from '../models/types';
+import { syncProductToSheet } from '../services/googleSheetService';
 
 export const createProduct = async (req: Request, res: Response) => {
   const { name, description, price, discountPrice, category, images, stock } = req.body;
@@ -25,6 +26,10 @@ export const createProduct = async (req: Request, res: Response) => {
     };
 
     await db.collection('products').doc(newProduct.id).set(newProduct);
+    
+    // Sync to Google Sheet
+    await syncProductToSheet(newProduct);
+    
     res.status(201).json(newProduct);
   } catch (error) {
     res.status(500).json({ message: 'Server error creating product' });
@@ -98,7 +103,12 @@ export const updateProduct = async (req: Request, res: Response) => {
 
     await productRef.update(req.body);
     const updatedDoc = await productRef.get();
-    res.json({ id: updatedDoc.id, ...updatedDoc.data() });
+    const updatedProduct = { id: updatedDoc.id, ...updatedDoc.data() };
+    
+    // Sync to Google Sheet
+    await syncProductToSheet(updatedProduct);
+    
+    res.json(updatedProduct);
   } catch (error) {
     res.status(500).json({ message: 'Server error updating product' });
   }

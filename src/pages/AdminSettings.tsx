@@ -441,7 +441,7 @@ export default function AdminSettings() {
                 />
                 <input
                   type="color"
-                  value={settings.primaryColor}
+                  value={settings.primaryColor || '#10b981'}
                   onChange={(e) => setSettings({ ...settings, primaryColor: e.target.value })}
                   className="w-12 h-12 bg-transparent border-none cursor-pointer"
                 />
