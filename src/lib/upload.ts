@@ -62,7 +62,8 @@ export const uploadFile = async (file: File, idToken: string): Promise<string | 
     const response = await fetch('/api/upload/single', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${idToken}`
+        'Authorization': `Bearer ${idToken}`,
+        'X-Requested-With': 'XMLHttpRequest'
       },
       body: formData,
     });
@@ -87,14 +88,20 @@ export const uploadFile = async (file: File, idToken: string): Promise<string | 
     if (!contentType || !contentType.includes('application/json')) {
       const text = await response.text();
       console.error('Expected JSON but received:', text.substring(0, 500));
+      
+      // If it looks like HTML, it might be a bot protection or error page
+      if (text.trim().startsWith('<!doctype html') || text.trim().startsWith('<html')) {
+        throw new Error('Server returned an HTML page instead of JSON. This often happens when a request is blocked by a security layer or if the server is down.');
+      }
+      
       throw new Error('Server returned an invalid response format (not JSON)');
     }
 
     const data = await response.json();
     return data.url;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Upload error:', error);
-    toast.error('Failed to upload file');
+    toast.error(error.message || 'Failed to upload file');
     return null;
   }
 };
@@ -111,7 +118,8 @@ export const uploadMultipleFiles = async (files: FileList | File[], idToken: str
     const response = await fetch('/api/upload/multiple', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${idToken}`
+        'Authorization': `Bearer ${idToken}`,
+        'X-Requested-With': 'XMLHttpRequest'
       },
       body: formData,
     });
@@ -136,14 +144,20 @@ export const uploadMultipleFiles = async (files: FileList | File[], idToken: str
     if (!contentType || !contentType.includes('application/json')) {
       const text = await response.text();
       console.error('Expected JSON but received:', text.substring(0, 500));
+      
+      // If it looks like HTML, it might be a bot protection or error page
+      if (text.trim().startsWith('<!doctype html') || text.trim().startsWith('<html')) {
+        throw new Error('Server returned an HTML page instead of JSON. This often happens when a request is blocked by a security layer or if the server is down.');
+      }
+      
       throw new Error('Server returned an invalid response format (not JSON)');
     }
 
     const data = await response.json();
     return data.urls;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Upload error:', error);
-    toast.error('Failed to upload files');
+    toast.error(error.message || 'Failed to upload files');
     return [];
   }
 };

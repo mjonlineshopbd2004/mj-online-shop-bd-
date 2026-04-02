@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Save, FileSpreadsheet, AlertCircle, CheckCircle2, Loader2, RefreshCw, Copy, ExternalLink, HelpCircle, ShieldCheck } from 'lucide-react';
+import { Save, FileSpreadsheet, AlertCircle, CheckCircle2, Loader2, RefreshCw, Copy, ExternalLink, HelpCircle, ShieldCheck, Image as ImageIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '../lib/utils';
 import { auth, db } from '../lib/firebase';
@@ -26,6 +26,7 @@ const AdminGoogleSheetSettings: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
+  const [testingDrive, setTestingDrive] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
   const [showSyncConfirm, setShowSyncConfirm] = useState(false);
@@ -159,6 +160,28 @@ const AdminGoogleSheetSettings: React.FC = () => {
       }
     } catch (error: any) {
       toast.error(`Debug failed: ${error.message}`);
+    }
+  };
+
+  const handleTestDrive = async () => {
+    setTestingDrive(true);
+    try {
+      const idToken = await auth.currentUser?.getIdToken();
+      const response = await fetch('/api/admin/test-drive', {
+        headers: {
+          'Authorization': `Bearer ${idToken}`
+        }
+      });
+      const data = await response.json();
+      if (response.ok) {
+        toast.success(data.message);
+      } else {
+        toast.error(data.message || 'Drive test failed');
+      }
+    } catch (error: any) {
+      toast.error(`Drive test failed: ${error.message}`);
+    } finally {
+      setTestingDrive(false);
     }
   };
 
@@ -539,20 +562,35 @@ const AdminGoogleSheetSettings: React.FC = () => {
               <button
                 type="button"
                 onClick={handleTestConnection}
-                disabled={testing || saving || syncing}
+                disabled={testing || saving || syncing || testingDrive}
                 className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 transition-colors"
+                title="Test Google Sheet Connection"
               >
                 {testing ? (
                   <Loader2 className="w-5 h-5 animate-spin" />
                 ) : (
                   <CheckCircle2 className="w-5 h-5 text-green-600" />
                 )}
-                Test Connection
+                Test Sheet
+              </button>
+              <button
+                type="button"
+                onClick={handleTestDrive}
+                disabled={testing || saving || syncing || testingDrive}
+                className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 transition-colors"
+                title="Test Google Drive Folder Access"
+              >
+                {testingDrive ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <ImageIcon className="w-5 h-5 text-blue-600" />
+                )}
+                Test Drive
               </button>
               <button
                 type="button"
                 onClick={handleSyncProducts}
-                disabled={syncing || testing || saving}
+                disabled={syncing || testing || saving || testingDrive}
                 className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 transition-colors"
               >
                 {syncing ? (
@@ -565,7 +603,7 @@ const AdminGoogleSheetSettings: React.FC = () => {
               <button
                 type="button"
                 onClick={handleDebugFirebase}
-                disabled={testing || saving || syncing}
+                disabled={testing || saving || syncing || testingDrive}
                 className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 transition-colors"
                 title="Test Firebase Connection"
               >
@@ -575,7 +613,7 @@ const AdminGoogleSheetSettings: React.FC = () => {
             </div>
             <button
               type="submit"
-              disabled={saving || testing || syncing}
+              disabled={saving || testing || syncing || testingDrive}
               className="flex items-center gap-2 px-6 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:opacity-50 transition-colors"
             >
               {saving ? (

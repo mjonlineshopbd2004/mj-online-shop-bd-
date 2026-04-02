@@ -61,7 +61,8 @@ export default function AdminProducts() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${idToken}`
+          'Authorization': `Bearer ${idToken}`,
+          'X-Requested-With': 'XMLHttpRequest'
         },
         body: JSON.stringify({ url: product.sourceUrl })
       });

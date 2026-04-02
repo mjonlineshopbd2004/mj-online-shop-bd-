@@ -58,7 +58,7 @@ export const scrapeProduct = async (req: Request, res: Response) => {
           'upgrade-insecure-requests': '1',
           'Referer': 'https://www.google.com/',
         },
-        signal: AbortSignal.timeout(2000), // Reduced from 3000 to allow more time for Gemini fallback
+        signal: AbortSignal.timeout(10000), // Increased from 2000 to allow more time for slow sites
       });
 
       if (!response.ok) {

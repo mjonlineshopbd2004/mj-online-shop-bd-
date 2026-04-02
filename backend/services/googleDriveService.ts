@@ -2,7 +2,7 @@ import { google } from 'googleapis';
 import fs from 'fs';
 import path from 'path';
 
-const SCOPES = ['https://www.googleapis.com/auth/drive.file'];
+const SCOPES = ['https://www.googleapis.com/auth/drive'];
 
 export class GoogleDriveService {
   private drive: any = null;
@@ -31,6 +31,13 @@ export class GoogleDriveService {
       let privateKey = key.trim().replace(/^["']|["']$/g, '');
       privateKey = privateKey.replace(/\\n/g, '\n');
 
+      // Clean folder ID - extract from URL if user pasted the whole link
+      let cleanFolderId = folderId.trim().replace(/^["']|["']$/g, '');
+      if (cleanFolderId.includes('/folders/')) {
+        const match = cleanFolderId.match(/\/folders\/([a-zA-Z0-9-_]+)/);
+        if (match) cleanFolderId = match[1];
+      }
+
       // Ensure proper PEM format
       if (!privateKey.includes('-----BEGIN PRIVATE KEY-----')) {
         const base64 = privateKey.replace(/\s/g, '');
@@ -45,7 +52,7 @@ export class GoogleDriveService {
       });
 
       this.drive = google.drive({ version: 'v3', auth });
-      this.currentConfig = { email, key: privateKey, folderId };
+      this.currentConfig = { email, key: privateKey, folderId: cleanFolderId };
       console.log('Google Drive Service configured successfully');
     } catch (error) {
       console.error('Error setting Google Drive config:', error);
@@ -95,9 +102,15 @@ export class GoogleDriveService {
 
       // Return the direct download link
       return `https://drive.google.com/uc?export=view&id=${fileId}`;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error uploading to Google Drive:', error);
-      return null;
+      
+      if (error.message?.includes('File not found')) {
+        const folderId = customFolderId || this.currentConfig?.folderId;
+        throw new Error(`Google Drive Folder not found: ${folderId}. Please ensure you have shared this folder with your Service Account email (${this.currentConfig?.email}) and granted "Editor" access.`);
+      }
+      
+      throw error;
     }
   }
 

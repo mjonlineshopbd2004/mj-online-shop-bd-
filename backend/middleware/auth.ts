@@ -5,7 +5,15 @@ import path from 'path';
 
 // Load firebase config manually to avoid ESM import issues with JSON
 const firebaseConfigPath = path.join(process.cwd(), 'firebase-applet-config.json');
-const firebaseConfig = JSON.parse(fs.readFileSync(firebaseConfigPath, 'utf8'));
+let firebaseConfig: any = { projectId: process.env.FIREBASE_PROJECT_ID || process.env.GOOGLE_CLOUD_PROJECT };
+
+try {
+  if (fs.existsSync(firebaseConfigPath)) {
+    firebaseConfig = JSON.parse(fs.readFileSync(firebaseConfigPath, 'utf8'));
+  }
+} catch (e) {
+  console.error('Error loading firebase config in auth middleware:', e);
+}
 
 export interface AuthRequest extends Request {
   user?: {

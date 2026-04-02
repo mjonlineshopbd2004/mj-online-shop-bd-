@@ -66,9 +66,6 @@ async function startServer() {
     next();
   }, apiRoutes);
 
-  // Scraper Route (Directly in server.ts for priority and reliability)
-  app.post('/api/scraper/product', authenticate, scraperController.scrapeProduct);
-
   // Image Proxy (Bypass Referrer restrictions)
   app.get('/api/proxy-image', async (req, res) => {
     let imageUrl = req.query.url as string;

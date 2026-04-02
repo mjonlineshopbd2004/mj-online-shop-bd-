@@ -85,8 +85,15 @@ export const uploadFile = async (req: Request, res: Response) => {
           }
           return res.status(200).json({ url: driveUrl });
         }
-      } catch (driveError) {
+      } catch (driveError: any) {
         console.error('Google Drive upload failed:', driveError);
+        // If it's a specific configuration error, report it to the user
+        if (driveError.message?.includes('Google Drive Folder not found')) {
+          return res.status(400).json({ 
+            message: driveError.message,
+            error: 'Google Drive Configuration Error'
+          });
+        }
       }
     }
 
@@ -130,8 +137,15 @@ export const uploadMultipleFiles = async (req: Request, res: Response) => {
             continue;
           }
         }
-      } catch (driveError) {
+      } catch (driveError: any) {
         console.error('Google Drive upload failed for file:', file.filename, driveError);
+        // If it's a configuration error, we stop and report it
+        if (driveError.message?.includes('Google Drive Folder not found')) {
+          return res.status(400).json({ 
+            message: driveError.message,
+            error: 'Google Drive Configuration Error'
+          });
+        }
       }
       
       fileUrls.push(`/uploads/${file.filename}`);

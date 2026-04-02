@@ -102,11 +102,39 @@ router.get('/admin/test-drive', authenticate, authorize(['admin']), async (req, 
       });
     }
 
-    res.json({ 
-      status: 'success', 
-      message: 'Google Drive service is initialized.',
-      env: envStatus
-    });
+    // Try to list files in the folder to verify access
+    try {
+      const drive = (googleDriveService as any).drive;
+      const folderId = (googleDriveService as any).currentConfig?.folderId;
+      
+      if (!folderId) {
+        throw new Error('Folder ID is missing in configuration');
+      }
+
+      const response = await drive.files.list({
+        q: `'${folderId}' in parents and trashed = false`,
+        pageSize: 1,
+        fields: 'files(id, name)'
+      });
+
+      res.json({ 
+        status: 'success', 
+        message: 'Google Drive service is initialized and folder access is verified.',
+        folderId,
+        filesFound: response.data.files?.length || 0,
+        env: envStatus
+      });
+    } catch (driveError: any) {
+      console.error('Drive access verification failed:', driveError);
+      res.status(400).json({
+        status: 'error',
+        message: `Google Drive is initialized but folder access failed: ${driveError.message}`,
+        details: driveError.message.includes('File not found') 
+          ? `The folder ID "${(googleDriveService as any).currentConfig?.folderId}" was not found. Please ensure you have shared this folder with the service account email: ${(googleDriveService as any).currentConfig?.email}`
+          : driveError.message,
+        env: envStatus
+      });
+    }
   } catch (error: any) {
     console.error('Test drive route error:', error);
     res.status(500).json({ 
