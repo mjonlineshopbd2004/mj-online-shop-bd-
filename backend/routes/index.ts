@@ -1,14 +1,14 @@
 import { Router } from 'express';
-import * as authController from '../controllers/authController';
-import * as productController from '../controllers/productController';
-import * as orderController from '../controllers/orderController';
-import * as adminController from '../controllers/adminController';
-import * as couponController from '../controllers/couponController';
-import * as paymentController from '../controllers/paymentController';
-import * as uploadController from '../controllers/uploadController';
-import * as scraperController from '../controllers/scraperController';
-import { authenticate, authorize } from '../middleware/auth';
-import { upload } from '../middleware/upload';
+import * as authController from '../controllers/authController.ts';
+import * as productController from '../controllers/productController.ts';
+import * as orderController from '../controllers/orderController.ts';
+import * as adminController from '../controllers/adminController.ts';
+import * as couponController from '../controllers/couponController.ts';
+import * as paymentController from '../controllers/paymentController.ts';
+import * as uploadController from '../controllers/uploadController.ts';
+import * as scraperController from '../controllers/scraperController.ts';
+import { authenticate, authorize } from '../middleware/auth.ts';
+import { upload } from '../middleware/upload.ts';
 
 const router = Router();
 
@@ -47,6 +47,34 @@ router.post('/admin/settings/google-sheet/test', authenticate, authorize(['admin
 
 // Top-level sync route to avoid proxy blocks
 router.post('/sync-products', authenticate, authorize(['admin']), adminController.syncProductsFromSheet);
+
+// Firebase Debug Route
+router.get('/admin/test-firebase', authenticate, authorize(['admin']), async (req, res) => {
+  try {
+    const { testFirestoreConnection, getDb } = await import('../config/firebase');
+    const result = await testFirestoreConnection();
+    
+    const db = getDb();
+    const settings = await db.collection('settings').doc('googleSheet').get().catch((e: any) => ({ error: e.message }));
+    
+    res.json({
+      status: result.success ? 'success' : 'error',
+      connectionTest: result,
+      settingsDoc: {
+        exists: (settings as any).exists,
+        error: (settings as any).error,
+        data: (settings as any).exists ? 'REDACTED' : null
+      },
+      env: {
+        projectId: process.env.GOOGLE_CLOUD_PROJECT,
+        hasServiceAccount: !!process.env.FIREBASE_SERVICE_ACCOUNT,
+        hasGoogleCreds: !!process.env.GOOGLE_APPLICATION_CREDENTIALS
+      }
+    });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 // Drive Debug Route
 router.get('/admin/test-drive', authenticate, authorize(['admin']), async (req, res) => {

@@ -8,22 +8,36 @@ import path from 'path';
 import https from 'https';
 import os from 'os';
 import { createServer as createViteServer } from 'vite';
-import apiRoutes from './backend/routes';
+import apiRoutes from './backend/routes/index.ts';
 import fs from 'fs';
 
 // Load firebase config manually to avoid ESM import issues with JSON
 const firebaseConfigPath = path.join(process.cwd(), 'firebase-applet-config.json');
-const firebaseConfig = JSON.parse(fs.readFileSync(firebaseConfigPath, 'utf8'));
+let firebaseConfig: any = {};
+try {
+  if (fs.existsSync(firebaseConfigPath)) {
+    firebaseConfig = JSON.parse(fs.readFileSync(firebaseConfigPath, 'utf8'));
+  } else {
+    console.warn('firebase-applet-config.json not found. Using environment variables.');
+    firebaseConfig = {
+      projectId: process.env.FIREBASE_PROJECT_ID || process.env.GOOGLE_CLOUD_PROJECT
+    };
+  }
+} catch (e) {
+  console.error('Error loading firebase config:', e);
+}
 
-import * as scraperController from './backend/controllers/scraperController';
-import { authenticate } from './backend/middleware/auth';
+import * as scraperController from './backend/controllers/scraperController.ts';
+import { authenticate } from './backend/middleware/auth.ts';
 
 // Set GOOGLE_CLOUD_PROJECT early to ensure Firebase Admin SDK uses the correct project ID
-process.env.GOOGLE_CLOUD_PROJECT = firebaseConfig.projectId;
+if (firebaseConfig.projectId) {
+  process.env.GOOGLE_CLOUD_PROJECT = firebaseConfig.projectId;
+}
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  const PORT = Number(process.env.PORT) || 3000;
 
   // Standard Middlewares
   app.use(cors());

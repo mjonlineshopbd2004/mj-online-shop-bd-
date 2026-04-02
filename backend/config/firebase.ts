@@ -6,7 +6,20 @@ import path from 'path';
 
 // Load firebase config manually to avoid ESM import issues with JSON
 const firebaseConfigPath = path.join(process.cwd(), 'firebase-applet-config.json');
-const firebaseConfig = JSON.parse(fs.readFileSync(firebaseConfigPath, 'utf8'));
+let firebaseConfig: any = {};
+try {
+  if (fs.existsSync(firebaseConfigPath)) {
+    firebaseConfig = JSON.parse(fs.readFileSync(firebaseConfigPath, 'utf8'));
+  } else {
+    console.warn('firebase-applet-config.json not found. Using environment variables.');
+    firebaseConfig = {
+      projectId: process.env.FIREBASE_PROJECT_ID,
+      firestoreDatabaseId: process.env.FIREBASE_DATABASE_ID || '(default)'
+    };
+  }
+} catch (e) {
+  console.error('Error loading firebase config:', e);
+}
 
 // Explicitly set the project ID in the environment to avoid confusion with the AI Studio project
 // But only if it's not already set, to avoid overwriting the correct project ID in remixed apps
@@ -18,9 +31,9 @@ if (isRemix) {
   console.warn(`REMIX DETECTED: Environment project (${currentProjectId}) does not match config project (${configProjectId}).`);
 }
 
-if (!process.env.GOOGLE_CLOUD_PROJECT) {
+if (!process.env.GOOGLE_CLOUD_PROJECT && firebaseConfig.projectId) {
   process.env.GOOGLE_CLOUD_PROJECT = firebaseConfig.projectId;
-} else {
+} else if (process.env.GOOGLE_CLOUD_PROJECT) {
   console.log('Using existing GOOGLE_CLOUD_PROJECT from environment:', process.env.GOOGLE_CLOUD_PROJECT);
 }
 
@@ -36,47 +49,57 @@ const initializeAdmin = () => {
     if (apps.length > 0) return apps[0];
     
     console.log('Initializing Firebase Admin...');
+    console.log('Environment GOOGLE_CLOUD_PROJECT:', process.env.GOOGLE_CLOUD_PROJECT);
+    console.log('Config projectId:', firebaseConfig.projectId);
     
-    // 0. Try default initialization first (Best for Cloud Run/Ambient ADC)
-    // This is the most reliable way in the AI Studio environment
-    try {
-      console.log('Attempting default initialization (Ambient ADC)...');
-      // We don't pass any options, let it use the environment
-      return initializeApp();
-    } catch (e) {
-      console.log('Default initialization failed, trying alternatives...');
-    }
-    
+    const projectId = process.env.GOOGLE_CLOUD_PROJECT || firebaseConfig.projectId;
+
     // 1. Check if we have service account credentials in the environment
     if (process.env.FIREBASE_SERVICE_ACCOUNT) {
       try {
-        const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-        console.log('Initializing with FIREBASE_SERVICE_ACCOUNT env var');
+        let saString = process.env.FIREBASE_SERVICE_ACCOUNT.trim();
+        
+        // Handle cases where the string might be wrapped in extra single or double quotes from the UI/env
+        if ((saString.startsWith("'") && saString.endsWith("'")) || 
+            (saString.startsWith('"') && saString.endsWith('"'))) {
+          saString = saString.substring(1, saString.length - 1).trim();
+        }
+
+        // If it looks like it's missing the outer braces (common copy-paste error)
+        if (saString.includes('"type":') && !saString.startsWith('{')) {
+          saString = `{${saString}}`;
+        }
+
+        const serviceAccount = JSON.parse(saString);
+        console.log('Initializing with FIREBASE_SERVICE_ACCOUNT env var for project:', serviceAccount.project_id);
         return initializeApp({
           credential: cert(serviceAccount),
           projectId: serviceAccount.project_id
         });
       } catch (e) {
         console.error('Failed to parse FIREBASE_SERVICE_ACCOUNT as JSON:', e);
+        console.error('Value starts with:', process.env.FIREBASE_SERVICE_ACCOUNT.substring(0, 20));
       }
     }
     
     // 2. Check for Google Application Credentials (ADC file)
     if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
-      console.log('Initializing with GOOGLE_APPLICATION_CREDENTIALS');
-      return initializeApp();
+      console.log('Initializing with GOOGLE_APPLICATION_CREDENTIALS file:', process.env.GOOGLE_APPLICATION_CREDENTIALS);
+      return initializeApp({
+        projectId: projectId
+      });
     }
     
-    // 3. Fallback: Try to initialize with the project ID from environment or config
-    const projectId = process.env.GOOGLE_CLOUD_PROJECT || firebaseConfig.projectId;
+    // 3. Try to initialize with the project ID explicitly
     if (projectId) {
-      console.log('Initializing with project ID (Explicit):', projectId);
+      console.log('Initializing with explicit project ID:', projectId);
       return initializeApp({
         projectId: projectId,
       });
     }
 
-    console.log('Initializing with default config (Final Fallback)');
+    // 4. Final Fallback: Try default initialization (Ambient ADC)
+    console.log('Attempting default initialization (Ambient ADC)...');
     return initializeApp();
   } catch (error: any) {
     console.error('CRITICAL: Firebase Admin initialization failed:', error);
@@ -138,6 +161,19 @@ export const getDb = () => {
     throw new Error('Firestore is not initialized. Check server logs for Firebase Admin errors.');
   }
   return dbInstance;
+};
+
+// Helper to test if we can actually read from Firestore
+export const testFirestoreConnection = async () => {
+  try {
+    const db = getDb();
+    // Try to read a non-existent doc just to check permissions
+    await db.collection('_health_check_').doc('ping').get();
+    return { success: true };
+  } catch (error: any) {
+    console.error('Firestore connection test failed:', error.message);
+    return { success: false, error: error.message, code: error.code };
+  }
 };
 
 export const getAuthInstance = () => {

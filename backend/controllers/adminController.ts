@@ -528,7 +528,7 @@ export const syncProductsFromSheet = async (req: Request, res: Response) => {
     
     // If it's a permission error, provide a very specific guide
     if (error.message.includes('PERMISSION_DENIED') || error.message.includes('Permission Denied')) {
-      return res.status(403).json({ 
+      return res.status(400).json({ 
         message: 'Sync failed: Permission Denied',
         error: 'The server does not have permission to access your settings. This is common in remixed apps. Please go to the "Settings" menu and re-run the Firebase setup to grant the necessary permissions to this new project.'
       });

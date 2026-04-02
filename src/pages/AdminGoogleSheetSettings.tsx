@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Save, FileSpreadsheet, AlertCircle, CheckCircle2, Loader2, RefreshCw, Copy, ExternalLink, HelpCircle } from 'lucide-react';
+import { Save, FileSpreadsheet, AlertCircle, CheckCircle2, Loader2, RefreshCw, Copy, ExternalLink, HelpCircle, ShieldCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '../lib/utils';
 import { auth, db } from '../lib/firebase';
@@ -121,19 +121,44 @@ const AdminGoogleSheetSettings: React.FC = () => {
       } else {
         const text = await response.text();
         console.error('Non-JSON response from sync:', text);
+        // If it's a 403 HTML, provide a better explanation
+        if (response.status === 403) {
+          throw new Error('Access Denied (403). The request was blocked by a security layer. This often happens with certain URL patterns or headers.');
+        }
         throw new Error(text.substring(0, 100) || `Server returned ${response.status} ${response.statusText}`);
       }
 
       if (response.ok) {
         toast.success(data.message);
       } else {
-        throw new Error(data.message || 'Sync failed');
+        const errorMsg = data.error || data.message || 'Sync failed';
+        throw new Error(errorMsg);
       }
     } catch (error: any) {
       console.error('Sync error:', error);
       toast.error(`Sync failed: ${error.message}`);
     } finally {
       setSyncing(false);
+    }
+  };
+
+  const handleDebugFirebase = async () => {
+    try {
+      const idToken = await auth.currentUser?.getIdToken();
+      const response = await fetch('/api/admin/test-firebase', {
+        headers: {
+          'Authorization': `Bearer ${idToken}`
+        }
+      });
+      const data = await response.json();
+      console.log('Firebase Debug Info:', data);
+      if (data.status === 'success') {
+        toast.success('Firebase connection is healthy!');
+      } else {
+        toast.error(`Firebase error: ${data.connectionTest?.error || 'Unknown error'}`);
+      }
+    } catch (error: any) {
+      toast.error(`Debug failed: ${error.message}`);
     }
   };
 
@@ -536,6 +561,16 @@ const AdminGoogleSheetSettings: React.FC = () => {
                   <RefreshCw className="w-5 h-5 text-blue-600" />
                 )}
                 Sync Products
+              </button>
+              <button
+                type="button"
+                onClick={handleDebugFirebase}
+                disabled={testing || saving || syncing}
+                className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 transition-colors"
+                title="Test Firebase Connection"
+              >
+                <ShieldCheck className="w-5 h-5 text-purple-600" />
+                Debug Firebase
               </button>
             </div>
             <button
