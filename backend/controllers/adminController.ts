@@ -488,22 +488,44 @@ export const uploadToDrive = async (req: any, res: Response) => {
 
 export const syncProductsFromSheet = async (req: Request, res: Response) => {
   try {
+    console.log('Starting product sync from Google Sheet...');
     const products = await getProductsFromSheet();
     if (!products) {
+      console.warn('Sync failed: No products fetched from sheet.');
       return res.status(400).json({ message: 'Could not fetch products from Google Sheet. Check your settings.' });
     }
 
-    const batch = db.batch();
-    for (const product of products) {
-      if (!product.id) continue;
-      const productRef = db.collection('products').doc(product.id);
-      batch.set(productRef, product, { merge: true });
+    console.log(`Fetched ${products.length} products. Starting Firestore sync...`);
+
+    // Firestore batch limit is 500. We need to split into multiple batches if needed.
+    const BATCH_SIZE = 450;
+    let syncedCount = 0;
+
+    for (let i = 0; i < products.length; i += BATCH_SIZE) {
+      const batch = db.batch();
+      const chunk = products.slice(i, i + BATCH_SIZE);
+      
+      for (const product of chunk) {
+        if (!product.id) {
+          console.warn('Skipping product without ID:', product.name);
+          continue;
+        }
+        const productRef = db.collection('products').doc(product.id);
+        batch.set(productRef, product, { merge: true });
+        syncedCount++;
+      }
+      
+      console.log(`Committing batch of ${chunk.length} products...`);
+      await batch.commit();
     }
 
-    await batch.commit();
-    res.json({ message: `Successfully synced ${products.length} products from Google Sheet.` });
-  } catch (error) {
+    console.log(`Sync completed successfully. ${syncedCount} products updated.`);
+    res.json({ message: `Successfully synced ${syncedCount} products from Google Sheet.` });
+  } catch (error: any) {
     console.error('Sync error:', error);
-    res.status(500).json({ message: 'Server error during product sync' });
+    res.status(500).json({ 
+      message: 'Server error during product sync',
+      error: error.message 
+    });
   }
 };

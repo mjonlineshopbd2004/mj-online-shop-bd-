@@ -68,7 +68,17 @@ const AdminGoogleSheetSettings: React.FC = () => {
       if (response.ok) {
         toast.success('Connection successful! A test row has been added to the "Orders" sheet.');
       } else {
-        const data = await response.json();
+        const contentType = response.headers.get('content-type');
+        let data: any;
+        
+        if (contentType && contentType.includes('application/json')) {
+          data = await response.json();
+        } else {
+          const text = await response.text();
+          console.error('Non-JSON response from test connection:', text);
+          throw new Error(text.substring(0, 100) || `Server returned ${response.status} ${response.statusText}`);
+        }
+        
         throw new Error(data.message || 'Connection failed');
       }
     } catch (error: any) {
@@ -99,7 +109,17 @@ const AdminGoogleSheetSettings: React.FC = () => {
         }
       });
 
-      const data = await response.json();
+      const contentType = response.headers.get('content-type');
+      let data: any;
+      
+      if (contentType && contentType.includes('application/json')) {
+        data = await response.json();
+      } else {
+        const text = await response.text();
+        console.error('Non-JSON response from sync:', text);
+        throw new Error(text.substring(0, 100) || `Server returned ${response.status} ${response.statusText}`);
+      }
+
       if (response.ok) {
         toast.success(data.message);
       } else {

@@ -10,18 +10,31 @@ const CONFIG_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 const ensureDriveConfigured = async () => {
   try {
     const now = Date.now();
-    if (googleDriveService.isConfigured() && (now - lastConfigFetch < CONFIG_CACHE_TTL)) {
+    const isAlreadyConfigured = googleDriveService.isConfigured();
+    
+    // If already configured and cache is fresh, skip entirely
+    if (isAlreadyConfigured && (now - lastConfigFetch < CONFIG_CACHE_TTL)) {
       return;
     }
 
+    // Attempt to fetch settings from Firestore
+    // We do this to allow UI-based configuration to override environment variables
     const settingsDoc = await db.collection('settings').doc('googleSheet').get().catch(async (err: any) => {
+      // Only log as warning if we already have a working config from env vars
+      if (isAlreadyConfigured) {
+        console.warn('Could not refresh Google Drive settings from primary Firestore (Permission Denied). Using existing configuration.');
+        return { exists: false } as any;
+      }
+      
       console.warn('Primary Firestore fetch failed, trying fallback to default database:', err.message);
       try {
         const { getFirestore: getAdminFirestore } = await import('firebase-admin/firestore');
         const defaultDb = getAdminFirestore();
         return await defaultDb.collection('settings').doc('googleSheet').get();
       } catch (fallbackErr: any) {
-        console.error('Fallback Firestore fetch also failed:', fallbackErr.message);
+        if (!isAlreadyConfigured) {
+          console.error('Fallback Firestore fetch also failed:', fallbackErr.message);
+        }
         return { exists: false } as any;
       }
     });
@@ -32,16 +45,15 @@ const ensureDriveConfigured = async () => {
         googleDriveService.setConfig(clientEmail, privateKey, driveFolderId || '');
         lastConfigFetch = now;
       }
-    } else {
-      // If Firestore fetch failed or doc doesn't exist, ensure we're at least using env vars
-      console.log('Google Drive settings not found in Firestore, ensuring environment variables are used');
-      if (!googleDriveService.isConfigured()) {
-        // The service constructor already calls initializeFromEnv, but we can trigger it again or log status
-        console.log('Google Drive service is not configured via env either.');
-      }
+    } else if (!isAlreadyConfigured) {
+      // If Firestore fetch failed/doc doesn't exist AND we aren't configured via env
+      console.log('Google Drive settings not found in Firestore and not configured via environment variables.');
     }
   } catch (error) {
-    console.error('Error fetching Google Drive settings for upload:', error);
+    // Only log critical errors if we don't have any working configuration
+    if (!googleDriveService.isConfigured()) {
+      console.error('Error ensuring Google Drive configuration:', error);
+    }
   }
 };
 

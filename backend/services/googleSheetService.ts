@@ -1,5 +1,3 @@
-import { GoogleSpreadsheet } from 'google-spreadsheet';
-import { JWT } from 'google-auth-library';
 import { db } from '../config/firebase';
 
 export interface GoogleSheetConfig {
@@ -11,11 +9,18 @@ export interface GoogleSheetConfig {
 
 export const getGoogleSheetConfig = async (): Promise<GoogleSheetConfig | null> => {
   try {
+    if (!db) {
+      console.error('Firestore database is not initialized in googleSheetService');
+      return null;
+    }
     const settingsDoc = await db.collection('settings').doc('googleSheet').get();
-    if (!settingsDoc.exists) return null;
+    if (!settingsDoc.exists) {
+      console.log('Google Sheet settings document not found in Firestore.');
+      return null;
+    }
     return settingsDoc.data() as GoogleSheetConfig;
-  } catch (error) {
-    console.error('Error fetching Google Sheet config:', error);
+  } catch (error: any) {
+    console.error('Error fetching Google Sheet config:', error.message);
     return null;
   }
 };
@@ -67,6 +72,9 @@ export const syncOrderToSheet = async (order: any) => {
   }
 
   try {
+    const { JWT } = await import('google-auth-library');
+    const { GoogleSpreadsheet } = await import('google-spreadsheet');
+
     const extractId = (id: string) => {
       if (!id) return '';
       const match = id.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
@@ -117,8 +125,8 @@ export const syncOrderToSheet = async (order: any) => {
     });
 
     console.log(`Order ${order.id} synced to Google Sheet.`);
-  } catch (error) {
-    console.error('Error syncing order to Google Sheet:', error);
+  } catch (error: any) {
+    console.error('Error syncing order to Google Sheet:', error.message);
   }
 };
 
@@ -129,6 +137,9 @@ export const syncProductToSheet = async (product: any) => {
   }
 
   try {
+    const { JWT } = await import('google-auth-library');
+    const { GoogleSpreadsheet } = await import('google-spreadsheet');
+
     const extractId = (id: string) => {
       if (!id) return '';
       const match = id.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
@@ -189,18 +200,22 @@ export const syncProductToSheet = async (product: any) => {
     }
 
     console.log(`Product ${product.id} synced to Google Sheet.`);
-  } catch (error) {
-    console.error('Error syncing product to Google Sheet:', error);
+  } catch (error: any) {
+    console.error('Error syncing product to Google Sheet:', error.message);
   }
 };
 
 export const getProductsFromSheet = async () => {
   const config = await getGoogleSheetConfig();
   if (!config || !config.enabled || !config.spreadsheetId || !config.clientEmail || !config.privateKey) {
+    console.warn('Google Sheet sync is disabled or not configured in getProductsFromSheet.');
     return null;
   }
 
   try {
+    const { JWT } = await import('google-auth-library');
+    const { GoogleSpreadsheet } = await import('google-spreadsheet');
+
     const extractId = (id: string) => {
       if (!id) return '';
       const match = id.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
@@ -209,6 +224,11 @@ export const getProductsFromSheet = async () => {
     const sanitizedId = extractId(config.spreadsheetId);
     const formattedKey = getFormattedKey(config.privateKey);
     
+    if (!formattedKey) {
+      console.error('Invalid private key format in getProductsFromSheet.');
+      return null;
+    }
+
     const serviceAccountAuth = new JWT({
       email: config.clientEmail.trim(),
       key: formattedKey,
@@ -216,12 +236,19 @@ export const getProductsFromSheet = async () => {
     });
 
     const doc = new GoogleSpreadsheet(sanitizedId, serviceAccountAuth);
+    console.log('Loading spreadsheet info for product sync...');
     await doc.loadInfo();
 
     const sheet = doc.sheetsByTitle['Products'];
-    if (!sheet) return null;
+    if (!sheet) {
+      console.warn('Sheet "Products" not found in spreadsheet.');
+      return null;
+    }
 
+    console.log('Fetching rows from "Products" sheet...');
     const rows = await sheet.getRows();
+    console.log(`Fetched ${rows.length} rows from sheet.`);
+
     return rows.map(row => ({
       id: row.get('Product ID'),
       name: row.get('Name'),
@@ -234,8 +261,8 @@ export const getProductsFromSheet = async () => {
       images: row.get('Images') ? row.get('Images').split(',').map((s: string) => s.trim()) : [],
       createdAt: row.get('Last Updated') || new Date().toISOString()
     }));
-  } catch (error) {
-    console.error('Error fetching products from Google Sheet:', error);
+  } catch (error: any) {
+    console.error('Error fetching products from Google Sheet:', error.message);
     return null;
   }
 };

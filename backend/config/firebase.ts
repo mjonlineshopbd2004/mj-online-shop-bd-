@@ -51,34 +51,6 @@ const initializeAdmin = () => {
       });
     }
 
-    // 4. Last resort fallback: Check for Google Drive service account credentials
-    // We do this last because this service account might have limited scopes (e.g. only Drive)
-    if (process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL && process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY) {
-      try {
-        let privateKey = process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY.trim().replace(/^["']|["']$/g, '');
-        privateKey = privateKey.replace(/\\n/g, '\n');
-
-        // Ensure proper PEM format
-        if (!privateKey.includes('-----BEGIN PRIVATE KEY-----')) {
-          const base64 = privateKey.replace(/\s/g, '');
-          const wrappedBase64 = base64.match(/.{1,64}/g)?.join('\n') || base64;
-          privateKey = `-----BEGIN PRIVATE KEY-----\n${wrappedBase64}\n-----END PRIVATE KEY-----\n`;
-        }
-
-        console.log('Initializing Firebase Admin with Google Drive service account credentials (Fallback)');
-        return initializeApp({
-          credential: cert({
-            clientEmail: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-            privateKey: privateKey,
-            projectId: firebaseConfig.projectId
-          }),
-          projectId: firebaseConfig.projectId
-        });
-      } catch (e) {
-        console.error('Failed to initialize Firebase Admin with Google Drive credentials:', e);
-      }
-    }
-    
     console.log('Initializing Firebase Admin with default config (Final Fallback)');
     return initializeApp();
   } catch (error: any) {
