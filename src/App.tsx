@@ -23,6 +23,10 @@ import Checkout from './pages/Checkout';
 import OrderConfirmation from './pages/OrderConfirmation';
 import OrderHistory from './pages/OrderHistory';
 import Profile from './pages/Profile';
+import UserDashboard from './pages/UserDashboard';
+import UserSettings from './pages/UserSettings';
+import Payments from './pages/Payments';
+import Delivery from './pages/Delivery';
 import Categories from './pages/Categories';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminProducts from './pages/AdminProducts';
@@ -69,6 +73,10 @@ function AnimatedRoutes() {
             <Route path="/order-confirmation/:id" element={<OrderConfirmation />} />
             <Route path="/orders" element={<OrderHistory />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/profile/dashboard" element={<UserDashboard />} />
+            <Route path="/profile/settings" element={<UserSettings />} />
+            <Route path="/payments" element={<Payments />} />
+            <Route path="/delivery" element={<Delivery />} />
             <Route path="/categories" element={<Categories />} />
             <Route path="/wishlist" element={<Wishlist />} />
             <Route path="/about" element={<StaticPage title="About Us" content={<p>Welcome to MJ ONLINE SHOP BD, your number one source for all things fashion, electronics, and accessories. We're dedicated to giving you the very best of products, with a focus on dependability, customer service, and uniqueness.</p>} />} />

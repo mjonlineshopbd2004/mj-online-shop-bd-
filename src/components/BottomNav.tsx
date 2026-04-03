@@ -17,7 +17,7 @@ export default function BottomNav() {
     { name: 'Cart', path: '/cart', icon: ShoppingCart, badge: totalItems },
     { name: 'Home', path: '/', isLogo: true },
     { name: 'Wishlist', path: '/wishlist', icon: Heart, badge: wishlistItems.length },
-    { name: 'Dashboard', path: '/profile', icon: LayoutDashboard },
+    { name: 'Account', path: '/profile', icon: LayoutDashboard },
   ];
 
   return (
@@ -32,7 +32,7 @@ export default function BottomNav() {
               <Link
                 key={item.name}
                 to="/"
-                className="flex flex-col items-center justify-center -translate-y-6 bg-white p-1 rounded-full shadow-xl border-4 border-white w-16 h-16 transition-transform active:scale-95"
+                className="flex flex-col items-center justify-center -translate-y-2 bg-white p-1 rounded-full shadow-xl border-4 border-white w-16 h-16 transition-transform active:scale-95"
               >
                 <div className="w-full h-full rounded-full overflow-hidden bg-white flex items-center justify-center border border-gray-100">
                   {settings.logoUrl ? (

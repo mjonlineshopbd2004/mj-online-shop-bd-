@@ -174,5 +174,9 @@ service cloud.firestore {
     match /test/connection {
       allow read: if true;
     }
+
+    match /otps/{email} {
+      allow read, write: if false; // Only accessible via Admin SDK
+    }
   }
 }

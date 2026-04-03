@@ -22,25 +22,15 @@ try {
 }
 
 // Explicitly set the project ID in the environment to avoid confusion with the AI Studio project
-// But only if it's not already set, to avoid overwriting the correct project ID in remixed apps
-const currentProjectId = process.env.GOOGLE_CLOUD_PROJECT;
-const configProjectId = firebaseConfig.projectId;
-const isRemix = currentProjectId && configProjectId && currentProjectId !== configProjectId;
+const projectId = firebaseConfig.projectId || process.env.GOOGLE_CLOUD_PROJECT;
 
-if (isRemix) {
-  console.warn(`REMIX DETECTED: Environment project (${currentProjectId}) does not match config project (${configProjectId}).`);
+if (projectId) {
+  process.env.GOOGLE_CLOUD_PROJECT = projectId;
+  process.env.FIREBASE_CONFIG = JSON.stringify({
+    projectId: projectId,
+    storageBucket: `${projectId}.appspot.com`,
+  });
 }
-
-if (!process.env.GOOGLE_CLOUD_PROJECT && firebaseConfig.projectId) {
-  process.env.GOOGLE_CLOUD_PROJECT = firebaseConfig.projectId;
-} else if (process.env.GOOGLE_CLOUD_PROJECT) {
-  console.log('Using existing GOOGLE_CLOUD_PROJECT from environment:', process.env.GOOGLE_CLOUD_PROJECT);
-}
-
-process.env.FIREBASE_CONFIG = JSON.stringify({
-  projectId: process.env.GOOGLE_CLOUD_PROJECT || firebaseConfig.projectId,
-  storageBucket: `${process.env.GOOGLE_CLOUD_PROJECT || firebaseConfig.projectId}.appspot.com`,
-});
 
 // Initialize Firebase Admin
 const initializeAdmin = () => {
@@ -48,12 +38,8 @@ const initializeAdmin = () => {
     const apps = getApps();
     if (apps.length > 0) return apps[0];
     
-    console.log('Initializing Firebase Admin...');
-    console.log('Environment GOOGLE_CLOUD_PROJECT:', process.env.GOOGLE_CLOUD_PROJECT);
-    console.log('Config projectId:', firebaseConfig.projectId);
+    console.log('Initializing Firebase Admin for project:', projectId);
     
-    const projectId = process.env.GOOGLE_CLOUD_PROJECT || firebaseConfig.projectId;
-
     // 1. Check if we have service account credentials in the environment
     if (process.env.FIREBASE_SERVICE_ACCOUNT) {
       try {
@@ -65,26 +51,40 @@ const initializeAdmin = () => {
           saString = saString.substring(1, saString.length - 1).trim();
         }
 
-        // If it looks like it's missing the outer braces (common copy-paste error)
-        if (saString.includes('"type":') && !saString.startsWith('{')) {
-          saString = `{${saString}}`;
+        // Try to find the actual JSON object if there's surrounding text
+        const firstBrace = saString.indexOf('{');
+        const lastBrace = saString.lastIndexOf('}');
+        
+        if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+          saString = saString.substring(firstBrace, lastBrace + 1);
         }
 
-        const serviceAccount = JSON.parse(saString);
-        console.log('Initializing with FIREBASE_SERVICE_ACCOUNT env var for project:', serviceAccount.project_id);
-        return initializeApp({
-          credential: cert(serviceAccount),
-          projectId: serviceAccount.project_id
-        });
+        // Fix common JSON issues (missing quotes around keys, etc.)
+        try {
+          const serviceAccount = JSON.parse(saString);
+          console.log('Initializing with FIREBASE_SERVICE_ACCOUNT env var for project:', serviceAccount.project_id);
+          return initializeApp({
+            credential: cert(serviceAccount),
+            projectId: serviceAccount.project_id
+          });
+        } catch (jsonError) {
+          console.warn('Standard JSON parse failed, attempting to fix formatting...');
+          let fixedSa = saString.replace(/([{,]\s*)([a-zA-Z0-9_]+)(\s*:)/g, '$1"$2"$3');
+          fixedSa = fixedSa.replace(/'/g, '"');
+          const serviceAccount = JSON.parse(fixedSa);
+          return initializeApp({
+            credential: cert(serviceAccount),
+            projectId: serviceAccount.project_id
+          });
+        }
       } catch (e) {
-        console.error('Failed to parse FIREBASE_SERVICE_ACCOUNT as JSON:', e);
-        console.error('Value starts with:', process.env.FIREBASE_SERVICE_ACCOUNT.substring(0, 20));
+        console.error('CRITICAL: Failed to parse FIREBASE_SERVICE_ACCOUNT:', e);
       }
     }
     
     // 2. Check for Google Application Credentials (ADC file)
     if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
-      console.log('Initializing with GOOGLE_APPLICATION_CREDENTIALS file:', process.env.GOOGLE_APPLICATION_CREDENTIALS);
+      console.log('Initializing with GOOGLE_APPLICATION_CREDENTIALS file');
       return initializeApp({
         projectId: projectId
       });
@@ -98,8 +98,8 @@ const initializeAdmin = () => {
       });
     }
 
-    // 4. Final Fallback: Try default initialization (Ambient ADC)
-    console.log('Attempting default initialization (Ambient ADC)...');
+    // 4. Final Fallback: Try default initialization
+    console.log('Attempting default initialization...');
     return initializeApp();
   } catch (error: any) {
     console.error('CRITICAL: Firebase Admin initialization failed:', error);
@@ -115,13 +115,7 @@ try {
 }
 
 // Initialize Firestore and Auth
-let dbId = firebaseConfig.firestoreDatabaseId;
-
-if (isRemix && dbId && dbId !== '(default)') {
-  console.warn(`Ignoring potentially stale firestoreDatabaseId "${dbId}" from config due to remix. Falling back to default database.`);
-  dbId = '(default)';
-}
-
+const dbId = firebaseConfig.firestoreDatabaseId;
 console.log('Firestore Database ID to use:', dbId || '(default)');
 
 let dbInstance: any = null;
@@ -156,6 +150,44 @@ if (adminApp) {
   }
 }
 
+// Error handling for Firestore operations
+export enum OperationType {
+  CREATE = 'create',
+  UPDATE = 'update',
+  DELETE = 'delete',
+  LIST = 'list',
+  GET = 'get',
+  WRITE = 'write',
+}
+
+export const handleFirestoreError = (error: any, operationType: OperationType, path: string | null) => {
+  const errInfo = {
+    error: error.message || String(error),
+    code: error.code,
+    operationType,
+    path,
+    projectId: projectId,
+    databaseId: dbId || '(default)',
+    hasServiceAccount: !!process.env.FIREBASE_SERVICE_ACCOUNT
+  };
+  
+  console.error('Firestore Error Details:', JSON.stringify(errInfo, null, 2));
+  
+  if (error.code === 7 || error.message?.includes('PERMISSION_DENIED')) {
+    const fixInstructions = `
+      HOW TO FIX PERMISSION_DENIED:
+      1. Go to Google Cloud Console: https://console.cloud.google.com/iam-admin/iam?project=${projectId}
+      2. Find the Service Account: ${process.env.FIREBASE_SERVICE_ACCOUNT ? 'The one you provided in settings' : 'The default compute service account'}
+      3. Add the role: "Firebase Admin" or "Cloud Datastore User"
+      4. Ensure you are using the correct Database ID: ${dbId || '(default)'}
+    `;
+    console.error(fixInstructions);
+    throw new Error(`Firebase Permission Denied for project ${projectId}. Please check IAM roles in Google Cloud Console.`);
+  }
+  
+  throw error;
+};
+
 export const getDb = () => {
   if (!dbInstance) {
     throw new Error('Firestore is not initialized. Check server logs for Firebase Admin errors.');
@@ -167,12 +199,26 @@ export const getDb = () => {
 export const testFirestoreConnection = async () => {
   try {
     const db = getDb();
+    console.log('Testing Firestore connection to database:', dbId || '(default)');
     // Try to read a non-existent doc just to check permissions
-    await db.collection('_health_check_').doc('ping').get();
-    return { success: true };
+    const docRef = db.collection('_health_check_').doc('ping');
+    await docRef.get();
+    return { 
+      success: true, 
+      projectId, 
+      databaseId: dbId || '(default)',
+      usingServiceAccount: !!process.env.FIREBASE_SERVICE_ACCOUNT
+    };
   } catch (error: any) {
     console.error('Firestore connection test failed:', error.message);
-    return { success: false, error: error.message, code: error.code };
+    return { 
+      success: false, 
+      error: error.message, 
+      code: error.code,
+      projectId,
+      databaseId: dbId || '(default)',
+      details: 'If code is 7, check if your Service Account has permissions for this specific database.'
+    };
   }
 };
 

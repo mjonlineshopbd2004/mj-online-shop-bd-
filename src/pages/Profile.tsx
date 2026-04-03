@@ -1,39 +1,54 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { User, Phone, MapPin, Mail, Save, Loader2, LogOut, Download } from 'lucide-react';
+import { 
+  User, 
+  Phone, 
+  MapPin, 
+  Mail, 
+  Save, 
+  Loader2, 
+  LogOut, 
+  Download, 
+  Home, 
+  ShoppingBag, 
+  CreditCard, 
+  Truck, 
+  Settings, 
+  Clock, 
+  Package,
+  ChevronRight
+} from 'lucide-react';
 import { motion } from 'motion/react';
+import { Link } from 'react-router-dom';
 
 export default function Profile() {
   const { profile, updateUserProfile, logout } = useAuth();
   const [isSaving, setIsSaving] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
-  const [formData, setFormData] = useState({
-    displayName: '',
-    phone: '',
-    address: '',
-  });
+  const [activeTab, setActiveTab] = useState('account'); // 'account' or 'settings'
 
   useEffect(() => {
     const handleBeforeInstallPrompt = (e: any) => {
       e.preventDefault();
       setDeferredPrompt(e);
     };
-
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-
-    return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    };
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
   }, []);
 
-  const handleInstallClick = async () => {
-    if (!deferredPrompt) return;
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === 'accepted') {
-      setDeferredPrompt(null);
-    }
-  };
+  if (!profile) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <Loader2 className="h-12 w-12 text-primary animate-spin" />
+      </div>
+    );
+  }
+
+  const [formData, setFormData] = useState({
+    displayName: '',
+    phone: '',
+    address: '',
+  });
 
   useEffect(() => {
     if (profile) {
@@ -50,6 +65,7 @@ export default function Profile() {
     setIsSaving(true);
     try {
       await updateUserProfile(formData);
+      setActiveTab('dashboard');
     } catch (error) {
       console.error("Profile update error:", error);
     } finally {
@@ -57,156 +73,80 @@ export default function Profile() {
     }
   };
 
-  if (!profile) {
-    return (
-      <div className="min-h-[60vh] flex items-center justify-center">
-        <Loader2 className="h-12 w-12 text-orange-600 animate-spin" />
-      </div>
-    );
-  }
+  const menuItems = [
+    { name: 'Dashboard', icon: Home, path: '/profile/dashboard', color: 'text-gray-600' },
+    { name: 'Orders', icon: ShoppingBag, path: '/orders', color: 'text-gray-600' },
+    { name: 'Payments', icon: CreditCard, path: '/payments', color: 'text-gray-600' },
+    { name: 'Delivery', icon: Package, path: '/delivery', color: 'text-gray-600' },
+    { name: 'Settings', icon: Settings, path: '/profile/settings', color: 'text-gray-600' },
+    { name: 'Logout', icon: LogOut, action: logout, color: 'text-gray-600' },
+  ];
 
   return (
-    <div className="container-custom py-12">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-white rounded-[2.5rem] shadow-2xl shadow-gray-200/50 overflow-hidden border border-gray-100"
-      >
-        <div className="bg-gray-900 px-8 py-12 text-white relative overflow-hidden">
-          <div className="relative z-10">
-            <h1 className="text-4xl font-bold tracking-tight mb-2">Account Settings</h1>
-            <p className="text-gray-400 font-bold uppercase tracking-widest text-sm">Manage your personal information</p>
+    <div className="bg-gray-50 min-h-screen pb-24">
+      {/* Profile Header */}
+      <div className="bg-white pt-12 pb-8 px-6 text-center border-b border-gray-100">
+        <div className="relative inline-block">
+          <div className="w-24 h-24 bg-gray-300 rounded-full flex items-center justify-center text-white text-3xl font-bold shadow-inner mx-auto">
+            {profile.displayName?.charAt(0).toUpperCase() || profile.email?.charAt(0).toUpperCase()}
           </div>
-          <div className="absolute top-0 right-0 w-64 h-64 bg-orange-600/20 rounded-full blur-3xl -mr-32 -mt-32"></div>
         </div>
+        <h1 className="mt-4 text-xl font-black text-gray-900 uppercase tracking-tight font-display">
+          {profile.displayName || 'User'}
+        </h1>
+      </div>
 
-        <div className="p-8 sm:p-12">
-          {deferredPrompt && (
-            <div className="mb-10 bg-orange-50 border-2 border-orange-200 rounded-3xl p-6 flex flex-col sm:flex-row items-center justify-between gap-6">
-              <div className="flex items-center space-x-4">
-                <div className="bg-orange-600 p-3 rounded-2xl text-white">
-                  <Download className="h-6 w-6" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold tracking-tight text-gray-900">Install MJ SHOP App</h3>
-                  <p className="text-sm text-gray-500 font-medium">Install our app for a better shopping experience!</p>
-                </div>
-              </div>
-              <button
-                onClick={handleInstallClick}
-                className="bg-orange-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-orange-700 transition-all shadow-lg shadow-orange-200 whitespace-nowrap"
-              >
-                Install Now
+      {/* Menu Grid */}
+      <div className="grid grid-cols-2 border-b border-gray-100 bg-white">
+        {menuItems.map((item, idx) => (
+          <div 
+            key={item.name}
+            className={`
+              p-6 flex items-center gap-4 border-gray-50
+              ${idx % 2 === 0 ? 'border-r' : ''}
+              ${idx < 4 ? 'border-b' : ''}
+            `}
+          >
+            {item.path ? (
+              <Link to={item.path} className="flex items-center gap-3 w-full">
+                <item.icon className={`h-5 w-5 ${item.color}`} />
+                <span className="text-sm font-bold text-gray-800">{item.name}</span>
+              </Link>
+            ) : (
+              <button onClick={item.action} className="flex items-center gap-3 w-full text-left">
+                <item.icon className={`h-5 w-5 ${item.color}`} />
+                <span className="text-sm font-bold text-gray-800">{item.name}</span>
               </button>
-            </div>
-          )}
+            )}
+          </div>
+        ))}
+      </div>
 
-          <form onSubmit={handleSubmit} className="space-y-10">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {/* Name */}
-              <div className="space-y-3">
-                <label className="text-sm font-bold text-gray-400 uppercase tracking-widest flex items-center">
-                  <User className="h-4 w-4 mr-2 text-orange-600" />
-                  Full Name
-                </label>
-                <input
-                  type="text"
-                  required
-                  className="w-full bg-gray-50 border-2 border-transparent focus:border-orange-500 focus:bg-white rounded-2xl px-6 py-4 outline-none transition-all font-bold text-gray-900"
-                  value={formData.displayName}
-                  onChange={(e) => setFormData({ ...formData, displayName: e.target.value })}
-                />
+      {/* App Install Banner (if available) */}
+      {deferredPrompt && (
+        <div className="px-6 mt-8">
+          <div className="bg-primary/5 border border-primary/10 rounded-2xl p-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="bg-primary p-2 rounded-lg text-white">
+                <Download className="h-4 w-4" />
               </div>
-
-              {/* Email (Read-only) */}
-              <div className="space-y-3">
-                <label className="text-sm font-bold text-gray-400 uppercase tracking-widest flex items-center">
-                  <Mail className="h-4 w-4 mr-2 text-gray-400" />
-                  Email Address
-                </label>
-                <input
-                  type="email"
-                  disabled
-                  className="w-full bg-gray-100 border-2 border-transparent rounded-2xl px-6 py-4 outline-none font-bold text-gray-500 cursor-not-allowed"
-                  value={profile.email}
-                />
-                <p className="text-[10px] text-gray-400 font-bold italic">* Email cannot be changed</p>
-              </div>
-
-              {/* Phone */}
-              <div className="space-y-3">
-                <label className="text-sm font-bold text-gray-400 uppercase tracking-widest flex items-center">
-                  <Phone className="h-4 w-4 mr-2 text-orange-600" />
-                  Phone Number
-                </label>
-                <input
-                  type="tel"
-                  required
-                  className="w-full bg-gray-50 border-2 border-transparent focus:border-orange-500 focus:bg-white rounded-2xl px-6 py-4 outline-none transition-all font-bold text-gray-900"
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                />
-              </div>
-
-              {/* Role (Read-only) */}
-              <div className="space-y-3">
-                <label className="text-sm font-bold text-gray-400 uppercase tracking-widest flex items-center">
-                  <User className="h-4 w-4 mr-2 text-gray-400" />
-                  Account Type
-                </label>
-                <div className="w-full bg-gray-100 border-2 border-transparent rounded-2xl px-6 py-4 font-bold text-gray-500 uppercase tracking-widest text-sm">
-                  {profile.role}
-                </div>
+              <div>
+                <p className="text-xs font-bold text-gray-900">Install Mobile App</p>
+                <p className="text-[10px] text-gray-500">For better experience</p>
               </div>
             </div>
-
-            {/* Address */}
-            <div className="space-y-3">
-              <label className="text-sm font-bold text-gray-400 uppercase tracking-widest flex items-center">
-                <MapPin className="h-4 w-4 mr-2 text-orange-600" />
-                Shipping Address
-              </label>
-              <textarea
-                required
-                rows={4}
-                className="w-full bg-gray-50 border-2 border-transparent focus:border-orange-500 focus:bg-white rounded-2xl px-6 py-4 outline-none transition-all font-bold text-gray-900"
-                value={formData.address}
-                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                placeholder="Enter your full shipping address..."
-              />
-            </div>
-
-            <div className="pt-6 border-t border-gray-100 flex flex-col sm:flex-row justify-between gap-4">
-              <button
-                type="button"
-                onClick={() => logout()}
-                className="bg-gray-100 text-gray-600 px-8 py-5 rounded-2xl font-bold text-lg hover:bg-gray-200 transition-all flex items-center justify-center space-x-3"
-              >
-                <LogOut className="h-5 w-5" />
-                <span>Logout</span>
-              </button>
-              
-              <button
-                type="submit"
-                disabled={isSaving}
-                className="bg-orange-600 text-white px-12 py-5 rounded-2xl font-bold text-xl shadow-xl shadow-orange-100 hover:bg-orange-700 transition-all flex items-center justify-center space-x-3 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isSaving ? (
-                  <>
-                    <Loader2 className="h-6 w-6 animate-spin" />
-                    <span>Saving...</span>
-                  </>
-                ) : (
-                  <>
-                    <Save className="h-6 w-6" />
-                    <span>Save Changes</span>
-                  </>
-                )}
-              </button>
-            </div>
-          </form>
+            <button 
+              onClick={() => {
+                deferredPrompt.prompt();
+                setDeferredPrompt(null);
+              }}
+              className="bg-primary text-white px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase"
+            >
+              Install
+            </button>
+          </div>
         </div>
-      </motion.div>
+      )}
     </div>
   );
 }

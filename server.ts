@@ -161,12 +161,6 @@ async function startServer() {
     }
   });
   
-  // 404 for API routes - Move this here to catch all unmatched /api/* routes
-  app.all('/api/*', (req, res) => {
-    console.warn(`API route not found: ${req.method} ${req.originalUrl}`);
-    res.status(404).json({ message: `API route not found: ${req.originalUrl}` });
-  });
-  
   // PWA Direct Routes (Ensures PWABuilder can find them)
   app.get('/manifest.json', (req, res) => {
     res.setHeader('Content-Type', 'application/manifest+json');
@@ -224,8 +218,32 @@ async function startServer() {
     res.json({ status: 'ok', timestamp: new Date().toISOString(), vercel: !!process.env.VERCEL });
   });
 
+  app.get('/api/firebase-check', async (req, res) => {
+    try {
+      const { testFirestoreConnection } = await import('./backend/config/firebase.ts');
+      const result = await testFirestoreConnection();
+      res.json({
+        message: 'Firebase check completed',
+        ...result,
+        env: {
+          GOOGLE_CLOUD_PROJECT: process.env.GOOGLE_CLOUD_PROJECT,
+          HAS_SERVICE_ACCOUNT: !!process.env.FIREBASE_SERVICE_ACCOUNT,
+          HAS_ADC: !!process.env.GOOGLE_APPLICATION_CREDENTIALS
+        }
+      });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   app.get('/api/test-proxy', (req, res) => {
     res.json({ message: 'Proxy is reachable', env: process.env.NODE_ENV, vercel: !!process.env.VERCEL });
+  });
+
+  // 404 for API routes - Move this here to catch all unmatched /api/* routes
+  app.all('/api/*', (req, res) => {
+    console.warn(`API route not found: ${req.method} ${req.originalUrl}`);
+    res.status(404).json({ message: `API route not found: ${req.originalUrl}` });
   });
 
   // Vite middleware for development

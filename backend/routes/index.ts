@@ -13,8 +13,30 @@ import { upload } from '../middleware/upload.ts';
 const router = Router();
 
 // Auth Routes
+router.get('/auth/health', async (req, res) => {
+  try {
+    const { testFirestoreConnection } = await import('../config/firebase');
+    const result = await testFirestoreConnection();
+    const resendStatus = !!process.env.RESEND_API_KEY;
+    
+    res.json({
+      firebase: result,
+      resend: {
+        configured: resendStatus,
+        message: resendStatus ? 'API Key present' : 'API Key missing'
+      }
+    });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.post('/auth/check-email', authController.checkEmail);
 router.post('/auth/register', authController.registerUser);
 router.post('/auth/login', authController.loginUser);
+router.post('/auth/send-otp', authController.sendOTP);
+router.post('/auth/verify-register', authController.verifyOTPAndRegister);
+router.post('/auth/reset-password', authController.resetPassword);
 router.get('/auth/profile', authenticate, authController.getProfile);
 
 // Product Routes

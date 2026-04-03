@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { collection, query, where, limit, getDocs, orderBy } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { Product } from '../types';
@@ -8,7 +8,7 @@ import { getProxyUrl } from '../lib/utils';
 import HeroSection from '../components/HeroSection';
 import ProductCard from '../components/ProductCard';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Star, Quote, Truck, ShieldCheck, RotateCcw, Headphones } from 'lucide-react';
+import { ArrowRight, Star, Quote, Truck, ShieldCheck, RotateCcw, Headphones, ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion } from 'motion/react';
 
 export default function Home() {
@@ -17,6 +17,29 @@ export default function Home() {
   const [trendingProducts, setTrendingProducts] = useState<Product[]>([]);
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const scroll = (direction: 'left' | 'right') => {
+    if (scrollRef.current) {
+      const scrollAmount = direction === 'left' ? -200 : 200;
+      scrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    }
+  };
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (scrollRef.current) {
+        const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+        if (scrollLeft + clientWidth >= scrollWidth - 10) {
+          scrollRef.current.scrollTo({ left: 0, behavior: 'smooth' });
+        } else {
+          scrollRef.current.scrollBy({ left: 200, behavior: 'smooth' });
+        }
+      }
+    }, 6000); // 4s pause + 2s scroll time approx
+
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -76,22 +99,12 @@ export default function Home() {
   };
 
   return (
-    <div className="space-y-20 pb-20">
+    <div className="space-y-8 md:space-y-20 pb-20">
       <HeroSection />
       
-      {/* Shipping Service Bar */}
-      <div className="container-custom -mt-10 relative z-10">
-        <div className="bg-pink-50 border border-pink-100 rounded-2xl p-4 flex items-center justify-between shadow-sm">
-          <p className="text-sm font-bold text-gray-900">Looking for Shipping Service</p>
-          <button className="bg-[#003d4d] text-white px-6 py-2 rounded-full font-bold text-xs flex items-center gap-2 hover:bg-[#002d3d] transition-all">
-            Click Here <ArrowRight className="h-4 w-4" />
-          </button>
-        </div>
-      </div>
-
       {/* Features Bar */}
       <section className="border-b border-gray-100 bg-white">
-        <div className="container-custom py-6 md:py-10">
+        <div className="container-custom py-8 md:py-10">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
             <div className="flex items-center space-x-3 md:space-x-4">
               <div className="flex-shrink-0">
@@ -135,38 +148,66 @@ export default function Home() {
 
       {/* Categories */}
       <section className="container-custom">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 gap-4">
           <div>
-            <h2 className="text-2xl font-black text-gray-900 tracking-tight font-display uppercase">Top Category</h2>
+            <h2 className="text-xl font-black text-gray-900 tracking-tight font-display uppercase">Top Category</h2>
           </div>
           <div className="h-1 w-24 bg-primary rounded-full hidden md:block"></div>
         </div>
-        <div className="grid grid-cols-3 md:grid-cols-6 lg:grid-cols-8 gap-4 md:gap-6">
-          {(settings.categories && settings.categories.length > 0 ? settings.categories : CATEGORIES).map((category, idx) => {
-            const name = typeof category === 'string' ? category : category.name;
-            const image = typeof category === 'string' ? `https://picsum.photos/seed/${category}/200/200` : category.image;
-            
-            return (
-              <Link
-                key={name}
-                to={`/products?category=${encodeURIComponent(name)}`}
-                className="group flex flex-col items-center gap-2"
-              >
-                <div className="relative w-full aspect-square overflow-hidden rounded-full border-2 border-gray-100 group-hover:border-primary transition-all duration-300 shadow-sm group-hover:shadow-md">
-                  <img
-                    src={getProxyUrl(image || `https://picsum.photos/seed/${name}/200/200`)}
-                    alt={name}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                    referrerPolicy="no-referrer"
-                  />
-                  <div className="absolute bottom-0 left-0 right-0 bg-orange-50/90 py-0.5">
-                    <p className="text-[8px] font-bold text-orange-600 text-center">From 80৳</p>
+        
+        <div className="relative group">
+          {/* Arrows */}
+          <button 
+            onClick={() => scroll('left')}
+            className="absolute left-0 top-1/2 -translate-y-1/2 z-20 bg-white/80 backdrop-blur-sm p-2 rounded-full shadow-lg border border-gray-100 hover:bg-white transition-all opacity-0 group-hover:opacity-100 hidden md:block"
+          >
+            <ChevronLeft className="h-5 w-5 text-gray-600" />
+          </button>
+          <button 
+            onClick={() => scroll('right')}
+            className="absolute right-0 top-1/2 -translate-y-1/2 z-20 bg-white/80 backdrop-blur-sm p-2 rounded-full shadow-lg border border-gray-100 hover:bg-white transition-all opacity-0 group-hover:opacity-100 hidden md:block"
+          >
+            <ChevronRight className="h-5 w-5 text-gray-600" />
+          </button>
+
+          {/* Mobile Arrows (always visible) */}
+          <div className="md:hidden absolute -left-2 top-1/2 -translate-y-1/2 z-20">
+            <button onClick={() => scroll('left')} className="p-1 text-gray-400"><ChevronLeft className="h-4 w-4" /></button>
+          </div>
+          <div className="md:hidden absolute -right-2 top-1/2 -translate-y-1/2 z-20">
+            <button onClick={() => scroll('right')} className="p-1 text-gray-400"><ChevronRight className="h-4 w-4" /></button>
+          </div>
+          
+          <div 
+            ref={scrollRef}
+            className="flex gap-6 md:gap-10 py-2 overflow-x-auto no-scrollbar scroll-smooth px-4"
+          >
+            {(settings.categories && settings.categories.length > 0 ? settings.categories : CATEGORIES).map((category, idx) => {
+              const name = typeof category === 'string' ? category : category.name;
+              const image = typeof category === 'string' ? `https://picsum.photos/seed/${category}/200/200` : category.image;
+              
+              return (
+                <Link
+                  key={`${name}-${idx}`}
+                  to={`/products?category=${encodeURIComponent(name)}`}
+                  className="flex flex-col items-center gap-2 flex-shrink-0"
+                >
+                  <div className="relative w-16 h-16 md:w-24 md:h-24 overflow-hidden rounded-full border-2 border-gray-100 hover:border-primary transition-all duration-300 shadow-sm">
+                    <img
+                      src={getProxyUrl(image || `https://picsum.photos/seed/${name}/200/200`)}
+                      alt={name}
+                      className="w-full h-full object-cover hover:scale-110 transition-transform duration-500"
+                      referrerPolicy="no-referrer"
+                    />
+                    <div className="absolute bottom-0 left-0 right-0 bg-orange-50/90 py-0.5">
+                      <p className="text-[7px] md:text-[9px] font-bold text-orange-600 text-center">From 80৳</p>
+                    </div>
                   </div>
-                </div>
-                <h3 className="text-[10px] md:text-sm font-bold text-gray-900 text-center group-hover:text-primary transition-colors tracking-tight leading-tight">{name}</h3>
-              </Link>
-            );
-          })}
+                  <h3 className="text-[9px] md:text-xs font-bold text-gray-900 text-center tracking-tight leading-tight max-w-[64px] md:max-w-[96px] truncate">{name}</h3>
+                </Link>
+              );
+            })}
+          </div>
         </div>
       </section>
 
