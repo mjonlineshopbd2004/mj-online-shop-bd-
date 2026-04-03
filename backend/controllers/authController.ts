@@ -144,10 +144,16 @@ export const verifyOTPAndRegister = async (req: Request, res: Response) => {
 
     await db.collection('users').doc(newUser.uid).set(newUser);
 
-    const token = jwt.sign({ uid: newUser.uid, email: newUser.email, role: newUser.role }, JWT_SECRET, { expiresIn: '7d' });
+    // Create Firebase Custom Token for the user
+    const { getAuthInstance } = await import('../config/firebase');
+    const adminAuth = getAuthInstance();
+    const customToken = await adminAuth.createCustomToken(newUser.uid, {
+      role: newUser.role,
+      email: newUser.email
+    });
 
     const { password: _, ...userWithoutPassword } = newUser;
-    res.status(201).json({ user: userWithoutPassword, token });
+    res.status(201).json({ user: userWithoutPassword, customToken });
   } catch (error) {
     console.error('Verify OTP and Register error:', error);
     res.status(500).json({ message: 'Failed to complete registration' });
@@ -309,10 +315,16 @@ export const loginUser = async (req: Request, res: Response) => {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    const token = jwt.sign({ uid: userData.uid, email: userData.email, role: userData.role }, JWT_SECRET, { expiresIn: '7d' });
+    // Create Firebase Custom Token for the user
+    const { getAuthInstance } = await import('../config/firebase');
+    const adminAuth = getAuthInstance();
+    const customToken = await adminAuth.createCustomToken(userData.uid, {
+      role: userData.role,
+      email: userData.email
+    });
 
     const { password: _, ...userWithoutPassword } = userData;
-    res.json({ user: userWithoutPassword, token });
+    res.json({ user: userWithoutPassword, customToken });
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ message: 'Server error during login' });

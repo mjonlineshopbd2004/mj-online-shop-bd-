@@ -314,22 +314,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const loginWithEmail = async (email: string, pass: string) => {
     setIsLoggingIn(true);
     try {
-      await signInWithEmailAndPassword(auth, email, pass);
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password: pass })
+      });
+      
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'Invalid email or password');
+      
+      // If the backend returns a customToken, use it to sign in with Firebase
+      if (data.customToken) {
+        await signInWithCustomToken(auth, data.customToken);
+      } else if (data.token) {
+        // Fallback or handle JWT if needed, but customToken is preferred for Firebase Auth
+        // For now, let's assume we need customToken for Firebase Auth state
+        toast.error('Server did not return a valid authentication token.');
+        return;
+      }
+
       toast.success('Logged in successfully!');
       setAuthModalOpen(false);
     } catch (error: any) {
-      console.error('Email login error details:', {
-        code: error.code,
-        message: error.message,
-        email: email
-      });
-      if (error.code === 'auth/operation-not-allowed') {
-        toast.error('Email/Password login is not enabled in Firebase. Please enable it in the Firebase Console under Authentication > Sign-in method.');
-      } else if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
-        toast.error('Invalid email or password. Please try again.');
-      } else {
-        toast.error(error.message || 'Failed to login. Please check your credentials.');
-      }
+      console.error('Email login error:', error);
+      toast.error(error.message || 'Failed to login. Please check your credentials.');
     } finally {
       setIsLoggingIn(false);
     }
