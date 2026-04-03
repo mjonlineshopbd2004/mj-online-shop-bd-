@@ -29,7 +29,7 @@ export default function AdminLayout() {
       {/* Desktop Sidebar */}
       <aside className="hidden lg:flex flex-col w-80 bg-[#111111] border-r border-white/5 text-white p-8 fixed top-0 left-0 bottom-0 z-30">
         <div className="flex items-center mb-12">
-          <div className="h-10 w-10 bg-emerald-500 rounded-xl flex items-center justify-center mr-3 shadow-lg shadow-emerald-500/20">
+          <div className="h-10 w-10 bg-primary rounded-xl flex items-center justify-center mr-3 shadow-lg shadow-primary/20">
             <span className="text-xl font-black text-white">MJ</span>
           </div>
           <span className="text-2xl font-black text-white tracking-tight">Admin</span>
@@ -43,7 +43,7 @@ export default function AdminLayout() {
               className={cn(
                 "flex items-center space-x-4 px-6 py-4 rounded-2xl font-bold transition-all duration-200",
                 location.pathname === item.path
-                  ? "bg-emerald-600 text-white shadow-xl shadow-emerald-600/20"
+                  ? "bg-primary-dark text-white shadow-xl shadow-primary-dark/20"
                   : "text-gray-400 hover:text-white hover:bg-white/5"
               )}
             >
@@ -74,7 +74,7 @@ export default function AdminLayout() {
       {/* Mobile Header */}
       <div className="lg:hidden fixed top-0 left-0 right-0 bg-[#111111] border-b border-white/5 text-white p-4 z-50 flex justify-between items-center backdrop-blur-xl bg-opacity-80">
         <div className="flex items-center">
-          <div className="h-8 w-8 bg-emerald-500 rounded-lg flex items-center justify-center mr-2">
+          <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center mr-2">
             <span className="text-sm font-black text-white">MJ</span>
           </div>
           <span className="text-lg font-black text-white">Admin</span>
@@ -98,7 +98,7 @@ export default function AdminLayout() {
         isSidebarOpen ? "translate-x-0" : "-translate-x-full"
       )}>
         <div className="flex items-center mb-12">
-          <div className="h-10 w-10 bg-emerald-500 rounded-xl flex items-center justify-center mr-3">
+          <div className="h-10 w-10 bg-primary rounded-xl flex items-center justify-center mr-3">
             <span className="text-xl font-black text-white">MJ</span>
           </div>
           <span className="text-2xl font-black text-white">Admin</span>
@@ -112,7 +112,7 @@ export default function AdminLayout() {
               className={cn(
                 "flex items-center space-x-4 px-6 py-4 rounded-2xl font-bold transition-all",
                 location.pathname === item.path 
-                  ? "bg-emerald-600 text-white shadow-lg shadow-emerald-600/20" 
+                  ? "bg-primary-dark text-white shadow-lg shadow-primary-dark/20" 
                   : "text-gray-400 hover:text-white hover:bg-white/5"
               )}
             >

@@ -58,11 +58,11 @@ export default function AdminUsers() {
         <input
           type="text"
           placeholder="Search by name, email, or phone..."
-          className="w-full bg-white/5 border border-white/10 rounded-xl px-12 py-4 outline-none focus:border-emerald-500 transition-all font-bold text-white"
+          className="w-full bg-white/5 border border-white/10 rounded-xl px-12 py-4 outline-none focus:border-primary transition-all font-bold text-white"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 group-focus-within:text-emerald-500 transition-colors" />
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 group-focus-within:text-primary transition-colors" />
       </div>
 
       {/* Users Table */}
@@ -89,15 +89,15 @@ export default function AdminUsers() {
                 <tr key={user.uid} className="hover:bg-white/5 transition-colors group">
                   <td className="px-8 py-6">
                     <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center overflow-hidden">
+                      <div className="w-12 h-12 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center overflow-hidden">
                         {user.photoURL ? (
                           <img src={getProxyUrl(user.photoURL)} alt="" className="w-full h-full object-cover" />
                         ) : (
-                          <User className="h-6 w-6 text-emerald-500" />
+                          <User className="h-6 w-6 text-primary" />
                         )}
                       </div>
                       <div>
-                        <p className="font-black text-white group-hover:text-emerald-500 transition-colors">{user.displayName || 'No Name'}</p>
+                        <p className="font-black text-white group-hover:text-primary transition-colors">{user.displayName || 'No Name'}</p>
                         <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest">{user.uid.slice(0, 8)}...</p>
                       </div>
                     </div>
@@ -125,7 +125,7 @@ export default function AdminUsers() {
                   <td className="px-8 py-6">
                     <div className={cn(
                       "inline-flex items-center gap-2 px-4 py-1.5 rounded-full border font-black text-[10px] uppercase tracking-widest",
-                      user.role === 'admin' ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" : "bg-blue-500/10 text-blue-500 border-blue-500/20"
+                      user.role === 'admin' ? "bg-primary/10 text-primary border-primary/20" : "bg-blue-500/10 text-blue-500 border-blue-500/20"
                     )}>
                       {user.role === 'admin' ? <Shield className="h-3 w-3" /> : <User className="h-3 w-3" />}
                       <span>{user.role}</span>
@@ -141,7 +141,7 @@ export default function AdminUsers() {
                         <div className="py-2">
                           <button
                             onClick={() => handleRoleChange(user.uid, 'admin')}
-                            className="flex items-center w-full px-4 py-3 text-xs text-gray-400 hover:bg-white/5 hover:text-emerald-500 font-black uppercase tracking-widest transition-colors"
+                            className="flex items-center w-full px-4 py-3 text-xs text-gray-400 hover:bg-white/5 hover:text-primary font-black uppercase tracking-widest transition-colors"
                           >
                             <Shield className="h-4 w-4 mr-2" />
                             Make Admin

@@ -261,7 +261,7 @@ export default function AdminCategories() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-[#0a0a0a]">
-        <Loader2 className="h-12 w-12 text-emerald-500 animate-spin" />
+        <Loader2 className="h-12 w-12 text-primary animate-spin" />
       </div>
     );
   }
@@ -284,7 +284,7 @@ export default function AdminCategories() {
                 key={suggested.name}
                 onClick={() => handleQuickAdd(suggested)}
                 disabled={saving || categories.some(cat => cat.name === suggested.name)}
-                className="flex flex-col items-center gap-2 p-4 bg-white/5 border border-white/10 rounded-2xl hover:bg-emerald-500/10 hover:border-emerald-500/50 transition-all group disabled:opacity-50"
+                className="flex flex-col items-center gap-2 p-4 bg-white/5 border border-white/10 rounded-2xl hover:bg-primary/10 hover:border-primary/50 transition-all group disabled:opacity-50"
               >
                 <div className="h-12 w-12 rounded-xl overflow-hidden bg-white/5">
                   <img src={getProxyUrl(suggested.image)} alt="" className="h-full w-full object-cover group-hover:scale-110 transition-transform" />
@@ -298,9 +298,9 @@ export default function AdminCategories() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="space-y-6">
             {editingIndex !== null ? (
-              <div className="space-y-6 p-6 bg-emerald-500/5 border border-emerald-500/20 rounded-3xl">
+              <div className="space-y-6 p-6 bg-primary/5 border border-primary/20 rounded-3xl">
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-lg font-black text-emerald-500">Edit Category</h3>
+                  <h3 className="text-lg font-black text-primary">Edit Category</h3>
                   <button 
                     onClick={() => setEditingIndex(null)}
                     className="p-2 hover:bg-white/5 rounded-xl transition-all"
@@ -312,7 +312,7 @@ export default function AdminCategories() {
                 <div className="space-y-3">
                   <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-2">Category Name</label>
                   <div className="relative group">
-                    <Layers className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 group-focus-within:text-emerald-500 transition-colors" />
+                    <Layers className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 group-focus-within:text-primary transition-colors" />
                     <input
                       type="text"
                       value={editCategory.name}
@@ -320,7 +320,7 @@ export default function AdminCategories() {
                       onKeyDown={(e) => e.key === 'Enter' && !saving && handleUpdateCategory()}
                       placeholder="Enter category name..."
                       disabled={saving}
-                      className="w-full bg-white/5 border border-white/10 rounded-2xl pl-14 pr-6 py-4 outline-none focus:border-emerald-500 transition-all font-bold text-white disabled:opacity-50"
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl pl-14 pr-6 py-4 outline-none focus:border-primary transition-all font-bold text-white disabled:opacity-50"
                     />
                   </div>
                 </div>
@@ -328,7 +328,7 @@ export default function AdminCategories() {
                 <div className="space-y-3">
                   <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-2 flex justify-between">
                     <span>Category Image</span>
-                    <span className="text-emerald-500/50">Optional</span>
+                    <span className="text-primary/50">Optional</span>
                   </label>
                   <div className="relative">
                     {editCategory.image ? (
@@ -353,13 +353,13 @@ export default function AdminCategories() {
                         </div>
                       </div>
                     ) : (
-                      <label className="flex flex-col items-center justify-center aspect-video bg-white/5 border-2 border-dashed border-white/10 rounded-2xl cursor-pointer hover:border-emerald-500/50 transition-all group/upload">
+                      <label className="flex flex-col items-center justify-center aspect-video bg-white/5 border-2 border-dashed border-white/10 rounded-2xl cursor-pointer hover:border-primary/50 transition-all group/upload">
                         {uploading ? (
-                          <Loader2 className="h-8 w-8 text-emerald-500 animate-spin" />
+                          <Loader2 className="h-8 w-8 text-primary animate-spin" />
                         ) : (
                           <>
-                            <Upload className="h-8 w-8 text-gray-500 group-hover/upload:text-emerald-500 transition-colors mb-2" />
-                            <span className="text-xs font-black text-gray-500 group-hover/upload:text-emerald-500 uppercase tracking-widest">Upload Image</span>
+                            <Upload className="h-8 w-8 text-gray-500 group-hover/upload:text-primary transition-colors mb-2" />
+                            <span className="text-xs font-black text-gray-500 group-hover/upload:text-primary uppercase tracking-widest">Upload Image</span>
                           </>
                         )}
                         <input
@@ -384,7 +384,7 @@ export default function AdminCategories() {
                   <button
                     onClick={handleUpdateCategory}
                     disabled={saving || uploading}
-                    className="flex-[2] bg-emerald-600 text-white py-4 rounded-2xl font-black hover:bg-emerald-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg shadow-emerald-600/20"
+                    className="flex-[2] bg-primary-dark text-white py-4 rounded-2xl font-black hover:bg-primary transition-all flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg shadow-primary-dark/20"
                   >
                     {saving ? <Loader2 className="h-5 w-5 animate-spin" /> : <Plus className="h-5 w-5" />}
                     Save Changes
@@ -396,7 +396,7 @@ export default function AdminCategories() {
                 <div className="space-y-3">
                   <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-2">Category Name</label>
                   <div className="relative group">
-                    <Layers className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 group-focus-within:text-emerald-500 transition-colors" />
+                    <Layers className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 group-focus-within:text-primary transition-colors" />
                     <input
                       type="text"
                       value={newCategory.name}
@@ -404,7 +404,7 @@ export default function AdminCategories() {
                       onKeyDown={(e) => e.key === 'Enter' && !saving && handleAddCategory()}
                       placeholder="Enter category name..."
                       disabled={saving}
-                      className="w-full bg-white/5 border border-white/10 rounded-2xl pl-14 pr-6 py-4 outline-none focus:border-emerald-500 transition-all font-bold text-white disabled:opacity-50"
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl pl-14 pr-6 py-4 outline-none focus:border-primary transition-all font-bold text-white disabled:opacity-50"
                     />
                   </div>
                 </div>
@@ -412,7 +412,7 @@ export default function AdminCategories() {
                 <div className="space-y-3">
                   <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-2 flex justify-between">
                     <span>Category Image</span>
-                    <span className="text-emerald-500/50">Optional</span>
+                    <span className="text-primary/50">Optional</span>
                   </label>
                   <div className="relative">
                     {newCategory.image ? (
@@ -437,13 +437,13 @@ export default function AdminCategories() {
                         </div>
                       </div>
                     ) : (
-                      <label className="flex flex-col items-center justify-center aspect-video bg-white/5 border-2 border-dashed border-white/10 rounded-2xl cursor-pointer hover:border-emerald-500/50 transition-all group/upload">
+                      <label className="flex flex-col items-center justify-center aspect-video bg-white/5 border-2 border-dashed border-white/10 rounded-2xl cursor-pointer hover:border-primary/50 transition-all group/upload">
                         {uploading ? (
-                          <Loader2 className="h-8 w-8 text-emerald-500 animate-spin" />
+                          <Loader2 className="h-8 w-8 text-primary animate-spin" />
                         ) : (
                           <>
-                            <Upload className="h-8 w-8 text-gray-500 group-hover/upload:text-emerald-500 transition-colors mb-2" />
-                            <span className="text-xs font-black text-gray-500 group-hover/upload:text-emerald-500 uppercase tracking-widest">Upload Image</span>
+                            <Upload className="h-8 w-8 text-gray-500 group-hover/upload:text-primary transition-colors mb-2" />
+                            <span className="text-xs font-black text-gray-500 group-hover/upload:text-primary uppercase tracking-widest">Upload Image</span>
                           </>
                         )}
                         <input
@@ -460,7 +460,7 @@ export default function AdminCategories() {
                 <button
                   onClick={handleAddCategory}
                   disabled={saving || uploading}
-                  className="w-full bg-emerald-600 text-white py-4 rounded-2xl font-black hover:bg-emerald-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg shadow-emerald-600/20"
+                  className="w-full bg-primary-dark text-white py-4 rounded-2xl font-black hover:bg-primary transition-all flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg shadow-primary-dark/20"
                 >
                   {saving ? <Loader2 className="h-5 w-5 animate-spin" /> : <Plus className="h-5 w-5" />}
                   Add Category
@@ -499,7 +499,7 @@ export default function AdminCategories() {
                         setEditCategory(category);
                         window.scrollTo({ top: 0, behavior: 'smooth' });
                       }}
-                      className="p-3 text-gray-500 hover:text-emerald-500 hover:bg-emerald-500/10 rounded-xl transition-all"
+                      className="p-3 text-gray-500 hover:text-primary hover:bg-primary/10 rounded-xl transition-all"
                     >
                       <Plus className="h-5 w-5 rotate-45" />
                     </button>
@@ -524,8 +524,8 @@ export default function AdminCategories() {
         </div>
       </div>
 
-      <div className="bg-emerald-500/5 border border-emerald-500/10 rounded-[2rem] p-8">
-        <h3 className="text-lg font-black text-emerald-500 mb-2">Pro Tip</h3>
+      <div className="bg-primary/5 border border-primary/10 rounded-[2rem] p-8">
+        <h3 className="text-lg font-black text-primary mb-2">Pro Tip</h3>
         <p className="text-gray-400 font-bold text-sm leading-relaxed">
           Categories help your customers find products faster. Make sure to use clear, descriptive names. 
           Changes saved here will reflect immediately on the Navbar, Footer, and Home page.

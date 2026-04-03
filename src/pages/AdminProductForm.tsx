@@ -340,7 +340,7 @@ export default function AdminProductForm() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-[#0a0a0a]">
-        <Loader2 className="h-12 w-12 text-emerald-500 animate-spin" />
+        <Loader2 className="h-12 w-12 text-primary animate-spin" />
       </div>
     );
   }
@@ -365,7 +365,7 @@ export default function AdminProductForm() {
         <button
           onClick={handleSubmit}
           disabled={submitting || uploading}
-          className="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-4 rounded-xl font-black transition-all shadow-lg shadow-emerald-600/20 disabled:opacity-50"
+          className="flex items-center justify-center gap-2 bg-primary-dark hover:bg-primary text-white px-8 py-4 rounded-xl font-black transition-all shadow-lg shadow-primary-dark/20 disabled:opacity-50"
         >
           {submitting ? <Loader2 className="h-5 w-5 animate-spin" /> : <Save className="h-5 w-5" />}
           <span>{isEditing ? 'Update Product' : 'Save Product'}</span>
@@ -377,7 +377,7 @@ export default function AdminProductForm() {
         <div className="lg:col-span-2 space-y-8">
           <div className="bg-white/5 border border-white/10 p-8 rounded-[2rem] space-y-6">
             <h2 className="text-xl font-black flex items-center gap-3 text-white">
-              <Plus className="h-5 w-5 text-emerald-500" />
+              <Plus className="h-5 w-5 text-primary" />
               Basic Information
             </h2>
             
@@ -387,7 +387,7 @@ export default function AdminProductForm() {
                 <input
                   type="text"
                   required
-                  className="flex-1 bg-white/5 border border-white/10 rounded-xl px-6 py-4 focus:outline-none focus:border-emerald-500 transition-all font-bold text-white"
+                  className="flex-1 bg-white/5 border border-white/10 rounded-xl px-6 py-4 focus:outline-none focus:border-primary transition-all font-bold text-white"
                   value={formData.name || ''}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 />
@@ -399,7 +399,7 @@ export default function AdminProductForm() {
                       handleFetchFromUrl();
                     }}
                     disabled={fetching}
-                    className="bg-white/5 border border-white/10 hover:bg-white/10 text-emerald-500 px-6 py-4 rounded-xl font-black transition-all flex items-center gap-2 disabled:opacity-50"
+                    className="bg-white/5 border border-white/10 hover:bg-white/10 text-primary px-6 py-4 rounded-xl font-black transition-all flex items-center gap-2 disabled:opacity-50"
                     title="Sync with Source"
                   >
                     {fetching ? <Loader2 className="h-5 w-5 animate-spin" /> : <Settings className="h-5 w-5" />}
@@ -414,7 +414,7 @@ export default function AdminProductForm() {
               <textarea
                 required
                 rows={6}
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-6 py-4 focus:outline-none focus:border-emerald-500 transition-all font-bold text-white resize-none"
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-6 py-4 focus:outline-none focus:border-primary transition-all font-bold text-white resize-none"
                 value={formData.description || ''}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               />
@@ -424,7 +424,7 @@ export default function AdminProductForm() {
               <div className="space-y-2">
                 <label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Category</label>
                 <select
-                  className="w-full bg-[#111111] border border-white/10 rounded-xl px-6 py-4 focus:outline-none focus:border-emerald-500 transition-all font-bold text-white"
+                  className="w-full bg-[#111111] border border-white/10 rounded-xl px-6 py-4 focus:outline-none focus:border-primary transition-all font-bold text-white"
                   value={formData.category || ''}
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                 >
@@ -439,7 +439,7 @@ export default function AdminProductForm() {
                 <input
                   type="number"
                   required
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-6 py-4 focus:outline-none focus:border-emerald-500 transition-all font-bold text-white"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-6 py-4 focus:outline-none focus:border-primary transition-all font-bold text-white"
                   value={formData.stock ?? 0}
                   onChange={(e) => setFormData({ ...formData, stock: Number(e.target.value) })}
                 />
@@ -449,7 +449,7 @@ export default function AdminProductForm() {
 
           <div className="bg-white/5 border border-white/10 p-8 rounded-[2rem] space-y-6">
             <h2 className="text-xl font-black flex items-center gap-3 text-white">
-              <DollarSign className="h-5 w-5 text-emerald-500" />
+              <DollarSign className="h-5 w-5 text-primary" />
               Pricing
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -458,7 +458,7 @@ export default function AdminProductForm() {
                 <input
                   type="number"
                   required
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-6 py-4 focus:outline-none focus:border-emerald-500 transition-all font-bold text-white"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-6 py-4 focus:outline-none focus:border-primary transition-all font-bold text-white"
                   value={formData.price ?? 0}
                   onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
                 />
@@ -467,7 +467,7 @@ export default function AdminProductForm() {
                 <label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Discount Price (Optional)</label>
                 <input
                   type="number"
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-6 py-4 focus:outline-none focus:border-emerald-500 transition-all font-bold text-white"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-6 py-4 focus:outline-none focus:border-primary transition-all font-bold text-white"
                   value={formData.discountPrice ?? ''}
                   onChange={(e) => setFormData({ ...formData, discountPrice: e.target.value ? Number(e.target.value) : null })}
                 />
@@ -478,7 +478,7 @@ export default function AdminProductForm() {
           <div className="bg-white/5 border border-white/10 p-8 rounded-[2rem] space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-black flex items-center gap-3 text-white">
-                <Settings className="h-5 w-5 text-emerald-500" />
+                <Settings className="h-5 w-5 text-primary" />
                 Variants (Sizes & Colors)
               </h2>
             </div>
@@ -491,7 +491,7 @@ export default function AdminProductForm() {
                   <button
                     type="button"
                     onClick={addSize}
-                    className="p-1.5 bg-emerald-500/10 text-emerald-500 rounded-lg hover:bg-emerald-500/20 transition-all"
+                    className="p-1.5 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-all"
                   >
                     <Plus className="h-4 w-4" />
                   </button>
@@ -502,7 +502,7 @@ export default function AdminProductForm() {
                       <input
                         type="text"
                         placeholder="Size"
-                        className="w-20 bg-white/5 border border-white/10 rounded-xl px-3 py-2 focus:outline-none focus:border-emerald-500 transition-all font-bold text-white text-xs"
+                        className="w-20 bg-white/5 border border-white/10 rounded-xl px-3 py-2 focus:outline-none focus:border-primary transition-all font-bold text-white text-xs"
                         value={size || ''}
                         onChange={(e) => updateSize(idx, e.target.value)}
                       />
@@ -528,7 +528,7 @@ export default function AdminProductForm() {
                   <button
                     type="button"
                     onClick={addColor}
-                    className="p-1.5 bg-emerald-500/10 text-emerald-500 rounded-lg hover:bg-emerald-500/20 transition-all"
+                    className="p-1.5 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-all"
                   >
                     <Plus className="h-4 w-4" />
                   </button>
@@ -539,7 +539,7 @@ export default function AdminProductForm() {
                       <input
                         type="text"
                         placeholder="Color"
-                        className="w-24 bg-white/5 border border-white/10 rounded-xl px-3 py-2 focus:outline-none focus:border-emerald-500 transition-all font-bold text-white text-xs"
+                        className="w-24 bg-white/5 border border-white/10 rounded-xl px-3 py-2 focus:outline-none focus:border-primary transition-all font-bold text-white text-xs"
                         value={color || ''}
                         onChange={(e) => updateColor(idx, e.target.value)}
                       />
@@ -565,7 +565,7 @@ export default function AdminProductForm() {
                   <button
                     type="button"
                     onClick={addColorVariant}
-                    className="p-1.5 bg-emerald-500/10 text-emerald-500 rounded-lg hover:bg-emerald-500/20 transition-all"
+                    className="p-1.5 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-all"
                   >
                     <Plus className="h-4 w-4" />
                   </button>
@@ -586,7 +586,7 @@ export default function AdminProductForm() {
                         <input
                           type="text"
                           placeholder="e.g. Midnight Black"
-                          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 focus:outline-none focus:border-emerald-500 transition-all font-bold text-white text-sm"
+                          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 focus:outline-none focus:border-primary transition-all font-bold text-white text-sm"
                           value={variant.name || ''}
                           onChange={(e) => updateColorVariant(idx, 'name', e.target.value)}
                         />
@@ -602,7 +602,7 @@ export default function AdminProductForm() {
                               onClick={() => updateColorVariant(idx, 'image', img)}
                               className={cn(
                                 "w-12 h-12 rounded-lg overflow-hidden border-2 transition-all flex-shrink-0",
-                                variant.image === img ? "border-emerald-500" : "border-transparent opacity-50"
+                                variant.image === img ? "border-primary" : "border-transparent opacity-50"
                               )}
                             >
                               <img src={getProxyUrl(img)} className="w-full h-full object-cover" />
@@ -612,7 +612,7 @@ export default function AdminProductForm() {
                         <input
                           type="text"
                           placeholder="Or paste image URL"
-                          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 focus:outline-none focus:border-emerald-500 transition-all font-bold text-white text-xs"
+                          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 focus:outline-none focus:border-primary transition-all font-bold text-white text-xs"
                           value={variant.image || ''}
                           onChange={(e) => updateColorVariant(idx, 'image', e.target.value)}
                         />
@@ -627,13 +627,13 @@ export default function AdminProductForm() {
           <div className="bg-white/5 border border-white/10 p-8 rounded-[2rem] space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-black flex items-center gap-3 text-white">
-                <Settings className="h-5 w-5 text-emerald-500" />
+                <Settings className="h-5 w-5 text-primary" />
                 Specifications
               </h2>
               <button
                 type="button"
                 onClick={addSpecification}
-                className="p-2 bg-emerald-500/10 text-emerald-500 rounded-lg hover:bg-emerald-500/20 transition-all"
+                className="p-2 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-all"
               >
                 <Plus className="h-5 w-5" />
               </button>
@@ -648,7 +648,7 @@ export default function AdminProductForm() {
                       <input
                         type="text"
                         placeholder="e.g. Material"
-                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-emerald-500 transition-all font-bold text-white text-sm"
+                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-primary transition-all font-bold text-white text-sm"
                         value={spec.key || ''}
                         onChange={(e) => updateSpecification(idx, 'key', e.target.value)}
                       />
@@ -658,7 +658,7 @@ export default function AdminProductForm() {
                       <input
                         type="text"
                         placeholder="e.g. Leather"
-                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-emerald-500 transition-all font-bold text-white text-sm"
+                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-primary transition-all font-bold text-white text-sm"
                         value={spec.value || ''}
                         onChange={(e) => updateSpecification(idx, 'value', e.target.value)}
                       />
@@ -687,7 +687,7 @@ export default function AdminProductForm() {
           <div className="bg-white/5 border border-white/10 p-8 rounded-[2rem] space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-black flex items-center gap-3 text-white">
-                <ImageIcon className="h-5 w-5 text-emerald-500" />
+                <ImageIcon className="h-5 w-5 text-primary" />
                 Images
               </h2>
               <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
@@ -713,7 +713,7 @@ export default function AdminProductForm() {
                   type="button"
                   onClick={() => imageInputRef.current?.click()}
                   disabled={uploading}
-                  className="aspect-square border-2 border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center gap-2 text-gray-500 hover:border-emerald-500 hover:text-emerald-500 transition-all bg-white/5"
+                  className="aspect-square border-2 border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center gap-2 text-gray-500 hover:border-primary hover:text-primary transition-all bg-white/5"
                 >
                   {uploading ? <Loader2 className="h-6 w-6 animate-spin" /> : <Upload className="h-6 w-6" />}
                   <span className="text-[10px] font-black uppercase tracking-widest">Upload</span>
@@ -725,7 +725,7 @@ export default function AdminProductForm() {
               <input
                 type="text"
                 placeholder="Paste image URL and press Enter"
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-emerald-500 transition-all font-bold text-white text-sm"
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-primary transition-all font-bold text-white text-sm"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
                     e.preventDefault();
@@ -761,7 +761,7 @@ export default function AdminProductForm() {
 
           <div className="bg-white/5 border border-white/10 p-8 rounded-[2rem] space-y-6">
             <h2 className="text-xl font-black flex items-center gap-3 text-white">
-              <Video className="h-5 w-5 text-emerald-500" />
+              <Video className="h-5 w-5 text-primary" />
               Product Video
             </h2>
             
@@ -771,7 +771,7 @@ export default function AdminProductForm() {
                 <input
                   type="text"
                   placeholder="Paste video URL"
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-emerald-500 transition-all font-bold text-white text-sm"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-primary transition-all font-bold text-white text-sm"
                   value={formData.videoUrl || ''}
                   onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })}
                 />
@@ -793,7 +793,7 @@ export default function AdminProductForm() {
                 type="button"
                 onClick={() => videoInputRef.current?.click()}
                 disabled={uploading}
-                className="w-full py-8 border-2 border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center gap-2 text-gray-500 hover:border-emerald-500 hover:text-emerald-500 transition-all bg-white/5"
+                className="w-full py-8 border-2 border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center gap-2 text-gray-500 hover:border-primary hover:text-primary transition-all bg-white/5"
               >
                 {uploading ? <Loader2 className="h-6 w-6 animate-spin" /> : <Video className="h-6 w-6" />}
                 <span className="text-[10px] font-black uppercase tracking-widest">Upload Video</span>

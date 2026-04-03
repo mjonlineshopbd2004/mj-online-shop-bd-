@@ -43,6 +43,7 @@ import AdminProductImporter from './pages/AdminProductImporter';
 import AdminGoogleSheetSettings from './pages/AdminGoogleSheetSettings';
 import SplashScreen from './components/SplashScreen';
 import FaviconUpdater from './components/FaviconUpdater';
+import ThemeManager from './components/ThemeManager';
 import { AnimatePresence, motion } from 'motion/react';
 import { useLocation } from 'react-router-dom';
 
@@ -138,6 +139,7 @@ export default function App() {
   return (
     <AuthProvider>
       <SettingsProvider>
+        <ThemeManager />
         <FaviconUpdater />
         <CartProvider>
           <WishlistProvider>

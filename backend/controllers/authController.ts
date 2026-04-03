@@ -9,11 +9,13 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key_here';
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export const sendOTP = async (req: Request, res: Response) => {
-  const { email, isForgotPassword } = req.body;
+  const { email: rawEmail, isForgotPassword } = req.body;
 
-  if (!email) {
+  if (!rawEmail) {
     return res.status(400).json({ message: 'Email is required' });
   }
+
+  const email = rawEmail.toLowerCase().trim();
 
   try {
     const db = getDb();
@@ -98,11 +100,13 @@ export const sendOTP = async (req: Request, res: Response) => {
 };
 
 export const verifyOTPAndRegister = async (req: Request, res: Response) => {
-  const { email, code, password, phone, name } = req.body;
+  const { email: rawEmail, code, password, phone, name } = req.body;
 
-  if (!email || !code || !password) {
+  if (!rawEmail || !code || !password) {
     return res.status(400).json({ message: 'Email, code, and password are required' });
   }
+
+  const email = rawEmail.toLowerCase().trim();
 
   try {
     const db = getDb();
@@ -126,33 +130,51 @@ export const verifyOTPAndRegister = async (req: Request, res: Response) => {
 
     // Check if user already exists
     const userSnapshot = await db.collection('users').where('email', '==', email).get();
+    let finalUser: any = null;
+
     if (!userSnapshot.empty) {
-      return res.status(400).json({ message: 'User already exists. Please login.' });
+      const existingUserDoc = userSnapshot.docs[0];
+      const existingUserData = existingUserDoc.data() as UserProfile;
+      
+      // If user exists but has no password (Google login), allow setting it
+      if (!existingUserData.password) {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const updatedData = {
+          password: hashedPassword,
+          phone: phone || existingUserData.phone || '',
+          displayName: name || existingUserData.displayName || email.split('@')[0]
+        };
+        await existingUserDoc.ref.update(updatedData);
+        finalUser = { ...existingUserData, ...updatedData };
+      } else {
+        return res.status(400).json({ message: 'User already exists. Please login.' });
+      }
+    } else {
+      // Create new user
+      const hashedPassword = await bcrypt.hash(password, 10);
+      const newUser: UserProfile = {
+        uid: db.collection('users').doc().id,
+        email,
+        password: hashedPassword,
+        displayName: name || email.split('@')[0],
+        phone: phone || '',
+        role: email === 'mjonlineshopbd@gmail.com' ? 'admin' : 'customer',
+        createdAt: new Date().toISOString(),
+      };
+
+      await db.collection('users').doc(newUser.uid).set(newUser);
+      finalUser = newUser;
     }
-
-    // Create new user
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser: UserProfile = {
-      uid: db.collection('users').doc().id,
-      email,
-      password: hashedPassword,
-      displayName: name || email.split('@')[0],
-      phone: phone || '',
-      role: email === 'mjonlineshopbd@gmail.com' ? 'admin' : 'customer',
-      createdAt: new Date().toISOString(),
-    };
-
-    await db.collection('users').doc(newUser.uid).set(newUser);
 
     // Create Firebase Custom Token for the user
     const { getAuthInstance } = await import('../config/firebase');
     const adminAuth = getAuthInstance();
-    const customToken = await adminAuth.createCustomToken(newUser.uid, {
-      role: newUser.role,
-      email: newUser.email
+    const customToken = await adminAuth.createCustomToken(finalUser.uid, {
+      role: finalUser.role,
+      email: finalUser.email
     });
 
-    const { password: _, ...userWithoutPassword } = newUser;
+    const { password: _, ...userWithoutPassword } = finalUser;
     res.status(201).json({ user: userWithoutPassword, customToken });
   } catch (error) {
     console.error('Verify OTP and Register error:', error);
@@ -161,11 +183,13 @@ export const verifyOTPAndRegister = async (req: Request, res: Response) => {
 };
 
 export const resetPassword = async (req: Request, res: Response) => {
-  const { email, code, newPassword } = req.body;
+  const { email: rawEmail, code, newPassword } = req.body;
 
-  if (!email || !code || !newPassword) {
+  if (!rawEmail || !code || !newPassword) {
     return res.status(400).json({ message: 'Email, code, and new password are required' });
   }
+
+  const email = rawEmail.toLowerCase().trim();
 
   try {
     const db = getDb();
@@ -208,24 +232,38 @@ export const resetPassword = async (req: Request, res: Response) => {
 };
 
 export const checkEmail = async (req: Request, res: Response) => {
-  const { email } = req.body;
-  if (!email) return res.status(400).json({ message: 'Email is required' });
+  const { email: rawEmail } = req.body;
+  if (!rawEmail) return res.status(400).json({ message: 'Email is required' });
+
+  const email = rawEmail.toLowerCase().trim();
 
   try {
     const db = getDb();
     const userSnapshot = await db.collection('users').where('email', '==', email).get();
-    res.json({ exists: !userSnapshot.empty });
+    
+    if (userSnapshot.empty) {
+      return res.json({ exists: false });
+    }
+
+    const userData = userSnapshot.docs[0].data();
+    res.json({ 
+      exists: true, 
+      hasPassword: !!userData.password,
+      method: userData.password ? 'password' : 'google'
+    });
   } catch (error) {
     res.status(500).json({ message: 'Error checking email' });
   }
 };
 
 export const verifyOTP = async (req: Request, res: Response) => {
-  const { email, code } = req.body;
+  const { email: rawEmail, code } = req.body;
 
-  if (!email || !code) {
+  if (!rawEmail || !code) {
     return res.status(400).json({ message: 'Email and code are required' });
   }
+
+  const email = rawEmail.toLowerCase().trim();
 
   try {
     const db = getDb();
@@ -252,11 +290,13 @@ export const verifyOTP = async (req: Request, res: Response) => {
 };
 
 export const registerUser = async (req: Request, res: Response) => {
-  const { name, email, password, phone, address } = req.body;
+  const { name, email: rawEmail, password, phone, address } = req.body;
 
-  if (!name || !email || !password) {
+  if (!name || !rawEmail || !password) {
     return res.status(400).json({ message: 'Name, email, and password are required' });
   }
+
+  const email = rawEmail.toLowerCase().trim();
 
   try {
     const db = getDb();
@@ -290,16 +330,21 @@ export const registerUser = async (req: Request, res: Response) => {
 };
 
 export const loginUser = async (req: Request, res: Response) => {
-  const { email, password } = req.body;
+  const { email: rawEmail, password } = req.body;
 
-  if (!email || !password) {
+  if (!rawEmail || !password) {
     return res.status(400).json({ message: 'Email and password are required' });
   }
 
+  const email = rawEmail.toLowerCase().trim();
+
   try {
     const db = getDb();
+    console.log(`Login attempt for email: ${email}`);
     const userSnapshot = await db.collection('users').where('email', '==', email).get();
+    
     if (userSnapshot.empty) {
+      console.log(`User not found in Firestore: ${email}`);
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
@@ -307,14 +352,17 @@ export const loginUser = async (req: Request, res: Response) => {
     const userData = userDoc.data() as UserProfile;
 
     if (!userData.password) {
-      return res.status(401).json({ message: 'Invalid credentials' });
+      console.log(`User found but has no password field (likely Google login): ${email}`);
+      return res.status(401).json({ message: 'This account was created with Google. Please use Google Login or "Forgot Password" to set a password.' });
     }
 
     const isMatch = await bcrypt.compare(password, userData.password);
     if (!isMatch) {
+      console.log(`Password mismatch for user: ${email}`);
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
+    console.log(`Login successful for user: ${email}`);
     // Create Firebase Custom Token for the user
     const { getAuthInstance } = await import('../config/firebase');
     const adminAuth = getAuthInstance();

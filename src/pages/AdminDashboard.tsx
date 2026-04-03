@@ -115,13 +115,13 @@ export default function AdminDashboard() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-[#111111]">
-        <Loader2 className="h-12 w-12 text-emerald-500 animate-spin" />
+        <Loader2 className="h-12 w-12 text-primary animate-spin" />
       </div>
     );
   }
 
   const mainStats = [
-    { label: 'Today Revenue', value: formatPrice(stats.todayRevenue), icon: DollarSign, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+    { label: 'Today Revenue', value: formatPrice(stats.todayRevenue), icon: DollarSign, color: 'text-primary', bg: 'bg-primary/10' },
     { label: 'Today Orders', value: stats.todayOrders, icon: ShoppingBag, color: 'text-blue-500', bg: 'bg-blue-500/10' },
     { label: 'Pending Orders', value: stats.pendingOrders, icon: Clock, color: 'text-orange-500', bg: 'bg-orange-500/10' },
     { label: 'Total Users', value: stats.totalUsers, icon: Users, color: 'text-purple-500', bg: 'bg-purple-500/10' },
@@ -150,7 +150,7 @@ export default function AdminDashboard() {
           </button>
           <Link 
             to="/admin/products/new"
-            className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg shadow-emerald-600/20"
+            className="flex items-center gap-2 bg-primary-dark hover:bg-primary text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg shadow-primary-dark/20"
           >
             <Plus className="h-5 w-5" />
             Add Product
@@ -172,7 +172,7 @@ export default function AdminDashboard() {
               <div className={`${card.bg} p-3 rounded-xl group-hover:scale-110 transition-transform`}>
                 <card.icon className={`h-6 w-6 ${card.color}`} />
               </div>
-              <TrendingUp className="h-4 w-4 text-emerald-500 opacity-50" />
+              <TrendingUp className="h-4 w-4 text-primary opacity-50" />
             </div>
             <p className="text-gray-400 font-bold uppercase tracking-widest text-[10px] mb-1">{card.label}</p>
             <h3 className="text-2xl font-bold tracking-tight text-white">{card.value}</h3>
@@ -184,7 +184,7 @@ export default function AdminDashboard() {
         {/* Detailed Revenue Breakdown */}
         <div className="lg:col-span-2 bg-white/5 border border-white/10 rounded-[2rem] p-8">
           <h2 className="text-xl font-bold tracking-tight mb-8 flex items-center gap-3 text-white">
-            <DollarSign className="h-5 w-5 text-emerald-500" />
+            <DollarSign className="h-5 w-5 text-primary" />
             Revenue Breakdown
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -195,8 +195,8 @@ export default function AdminDashboard() {
                   <p className="text-xl font-bold tracking-tight text-white">{formatPrice(item.rev)}</p>
                   <p className="text-xs text-gray-500 font-bold">{item.ord} Orders</p>
                 </div>
-                <div className="h-10 w-10 bg-emerald-500/10 rounded-xl flex items-center justify-center">
-                  <TrendingUp className="h-5 w-5 text-emerald-500" />
+                <div className="h-10 w-10 bg-primary/10 rounded-xl flex items-center justify-center">
+                  <TrendingUp className="h-5 w-5 text-primary" />
                 </div>
               </div>
             ))}
@@ -206,14 +206,14 @@ export default function AdminDashboard() {
         {/* Order Status Summary */}
         <div className="bg-white/5 border border-white/10 rounded-[2rem] p-8">
           <h2 className="text-xl font-bold tracking-tight mb-8 flex items-center gap-3 text-white">
-            <Package className="h-5 w-5 text-emerald-500" />
+            <Package className="h-5 w-5 text-primary" />
             Order Status
           </h2>
           <div className="space-y-3">
             {[
               { label: 'Pending', value: stats.pendingOrders, color: 'text-orange-500', bg: 'bg-orange-500/10' },
               { label: 'Processing', value: stats.processingOrders, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-              { label: 'Delivered', value: stats.deliveredOrders, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+              { label: 'Delivered', value: stats.deliveredOrders, color: 'text-primary', bg: 'bg-primary/10' },
             ].map((status) => (
               <div key={status.label} className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/5">
                 <div className="flex items-center gap-3">
@@ -232,7 +232,7 @@ export default function AdminDashboard() {
         <div className="lg:col-span-2 bg-white/5 border border-white/10 rounded-[2rem] overflow-hidden">
           <div className="p-8 flex items-center justify-between border-b border-white/10">
             <h2 className="text-xl font-bold tracking-tight text-white">Recent Orders</h2>
-            <Link to="/admin/orders" className="text-emerald-500 font-bold hover:underline flex items-center gap-2 text-sm">
+            <Link to="/admin/orders" className="text-primary font-bold hover:underline flex items-center gap-2 text-sm">
               View All <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
@@ -251,14 +251,14 @@ export default function AdminDashboard() {
                   <tr key={order.id} className="hover:bg-white/5 transition-colors group">
                     <td className="px-8 py-6 font-mono text-xs text-gray-400">#{order.id.slice(-6).toUpperCase()}</td>
                     <td className="px-8 py-6">
-                      <p className="font-bold text-white group-hover:text-emerald-500 transition-colors text-sm">{order.customerName}</p>
+                      <p className="font-bold text-white group-hover:text-primary transition-colors text-sm">{order.customerName}</p>
                       <p className="text-[10px] text-gray-500">{order.phone}</p>
                     </td>
                     <td className="px-8 py-6 font-bold tracking-tight text-white text-sm">{formatPrice(order.total)}</td>
                     <td className="px-8 py-6">
                       <span className={cn(
                         "px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider",
-                        order.status === 'delivered' ? "bg-emerald-500/10 text-emerald-500" :
+                        order.status === 'delivered' ? "bg-primary/10 text-primary" :
                         order.status === 'processing' ? "bg-blue-500/10 text-blue-500" :
                         "bg-orange-500/10 text-orange-500"
                       )}>
@@ -280,7 +280,7 @@ export default function AdminDashboard() {
               {[
                 { label: 'Products', icon: Package, link: '/admin/products', color: 'bg-blue-500' },
                 { label: 'Orders', icon: ShoppingBag, link: '/admin/orders', color: 'bg-orange-500' },
-                { label: 'Transactions', icon: CreditCard, link: '/admin/transactions', color: 'bg-emerald-500' },
+                { label: 'Transactions', icon: CreditCard, link: '/admin/transactions', color: 'bg-primary' },
                 { label: 'Reviews', icon: Star, link: '/admin/reviews', color: 'bg-yellow-500' },
                 { label: 'Users', icon: Users, link: '/admin/users', color: 'bg-purple-500' },
                 { label: 'Settings', icon: Settings, link: '/admin/settings', color: 'bg-gray-500' },
@@ -299,11 +299,11 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          <div className="bg-emerald-600 rounded-[2rem] p-8 text-white relative overflow-hidden group">
+          <div className="bg-primary-dark rounded-[2rem] p-8 text-white relative overflow-hidden group">
             <div className="relative z-10">
               <h3 className="text-xl font-bold tracking-tight mb-2 text-white">Need Help?</h3>
-              <p className="text-emerald-100 font-bold text-xs mb-6">Check out our documentation or contact support.</p>
-              <button className="bg-white text-emerald-600 px-6 py-3 rounded-xl font-bold hover:bg-emerald-50 transition-all text-sm">
+              <p className="text-primary/80 font-bold text-xs mb-6">Check out our documentation or contact support.</p>
+              <button className="bg-white text-primary-dark px-6 py-3 rounded-xl font-bold hover:bg-white/90 transition-all text-sm">
                 Contact Support
               </button>
             </div>
@@ -318,7 +318,7 @@ export default function AdminDashboard() {
       <div className="bg-white/5 border border-white/10 rounded-[2rem] p-8">
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-xl font-bold tracking-tight flex items-center gap-3 text-white">
-            <Layers className="h-5 w-5 text-emerald-500" />
+            <Layers className="h-5 w-5 text-primary" />
             System Usage & Storage
           </h2>
           <div className="flex gap-4">
@@ -326,7 +326,7 @@ export default function AdminDashboard() {
               href="https://console.firebase.google.com/project/_/firestore/usage" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="text-xs font-bold text-emerald-500 hover:underline flex items-center gap-1"
+              className="text-xs font-bold text-primary hover:underline flex items-center gap-1"
             >
               Firestore Console <ArrowRight className="h-3 w-3" />
             </a>
@@ -334,7 +334,7 @@ export default function AdminDashboard() {
               href="https://console.firebase.google.com/project/_/storage/usage" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="text-xs font-bold text-emerald-500 hover:underline flex items-center gap-1"
+              className="text-xs font-bold text-primary hover:underline flex items-center gap-1"
             >
               Storage Console <ArrowRight className="h-3 w-3" />
             </a>
@@ -346,7 +346,7 @@ export default function AdminDashboard() {
             { label: 'Products', value: stats.totalProducts, icon: Package, color: 'text-blue-500' },
             { label: 'Orders', value: stats.allTimeOrders, icon: ShoppingBag, color: 'text-orange-500' },
             { label: 'Users', value: stats.totalUsers, icon: Users, color: 'text-purple-500' },
-            { label: 'Categories', value: stats.totalCategories, icon: Layers, color: 'text-emerald-500' },
+            { label: 'Categories', value: stats.totalCategories, icon: Layers, color: 'text-primary' },
             { label: 'Coupons', value: stats.totalCoupons, icon: CreditCard, color: 'text-pink-500' },
             { label: 'Reviews', value: stats.totalReviews, icon: Star, color: 'text-yellow-500' },
           ].map((item) => (
@@ -363,7 +363,7 @@ export default function AdminDashboard() {
         <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="bg-white/5 p-6 rounded-2xl border border-white/5">
             <h3 className="text-sm font-bold text-gray-300 mb-4 flex items-center gap-2">
-              <div className="h-2 w-2 rounded-full bg-emerald-500" />
+              <div className="h-2 w-2 rounded-full bg-primary" />
               Database Health
             </h3>
             <div className="space-y-4">
@@ -374,7 +374,7 @@ export default function AdminDashboard() {
                 </span>
               </div>
               <div className="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
-                <div className="bg-emerald-500 h-full w-[15%]" />
+                <div className="bg-primary h-full w-[15%]" />
               </div>
               <p className="text-[10px] text-gray-400 font-bold italic">
                 * Firestore free tier allows up to 1GB of data storage.

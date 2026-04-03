@@ -197,10 +197,10 @@ export default function Navbar() {
 
           {/* Actions */}
           <div className="hidden md:flex items-center gap-2 md:gap-3">
-            {isAdmin && (
+            {user && (
               <Link 
-                to="/admin" 
-                className="flex items-center gap-2 px-3 py-2 bg-red-50 text-red-600 rounded-xl border border-red-100 font-bold hover:bg-red-100 transition-all shadow-sm text-xs"
+                to={isAdmin ? "/admin" : "/profile/dashboard"} 
+                className="flex items-center gap-2 px-3 py-2 bg-white text-red-600 rounded-xl border border-red-200 font-bold hover:bg-red-50 transition-all shadow-sm text-xs"
               >
                 <LayoutDashboard className="h-4 w-4" />
                 <span className="hidden lg:inline">Dashboard</span>

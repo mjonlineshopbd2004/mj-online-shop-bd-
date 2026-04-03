@@ -87,11 +87,11 @@ export default function AdminTransactions() {
           <input
             type="text"
             placeholder="Search by Order ID, Customer, or Transaction ID..."
-            className="w-full bg-white/5 border border-white/10 rounded-xl px-12 py-4 outline-none focus:border-emerald-500 transition-all font-bold text-white"
+            className="w-full bg-white/5 border border-white/10 rounded-xl px-12 py-4 outline-none focus:border-primary transition-all font-bold text-white"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 group-focus-within:text-emerald-500 transition-colors" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 group-focus-within:text-primary transition-colors" />
         </div>
         <button className="bg-white/5 border border-white/10 p-4 rounded-xl hover:bg-white/10 transition-all text-gray-400">
           <Filter className="h-5 w-5" />
@@ -128,7 +128,7 @@ export default function AdminTransactions() {
               ) : filteredTransactions.map((transaction) => (
                 <tr key={transaction.id} className="hover:bg-white/5 transition-colors group">
                   <td className="px-8 py-6">
-                    <p className="font-mono text-xs text-emerald-500 font-black">
+                    <p className="font-mono text-xs text-primary font-black">
                       {transaction.transactionId || `#${transaction.id.slice(-8).toUpperCase()}`}
                     </p>
                   </td>
@@ -140,7 +140,7 @@ export default function AdminTransactions() {
                     <p className="font-black text-white text-lg">{formatPrice(transaction.total)}</p>
                     <span className={cn(
                       "px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest",
-                      transaction.paymentStatus === 'paid' ? "bg-emerald-500/10 text-emerald-500" : "bg-yellow-500/10 text-yellow-500"
+                      transaction.paymentStatus === 'paid' ? "bg-primary/10 text-primary" : "bg-yellow-500/10 text-yellow-500"
                     )}>
                       {transaction.paymentStatus}
                     </span>
@@ -148,7 +148,7 @@ export default function AdminTransactions() {
                   <td className="px-8 py-6">
                     <div className="flex items-center gap-2">
                       <div className="bg-white/10 p-2 rounded-lg">
-                        <CreditCard className="h-4 w-4 text-emerald-500" />
+                        <CreditCard className="h-4 w-4 text-primary" />
                       </div>
                       <span className="font-black text-xs uppercase tracking-widest text-gray-300">{transaction.paymentMethod}</span>
                     </div>
@@ -162,7 +162,7 @@ export default function AdminTransactions() {
                   <td className="px-8 py-6 text-right">
                     <button 
                       onClick={() => setSelectedTransaction(transaction)}
-                      className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-xl font-black text-xs transition-all shadow-lg shadow-emerald-600/20"
+                      className="bg-primary-dark hover:bg-primary text-white px-6 py-2 rounded-xl font-black text-xs transition-all shadow-lg shadow-primary-dark/20"
                     >
                       Details
                     </button>
@@ -202,7 +202,7 @@ export default function AdminTransactions() {
                   </div>
                   <div>
                     <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Transaction ID</p>
-                    <p className="font-black text-emerald-500">{selectedTransaction.transactionId || 'N/A'}</p>
+                    <p className="font-black text-primary">{selectedTransaction.transactionId || 'N/A'}</p>
                   </div>
                   <div>
                     <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Customer</p>
@@ -215,7 +215,7 @@ export default function AdminTransactions() {
                   </div>
                   <div>
                     <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Amount Paid</p>
-                    <p className="text-2xl font-black text-emerald-500">{formatPrice(selectedTransaction.total)}</p>
+                    <p className="text-2xl font-black text-primary">{formatPrice(selectedTransaction.total)}</p>
                   </div>
                   <div>
                     <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Date</p>
@@ -243,7 +243,7 @@ export default function AdminTransactions() {
                 {selectedTransaction.paymentStatus === 'pending' && (
                   <button
                     onClick={() => handleMarkAsPaid(selectedTransaction.id)}
-                    className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-4 rounded-xl font-black transition-all shadow-lg shadow-emerald-600/20"
+                    className="flex items-center gap-2 bg-primary-dark hover:bg-primary text-white px-8 py-4 rounded-xl font-black transition-all shadow-lg shadow-primary-dark/20"
                   >
                     <CheckCircle2 className="h-5 w-5" />
                     Mark as Paid

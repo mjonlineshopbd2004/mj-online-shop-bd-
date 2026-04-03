@@ -16,6 +16,7 @@ export default function AuthModal() {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [isGoogleAccount, setIsGoogleAccount] = useState(false);
 
   useEffect(() => {
     if (!isAuthModalOpen) {
@@ -25,6 +26,7 @@ export default function AuthModal() {
       setOtpCode('');
       setName('');
       setPhone('');
+      setIsGoogleAccount(false);
     }
   }, [isAuthModalOpen]);
 
@@ -35,6 +37,7 @@ export default function AuthModal() {
     try {
       const result = await checkEmail(email);
       if (result.exists) {
+        setIsGoogleAccount(result.method === 'google');
         setStep('password');
       } else {
         await sendEmailOTP(email);
@@ -130,7 +133,7 @@ export default function AuthModal() {
                         required
                         className="w-full bg-gray-50 border border-gray-200 focus:border-primary focus:bg-white rounded-xl py-3.5 px-4 outline-none transition-all font-medium text-sm"
                         value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        onChange={(e) => setEmail(e.target.value.toLowerCase().trim())}
                       />
                     </div>
 
@@ -168,6 +171,11 @@ export default function AuthModal() {
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                   <div className="text-center mb-6">
                     <p className="text-gray-600 text-sm font-medium">আপনার পাসওয়ার্ড দিয়ে লগিন করুন</p>
+                    {isGoogleAccount && (
+                      <p className="mt-2 text-xs font-bold text-orange-600 bg-orange-50 p-2 rounded-lg border border-orange-100">
+                        এই অ্যাকাউন্টটি গুগল দিয়ে তৈরি করা হয়েছে। আপনি গুগল দিয়ে লগিন করতে পারেন অথবা "Forgot Password" ব্যবহার করে পাসওয়ার্ড সেট করতে পারেন।
+                      </p>
+                    )}
                   </div>
 
                   <form onSubmit={handleLoginSubmit} className="space-y-5">
@@ -181,26 +189,28 @@ export default function AuthModal() {
                       />
                     </div>
 
-                    <div className="space-y-1.5">
-                      <label className="text-sm font-bold text-gray-900 ml-1">পাসওয়ার্ড</label>
-                      <div className="relative">
-                        <input
-                          type={showPassword ? "text" : "password"}
-                          placeholder="পাসওয়ার্ড দিন"
-                          required
-                          className="w-full bg-gray-50 border border-gray-200 focus:border-primary focus:bg-white rounded-xl py-3.5 px-4 outline-none transition-all font-medium text-sm"
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400"
-                        >
-                          {showPassword ? <ShieldCheck className="h-5 w-5" /> : <Lock className="h-5 w-5" />}
-                        </button>
+                    {!isGoogleAccount && (
+                      <div className="space-y-1.5">
+                        <label className="text-sm font-bold text-gray-900 ml-1">পাসওয়ার্ড</label>
+                        <div className="relative">
+                          <input
+                            type={showPassword ? "text" : "password"}
+                            placeholder="পাসওয়ার্ড দিন"
+                            required
+                            className="w-full bg-gray-50 border border-gray-200 focus:border-primary focus:bg-white rounded-xl py-3.5 px-4 outline-none transition-all font-medium text-sm"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400"
+                          >
+                            {showPassword ? <ShieldCheck className="h-5 w-5" /> : <Lock className="h-5 w-5" />}
+                          </button>
+                        </div>
                       </div>
-                    </div>
+                    )}
 
                     <div className="flex justify-between items-center px-1">
                       <button
@@ -219,13 +229,25 @@ export default function AuthModal() {
                       </button>
                     </div>
 
-                    <button
-                      type="submit"
-                      disabled={isLoggingIn}
-                      className="w-full bg-[#d2235e] text-white py-3.5 rounded-xl font-bold text-base shadow-md hover:opacity-90 transition-all"
-                    >
-                      {isLoggingIn ? 'লগিন হচ্ছে...' : 'লগিন করুন'}
-                    </button>
+                    {isGoogleAccount ? (
+                      <button
+                        type="button"
+                        onClick={loginWithGoogle}
+                        disabled={isLoggingIn}
+                        className="w-full bg-white border border-gray-200 text-gray-700 py-3.5 rounded-xl font-bold text-sm flex items-center justify-center space-x-3 hover:border-primary hover:text-primary transition-all shadow-sm"
+                      >
+                        <Chrome className="h-4 w-4" />
+                        <span>গুগল দিয়ে লগিন করুন</span>
+                      </button>
+                    ) : (
+                      <button
+                        type="submit"
+                        disabled={isLoggingIn}
+                        className="w-full bg-[#d2235e] text-white py-3.5 rounded-xl font-bold text-base shadow-md hover:opacity-90 transition-all"
+                      >
+                        {isLoggingIn ? 'লগিন হচ্ছে...' : 'লগিন করুন'}
+                      </button>
+                    )}
                   </form>
                 </motion.div>
               )}
@@ -360,9 +382,10 @@ export default function AuthModal() {
                         <button
                           type="button"
                           onClick={() => sendEmailOTP(email, true)}
-                          className="bg-gray-100 px-4 rounded-xl text-xs font-bold hover:bg-gray-200 transition-all"
+                          disabled={isLoggingIn}
+                          className="bg-gray-100 px-4 rounded-xl text-xs font-bold hover:bg-gray-200 transition-all disabled:opacity-50"
                         >
-                          Send OTP
+                          {isLoggingIn ? 'Sending...' : 'Send OTP'}
                         </button>
                       </div>
                     </div>

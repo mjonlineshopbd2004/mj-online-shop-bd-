@@ -115,7 +115,7 @@ export default function AdminProducts() {
         </div>
         <Link
           to="/admin/products/new"
-          className="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-4 rounded-xl font-bold transition-all shadow-lg shadow-emerald-600/20 flex items-center gap-2"
+          className="bg-primary-dark hover:bg-primary text-white px-8 py-4 rounded-xl font-bold transition-all shadow-lg shadow-primary-dark/20 flex items-center gap-2"
         >
           <Plus className="h-5 w-5" />
           <span>Add New Product</span>
@@ -128,11 +128,11 @@ export default function AdminProducts() {
           <input
             type="text"
             placeholder="Search products by name or category..."
-            className="w-full bg-white/5 border border-white/10 rounded-xl px-12 py-4 outline-none focus:border-emerald-500 transition-all font-bold text-white"
+            className="w-full bg-white/5 border border-white/10 rounded-xl px-12 py-4 outline-none focus:border-primary transition-all font-bold text-white"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 group-focus-within:text-emerald-500 transition-colors" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 group-focus-within:text-primary transition-colors" />
         </div>
         <button className="bg-white/5 border border-white/10 p-4 rounded-xl hover:bg-white/10 transition-all text-gray-400">
           <Filter className="h-5 w-5" />
@@ -167,13 +167,13 @@ export default function AdminProducts() {
                         <img src={getProxyUrl(product.images[0])} alt="" className="w-full h-full object-cover" />
                       </div>
                       <div>
-                        <p className="font-bold tracking-tight text-white group-hover:text-emerald-500 transition-colors line-clamp-1">{product.name}</p>
+                        <p className="font-bold tracking-tight text-white group-hover:text-primary transition-colors line-clamp-1">{product.name}</p>
                         <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">ID: #{product.id.slice(-6).toUpperCase()}</p>
                       </div>
                     </div>
                   </td>
                   <td className="px-8 py-6">
-                    <span className="bg-emerald-500/10 text-emerald-500 px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest">
+                    <span className="bg-primary/10 text-primary px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest">
                       {product.category}
                     </span>
                   </td>
@@ -185,7 +185,7 @@ export default function AdminProducts() {
                     <div className="flex items-center gap-2">
                       <div className={cn(
                         "w-2 h-2 rounded-full",
-                        product.stock > 10 ? "bg-emerald-500" : product.stock > 0 ? "bg-yellow-500" : "bg-red-500"
+                        product.stock > 10 ? "bg-primary" : product.stock > 0 ? "bg-yellow-500" : "bg-red-500"
                       )}></div>
                       <span className="font-bold text-gray-300 text-sm">{product.stock} in stock</span>
                     </div>
@@ -196,7 +196,7 @@ export default function AdminProducts() {
                         <button
                           onClick={() => handleSync(product)}
                           disabled={syncingId === product.id}
-                          className="p-2 text-gray-400 hover:text-emerald-500 hover:bg-emerald-500/10 rounded-lg transition-all disabled:opacity-50"
+                          className="p-2 text-gray-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-all disabled:opacity-50"
                           title="Sync with Source"
                         >
                           {syncingId === product.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}

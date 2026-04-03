@@ -41,6 +41,7 @@ interface SiteSettings {
   enableImageSearch: boolean;
   primaryColor: string;
   bannerTextColor: string;
+  bannerBgColor: string;
   banners: Banner[];
   smallBanners: Banner[];
   categories: Category[];
@@ -67,7 +68,8 @@ export default function AdminSettings() {
     topBannerLink: '',
     enableImageSearch: true,
     primaryColor: '#10b981',
-    bannerTextColor: '#111827',
+    bannerTextColor: '#ffffff',
+    bannerBgColor: '#111827',
     banners: [
       {
         topText: 'Exclusive Offer',
@@ -139,44 +141,6 @@ export default function AdminSettings() {
     setShowResetConfirm(false);
     setClearing(true);
     try {
-      const defaultSettings = {
-        storeName: 'MJ Online Shop BD',
-        storeEmail: 'mjonlineshopbd@gmail.com',
-        storePhone: '+880123456789',
-        storeAddress: 'Dhaka, Bangladesh',
-        logoUrl: '',
-        primaryColor: '#22c55e',
-        enableImageSearch: true,
-        banners: [
-          {
-            id: '1',
-            image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&q=80&w=1920',
-            title: 'Fresh Grocery Delivery',
-            subtitle: 'Get up to 30% off on your first order',
-            link: '/products'
-          }
-        ],
-        smallBanners: [
-          {
-            id: '1',
-            image: 'https://images.unsplash.com/photo-1621939514649-280e2ee25f60?auto=format&fit=crop&q=80&w=600',
-            title: 'Weekend Special',
-            subtitle: 'Fresh organic vegetables',
-            link: '/products'
-          }
-        ],
-        deliveryCharges: {
-          insideDhaka: 60,
-          outsideDhaka: 120
-        },
-        socialLinks: {
-          facebook: '',
-          instagram: '',
-          youtube: '',
-          whatsapp: ''
-        }
-      };
-      
       await setDoc(doc(db, 'settings', 'site'), defaultSettings);
       setSettings(defaultSettings);
       toast.success('Settings reset to defaults');
@@ -269,7 +233,7 @@ export default function AdminSettings() {
   if (loading) {
     return (
       <div className="p-8 flex justify-center items-center min-h-[400px] bg-[#0a0a0a]">
-        <Loader2 className="animate-spin h-12 w-12 text-emerald-500" />
+        <Loader2 className="animate-spin h-12 w-12 text-primary" />
       </div>
     );
   }
@@ -285,7 +249,7 @@ export default function AdminSettings() {
         {/* General Settings */}
         <div className="bg-white/5 border border-white/10 rounded-[2.5rem] p-8 space-y-8">
           <h2 className="text-xl font-black flex items-center gap-3 text-white">
-            <Globe className="h-6 w-6 text-emerald-500" />
+            <Globe className="h-6 w-6 text-primary" />
             General Information
           </h2>
           
@@ -296,7 +260,7 @@ export default function AdminSettings() {
                 type="text"
                 value={settings.storeName || ''}
                 onChange={(e) => setSettings({ ...settings, storeName: e.target.value })}
-                className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-emerald-500 transition-all font-bold text-white"
+                className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-primary transition-all font-bold text-white"
                 required
               />
             </div>
@@ -306,7 +270,7 @@ export default function AdminSettings() {
                 type="text"
                 value={settings.shopTagline || ''}
                 onChange={(e) => setSettings({ ...settings, shopTagline: e.target.value })}
-                className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-emerald-500 transition-all font-bold text-white"
+                className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-primary transition-all font-bold text-white"
                 placeholder="Premium Online Shop"
               />
             </div>
@@ -332,7 +296,7 @@ export default function AdminSettings() {
                   </div>
                   {uploadingLogo && (
                     <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                      <Loader2 className="h-6 w-6 text-emerald-500 animate-spin" />
+                      <Loader2 className="h-6 w-6 text-primary animate-spin" />
                     </div>
                   )}
                 </div>
@@ -341,7 +305,7 @@ export default function AdminSettings() {
                     type="text"
                     value={settings.logoUrl || ''}
                     onChange={(e) => setSettings({ ...settings, logoUrl: e.target.value })}
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-3 outline-none focus:border-emerald-500 transition-all font-bold text-white text-sm"
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-3 outline-none focus:border-primary transition-all font-bold text-white text-sm"
                     placeholder="Logo URL (Optional)"
                   />
                   <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest px-2">Recommended: Square PNG with transparent background</p>
@@ -351,12 +315,12 @@ export default function AdminSettings() {
             <div className="space-y-3">
               <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-2">Hotline Number</label>
               <div className="relative group">
-                <Phone className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 group-focus-within:text-emerald-500 transition-colors" />
+                <Phone className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 group-focus-within:text-primary transition-colors" />
                 <input
                   type="text"
                   value={settings.phone || ''}
                   onChange={(e) => setSettings({ ...settings, phone: e.target.value })}
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl pl-14 pr-6 py-4 outline-none focus:border-emerald-500 transition-all font-bold text-white"
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl pl-14 pr-6 py-4 outline-none focus:border-primary transition-all font-bold text-white"
                   required
                 />
               </div>
@@ -364,12 +328,12 @@ export default function AdminSettings() {
             <div className="space-y-3">
               <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-2">WhatsApp Number</label>
               <div className="relative group">
-                <Phone className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 group-focus-within:text-emerald-500 transition-colors" />
+                <Phone className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 group-focus-within:text-primary transition-colors" />
                 <input
                   type="text"
                   value={settings.whatsappNumber || ''}
                   onChange={(e) => setSettings({ ...settings, whatsappNumber: e.target.value })}
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl pl-14 pr-6 py-4 outline-none focus:border-emerald-500 transition-all font-bold text-white"
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl pl-14 pr-6 py-4 outline-none focus:border-primary transition-all font-bold text-white"
                   required
                 />
               </div>
@@ -377,12 +341,12 @@ export default function AdminSettings() {
             <div className="space-y-3">
               <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-2">Payment Number (bKash/Nagad)</label>
               <div className="relative group">
-                <Phone className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 group-focus-within:text-emerald-500 transition-colors" />
+                <Phone className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 group-focus-within:text-primary transition-colors" />
                 <input
                   type="text"
                   value={settings.paymentNumber || ''}
                   onChange={(e) => setSettings({ ...settings, paymentNumber: e.target.value })}
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl pl-14 pr-6 py-4 outline-none focus:border-emerald-500 transition-all font-bold text-white"
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl pl-14 pr-6 py-4 outline-none focus:border-primary transition-all font-bold text-white"
                   required
                 />
               </div>
@@ -390,12 +354,12 @@ export default function AdminSettings() {
             <div className="space-y-3">
               <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-2">Email Address</label>
               <div className="relative group">
-                <Mail className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 group-focus-within:text-emerald-500 transition-colors" />
+                <Mail className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 group-focus-within:text-primary transition-colors" />
                 <input
                   type="email"
                   value={settings.email || ''}
                   onChange={(e) => setSettings({ ...settings, email: e.target.value })}
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl pl-14 pr-6 py-4 outline-none focus:border-emerald-500 transition-all font-bold text-white"
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl pl-14 pr-6 py-4 outline-none focus:border-primary transition-all font-bold text-white"
                   required
                 />
               </div>
@@ -403,12 +367,12 @@ export default function AdminSettings() {
             <div className="space-y-3 md:col-span-2">
               <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-2">Store Address</label>
               <div className="relative group">
-                <MapPin className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 group-focus-within:text-emerald-500 transition-colors" />
+                <MapPin className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 group-focus-within:text-primary transition-colors" />
                 <input
                   type="text"
                   value={settings.address || ''}
                   onChange={(e) => setSettings({ ...settings, address: e.target.value })}
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl pl-14 pr-6 py-4 outline-none focus:border-emerald-500 transition-all font-bold text-white"
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl pl-14 pr-6 py-4 outline-none focus:border-primary transition-all font-bold text-white"
                   required
                 />
               </div>
@@ -419,7 +383,7 @@ export default function AdminSettings() {
         {/* Feature Controls */}
         <div className="bg-white/5 border border-white/10 rounded-[2.5rem] p-8 space-y-8">
           <h2 className="text-xl font-black flex items-center gap-3 text-white">
-            <Save className="h-6 w-6 text-emerald-500" />
+            <Save className="h-6 w-6 text-primary" />
             Feature Controls
           </h2>
           
@@ -432,7 +396,7 @@ export default function AdminSettings() {
               <button
                 type="button"
                 onClick={() => setSettings({ ...settings, enableImageSearch: !settings.enableImageSearch })}
-                className={`w-14 h-8 rounded-full transition-all relative ${settings.enableImageSearch ? 'bg-emerald-500' : 'bg-gray-700'}`}
+                className={`w-14 h-8 rounded-full transition-all relative ${settings.enableImageSearch ? 'bg-primary' : 'bg-gray-700'}`}
               >
                 <div className={`absolute top-1 w-6 h-6 bg-white rounded-full transition-all ${settings.enableImageSearch ? 'right-1' : 'left-1'}`} />
               </button>
@@ -462,7 +426,7 @@ export default function AdminSettings() {
         {/* Banner Settings */}
         <div className="bg-white/5 border border-white/10 rounded-[2.5rem] p-8 space-y-8">
           <h2 className="text-xl font-black flex items-center gap-3 text-white">
-            <ImageIcon className="h-6 w-6 text-emerald-500" />
+            <ImageIcon className="h-6 w-6 text-primary" />
             Banner & Promotions
           </h2>
           
@@ -474,7 +438,7 @@ export default function AdminSettings() {
                   type="text"
                   value={settings.topBannerText || ''}
                   onChange={(e) => setSettings({ ...settings, topBannerText: e.target.value })}
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-emerald-500 transition-all font-bold text-white"
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-primary transition-all font-bold text-white"
                 />
               </div>
               <div className="space-y-3">
@@ -483,7 +447,7 @@ export default function AdminSettings() {
                   type="text"
                   value={settings.topBannerLink || ''}
                   onChange={(e) => setSettings({ ...settings, topBannerLink: e.target.value })}
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-emerald-500 transition-all font-bold text-white"
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-primary transition-all font-bold text-white"
                   placeholder="/products"
                 />
               </div>
@@ -496,8 +460,23 @@ export default function AdminSettings() {
                   />
                   <input
                     type="color"
-                    value={settings.bannerTextColor || '#000000'}
+                    value={settings.bannerTextColor || '#ffffff'}
                     onChange={(e) => setSettings({ ...settings, bannerTextColor: e.target.value })}
+                    className="w-full h-10 bg-transparent border-none cursor-pointer"
+                  />
+                </div>
+              </div>
+              <div className="space-y-3">
+                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-2">Banner Background Color</label>
+                <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-2xl px-6 py-3">
+                  <div 
+                    className="w-8 h-8 rounded-lg border border-white/20"
+                    style={{ backgroundColor: settings.bannerBgColor }}
+                  />
+                  <input
+                    type="color"
+                    value={settings.bannerBgColor || '#111827'}
+                    onChange={(e) => setSettings({ ...settings, bannerBgColor: e.target.value })}
                     className="w-full h-10 bg-transparent border-none cursor-pointer"
                   />
                 </div>
@@ -513,7 +492,7 @@ export default function AdminSettings() {
                     ...settings,
                     banners: [...settings.banners, { title: '', subtitle: '', image: '', link: '' }]
                   })}
-                  className="bg-emerald-500/10 text-emerald-500 px-6 py-2 rounded-xl font-black text-xs hover:bg-emerald-500/20 transition-all"
+                  className="bg-primary/10 text-primary px-6 py-2 rounded-xl font-black text-xs hover:bg-primary/20 transition-all"
                 >
                   + Add Banner
                 </button>
@@ -544,7 +523,7 @@ export default function AdminSettings() {
                             newBanners[index].topText = e.target.value;
                             setSettings({ ...settings, banners: newBanners });
                           }}
-                          className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-emerald-500 transition-all font-bold text-white"
+                          className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-primary transition-all font-bold text-white"
                           placeholder="Exclusive Offer"
                         />
                       </div>
@@ -558,7 +537,7 @@ export default function AdminSettings() {
                             newBanners[index].title = e.target.value;
                             setSettings({ ...settings, banners: newBanners });
                           }}
-                          className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-emerald-500 transition-all font-bold text-white"
+                          className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-primary transition-all font-bold text-white"
                         />
                       </div>
                       <div className="space-y-3">
@@ -571,13 +550,13 @@ export default function AdminSettings() {
                             newBanners[index].subtitle = e.target.value;
                             setSettings({ ...settings, banners: newBanners });
                           }}
-                          className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-emerald-500 transition-all font-bold text-white"
+                          className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-primary transition-all font-bold text-white"
                         />
                       </div>
                       <div className="space-y-3">
                         <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-2 flex justify-between">
                           <span>Banner Image</span>
-                          <span className="text-emerald-500 font-black">Size: 1920x800px</span>
+                          <span className="text-primary font-black">Size: 1920x800px</span>
                         </label>
                         <div className="relative">
                           {banner.image ? (
@@ -596,13 +575,13 @@ export default function AdminSettings() {
                               </div>
                             </div>
                           ) : (
-                            <label className="flex flex-col items-center justify-center aspect-[19/8] bg-white/5 border-2 border-dashed border-white/10 rounded-2xl cursor-pointer hover:border-emerald-500/50 transition-all group/upload">
+                            <label className="flex flex-col items-center justify-center aspect-[19/8] bg-white/5 border-2 border-dashed border-white/10 rounded-2xl cursor-pointer hover:border-primary/50 transition-all group/upload">
                               {uploadingIndex === index ? (
-                                <Loader2 className="h-8 w-8 text-emerald-500 animate-spin" />
+                                <Loader2 className="h-8 w-8 text-primary animate-spin" />
                               ) : (
                                 <>
-                                  <Upload className="h-8 w-8 text-gray-500 group-hover/upload:text-emerald-500 transition-colors mb-2" />
-                                  <span className="text-xs font-black text-gray-500 group-hover/upload:text-emerald-500 uppercase tracking-widest">Upload Banner</span>
+                                  <Upload className="h-8 w-8 text-gray-500 group-hover/upload:text-primary transition-colors mb-2" />
+                                  <span className="text-xs font-black text-gray-500 group-hover/upload:text-primary uppercase tracking-widest">Upload Banner</span>
                                 </>
                               )}
                               <input
@@ -625,7 +604,7 @@ export default function AdminSettings() {
                             newBanners[index].link = e.target.value;
                             setSettings({ ...settings, banners: newBanners });
                           }}
-                          className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-emerald-500 transition-all font-bold text-white"
+                          className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-primary transition-all font-bold text-white"
                           placeholder="/products"
                         />
                       </div>
@@ -644,7 +623,7 @@ export default function AdminSettings() {
                       ...settings,
                       smallBanners: [...(settings.smallBanners || []), { title: '', subtitle: '', image: '', link: '' }]
                     })}
-                    className="bg-emerald-500/10 text-emerald-500 px-6 py-2 rounded-xl font-black text-xs hover:bg-emerald-500/20 transition-all"
+                    className="bg-primary/10 text-primary px-6 py-2 rounded-xl font-black text-xs hover:bg-primary/20 transition-all"
                   >
                     + Add Small Banner
                   </button>
@@ -675,7 +654,7 @@ export default function AdminSettings() {
                               newBanners[index].topText = e.target.value;
                               setSettings({ ...settings, smallBanners: newBanners });
                             }}
-                            className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-emerald-500 transition-all font-bold text-white"
+                            className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-primary transition-all font-bold text-white"
                             placeholder="Limited Time"
                           />
                         </div>
@@ -689,7 +668,7 @@ export default function AdminSettings() {
                               newBanners[index].title = e.target.value;
                               setSettings({ ...settings, smallBanners: newBanners });
                             }}
-                            className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-emerald-500 transition-all font-bold text-white"
+                            className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-primary transition-all font-bold text-white"
                           />
                         </div>
                         <div className="space-y-3">
@@ -702,13 +681,13 @@ export default function AdminSettings() {
                               newBanners[index].subtitle = e.target.value;
                               setSettings({ ...settings, smallBanners: newBanners });
                             }}
-                            className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-emerald-500 transition-all font-bold text-white"
+                            className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-primary transition-all font-bold text-white"
                           />
                         </div>
                         <div className="space-y-3">
                           <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-2 flex justify-between">
                             <span>Banner Image</span>
-                            <span className="text-emerald-500 font-black">Size: 600x600px</span>
+                            <span className="text-primary font-black">Size: 600x600px</span>
                           </label>
                           <div className="relative">
                             {banner.image ? (
@@ -727,13 +706,13 @@ export default function AdminSettings() {
                                 </div>
                               </div>
                             ) : (
-                              <label className="flex flex-col items-center justify-center aspect-square bg-white/5 border-2 border-dashed border-white/10 rounded-2xl cursor-pointer hover:border-emerald-500/50 transition-all group/upload">
+                              <label className="flex flex-col items-center justify-center aspect-square bg-white/5 border-2 border-dashed border-white/10 rounded-2xl cursor-pointer hover:border-primary/50 transition-all group/upload">
                                 {uploadingIndex === index + 100 ? (
-                                  <Loader2 className="h-8 w-8 text-emerald-500 animate-spin" />
+                                  <Loader2 className="h-8 w-8 text-primary animate-spin" />
                                 ) : (
                                   <>
-                                    <Upload className="h-8 w-8 text-gray-500 group-hover/upload:text-emerald-500 transition-colors mb-2" />
-                                    <span className="text-xs font-black text-gray-500 group-hover/upload:text-emerald-500 uppercase tracking-widest">Upload Banner</span>
+                                    <Upload className="h-8 w-8 text-gray-500 group-hover/upload:text-primary transition-colors mb-2" />
+                                    <span className="text-xs font-black text-gray-500 group-hover/upload:text-primary uppercase tracking-widest">Upload Banner</span>
                                   </>
                                 )}
                                 <input
@@ -756,7 +735,7 @@ export default function AdminSettings() {
                               newBanners[index].link = e.target.value;
                               setSettings({ ...settings, smallBanners: newBanners });
                             }}
-                            className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-emerald-500 transition-all font-bold text-white"
+                            className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-primary transition-all font-bold text-white"
                             placeholder="/products"
                           />
                         </div>
@@ -772,7 +751,7 @@ export default function AdminSettings() {
         {/* Delivery Settings */}
         <div className="bg-white/5 border border-white/10 rounded-[2.5rem] p-8 space-y-8">
           <h2 className="text-xl font-black flex items-center gap-3 text-white">
-            <Truck className="h-6 w-6 text-emerald-500" />
+            <Truck className="h-6 w-6 text-primary" />
             Delivery Charges
           </h2>
           
@@ -783,7 +762,7 @@ export default function AdminSettings() {
                 type="number"
                 value={settings.deliveryChargeInside ?? 0}
                 onChange={(e) => setSettings({ ...settings, deliveryChargeInside: Number(e.target.value) || 0 })}
-                className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-emerald-500 transition-all font-bold text-white"
+                className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-primary transition-all font-bold text-white"
                 required
               />
             </div>
@@ -793,7 +772,7 @@ export default function AdminSettings() {
                 type="number"
                 value={settings.deliveryChargeOutside ?? 0}
                 onChange={(e) => setSettings({ ...settings, deliveryChargeOutside: Number(e.target.value) || 0 })}
-                className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-emerald-500 transition-all font-bold text-white"
+                className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-primary transition-all font-bold text-white"
                 required
               />
             </div>
@@ -803,7 +782,7 @@ export default function AdminSettings() {
         {/* Social Media */}
         <div className="bg-white/5 border border-white/10 rounded-[2.5rem] p-8 space-y-8">
           <h2 className="text-xl font-black flex items-center gap-3 text-white">
-            <Globe className="h-6 w-6 text-emerald-500" />
+            <Globe className="h-6 w-6 text-primary" />
             Social Media Links
           </h2>
           
@@ -816,7 +795,7 @@ export default function AdminSettings() {
                 type="url"
                 value={settings.facebook || ''}
                 onChange={(e) => setSettings({ ...settings, facebook: e.target.value })}
-                className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-emerald-500 transition-all font-bold text-white"
+                className="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 outline-none focus:border-primary transition-all font-bold text-white"
                 placeholder="https://facebook.com/yourpage"
               />
             </div>

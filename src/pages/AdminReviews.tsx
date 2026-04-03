@@ -77,7 +77,7 @@ export default function AdminReviews() {
     <div className="p-4 sm:p-8 bg-[#0a0a0a] min-h-screen text-white space-y-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-black tracking-tight mb-2 text-emerald-500">Our reviews</h1>
+          <h1 className="text-3xl font-black tracking-tight mb-2 text-primary">Our reviews</h1>
           <p className="text-gray-400 font-bold">Manage customer feedback and ratings</p>
         </div>
       </div>
@@ -88,13 +88,13 @@ export default function AdminReviews() {
           <input
             type="text"
             placeholder="Search reviews by product name, customer, or comment..."
-            className="w-full bg-white/5 border border-white/10 rounded-xl px-12 py-4 outline-none focus:border-emerald-500 transition-all font-bold text-white"
+            className="w-full bg-white/5 border border-white/10 rounded-xl px-12 py-4 outline-none focus:border-primary transition-all font-bold text-white"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 group-focus-within:text-emerald-500 transition-colors" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 group-focus-within:text-primary transition-colors" />
         </div>
-        <button className="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-4 rounded-xl font-black transition-all flex items-center gap-2 shadow-lg shadow-emerald-600/20">
+        <button className="bg-primary-dark hover:bg-primary text-white px-8 py-4 rounded-xl font-black transition-all flex items-center gap-2 shadow-lg shadow-primary-dark/20">
           Search <Search className="h-4 w-4" />
         </button>
       </div>
@@ -136,7 +136,7 @@ export default function AdminReviews() {
                             <img src={getProxyUrl(product.images[0])} alt="" className="w-full h-full object-cover" />
                           </div>
                         )}
-                        <p className="font-bold text-white group-hover:text-emerald-500 transition-colors text-sm truncate max-w-[200px]">
+                        <p className="font-bold text-white group-hover:text-primary transition-colors text-sm truncate max-w-[200px]">
                           {product?.name || 'Unknown Product'}
                         </p>
                       </div>
@@ -166,7 +166,7 @@ export default function AdminReviews() {
                       <div className="flex items-center justify-end gap-2">
                         <button 
                           onClick={() => setSelectedReview(review)}
-                          className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-xl font-black text-xs transition-all shadow-lg shadow-emerald-600/20"
+                          className="bg-primary-dark hover:bg-primary text-white px-6 py-2 rounded-xl font-black text-xs transition-all shadow-lg shadow-primary-dark/20"
                         >
                           Details
                         </button>
@@ -214,8 +214,8 @@ export default function AdminReviews() {
                   <div className="flex-1">
                     <h3 className="text-xl font-black text-white mb-2">{products[selectedReview.productId]?.name}</h3>
                     <div className="flex items-center gap-4 text-sm text-gray-400 font-bold">
-                      <span className="flex items-center gap-1"><Package className="h-4 w-4 text-emerald-500" /> #{selectedReview.productId.slice(-8).toUpperCase()}</span>
-                      <span className="flex items-center gap-1"><Calendar className="h-4 w-4 text-emerald-500" /> {new Date(selectedReview.createdAt).toLocaleDateString()}</span>
+                      <span className="flex items-center gap-1"><Package className="h-4 w-4 text-primary" /> #{selectedReview.productId.slice(-8).toUpperCase()}</span>
+                      <span className="flex items-center gap-1"><Calendar className="h-4 w-4 text-primary" /> {new Date(selectedReview.createdAt).toLocaleDateString()}</span>
                     </div>
                   </div>
                 </div>
@@ -223,7 +223,7 @@ export default function AdminReviews() {
                 <div className="bg-white/5 p-8 rounded-3xl border border-white/5 space-y-6">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 bg-emerald-500 rounded-full flex items-center justify-center font-black text-white">
+                      <div className="h-10 w-10 bg-primary rounded-full flex items-center justify-center font-black text-white">
                         {selectedReview.userName.charAt(0).toUpperCase()}
                       </div>
                       <div>
@@ -261,7 +261,7 @@ export default function AdminReviews() {
                 </button>
                 <button
                   onClick={() => setSelectedReview(null)}
-                  className="px-8 py-4 rounded-xl font-black text-white bg-emerald-600 hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/20"
+                  className="px-8 py-4 rounded-xl font-black text-white bg-primary-dark hover:bg-primary transition-all shadow-lg shadow-primary-dark/20"
                 >
                   Close
                 </button>

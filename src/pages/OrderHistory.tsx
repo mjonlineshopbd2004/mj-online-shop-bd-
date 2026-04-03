@@ -3,7 +3,6 @@ import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useAuth } from '../contexts/AuthContext';
 import { Order } from '../types';
-import { formatPrice, getProxyUrl } from '../lib/utils';
 import { useNavigate, Link } from 'react-router-dom';
 import { 
   Package, 
@@ -16,13 +15,17 @@ import {
   XCircle, 
   RefreshCcw, 
   AlertCircle, 
-  AlertTriangle 
+  AlertTriangle,
+  ShoppingBag,
+  Undo2,
+  Truck
 } from 'lucide-react';
-import { cn } from '../lib/utils';
+import { cn, formatPrice, getProxyUrl } from '../lib/utils';
 import { toast } from 'sonner';
 import { doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { motion, AnimatePresence } from 'motion/react';
 import Modal from '../components/Modal';
+import TrackingStatus from '../components/TrackingStatus';
 
 export default function OrderHistory() {
   const { user } = useAuth();
@@ -32,6 +35,9 @@ export default function OrderHistory() {
   const [activeTab, setActiveTab] = useState<'completed' | 'pending' | 'cancelled'>('pending');
   const [showOptions, setShowOptions] = useState<string | null>(null);
   const [orderToDelete, setOrderToDelete] = useState<string | null>(null);
+  const [orderToRefund, setOrderToRefund] = useState<string | null>(null);
+  const [refundReason, setRefundReason] = useState('');
+  const [isSubmittingRefund, setIsSubmittingRefund] = useState(false);
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -73,14 +79,80 @@ export default function OrderHistory() {
     }
   };
 
+  const handleRefundRequest = async () => {
+    if (!orderToRefund || !refundReason.trim()) {
+      toast.error('Please provide a reason for refund');
+      return;
+    }
+
+    setIsSubmittingRefund(true);
+    try {
+      await updateDoc(doc(db, 'orders', orderToRefund), {
+        refundRequest: {
+          reason: refundReason,
+          status: 'pending',
+          requestedAt: new Date().toISOString()
+        }
+      });
+      
+      setOrders(orders.map(o => o.id === orderToRefund ? {
+        ...o,
+        refundRequest: {
+          reason: refundReason,
+          status: 'pending',
+          requestedAt: new Date().toISOString()
+        }
+      } : o));
+      
+      toast.success('Refund request submitted successfully');
+      setOrderToRefund(null);
+      setRefundReason('');
+    } catch (error) {
+      console.error('Refund request error:', error);
+      toast.error('Failed to submit refund request');
+    } finally {
+      setIsSubmittingRefund(false);
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'pending': return <span className="text-[10px] font-bold text-orange-500 bg-orange-50 px-2 py-0.5 rounded-full">Pending</span>;
-      case 'processing': return <span className="text-[10px] font-bold text-blue-500 bg-blue-50 px-2 py-0.5 rounded-full">Processing</span>;
-      case 'shipped': return <span className="text-[10px] font-bold text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded-full">Shipped</span>;
-      case 'delivered': return <span className="text-[10px] font-bold text-green-500 bg-green-50 px-2 py-0.5 rounded-full">Completed</span>;
-      case 'cancelled': return <span className="text-[10px] font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded-full">Cancelled</span>;
-      default: return <span className="text-[10px] font-bold text-gray-500 bg-gray-50 px-2 py-0.5 rounded-full">{status}</span>;
+      case 'pending': return (
+        <div className="flex items-center gap-1.5 bg-orange-50 px-3 py-1 rounded-full border border-orange-100">
+          <Clock className="h-3 w-3 text-orange-500" />
+          <span className="text-xs font-black text-orange-600 uppercase tracking-tighter">Pending</span>
+        </div>
+      );
+      case 'processing': return (
+        <div className="flex items-center gap-1.5 bg-blue-50 px-3 py-1 rounded-full border border-blue-100">
+          <RefreshCcw className="h-3 w-3 text-blue-500 animate-spin-slow" />
+          <span className="text-xs font-black text-blue-600 uppercase tracking-tighter">Processing</span>
+        </div>
+      );
+      case 'shipped': 
+      case 'out_for_delivery': return (
+        <div className="flex items-center gap-1.5 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-100">
+          <Truck className="h-3 w-3 text-indigo-500" />
+          <span className="text-xs font-black text-indigo-600 uppercase tracking-tighter">Shipped</span>
+        </div>
+      );
+      case 'delivered': return (
+        <div className="flex items-center gap-1.5 bg-green-50 px-3 py-1 rounded-full border border-green-100">
+          <CheckCircle2 className="h-3 w-3 text-green-500" />
+          <span className="text-xs font-black text-green-600 uppercase tracking-tighter">Completed</span>
+        </div>
+      );
+      case 'cancelled': return (
+        <div className="flex items-center gap-1.5 bg-red-50 px-3 py-1 rounded-full border border-red-100">
+          <XCircle className="h-3 w-3 text-red-500" />
+          <span className="text-xs font-black text-red-600 uppercase tracking-tighter">Cancelled</span>
+        </div>
+      );
+      default: return (
+        <div className="flex items-center gap-1.5 bg-gray-50 px-3 py-1 rounded-full border border-gray-100">
+          <span className="text-xs font-black text-gray-600 uppercase tracking-tighter">{status}</span>
+        </div>
+      );
     }
   };
 
@@ -144,82 +216,89 @@ export default function OrderHistory() {
       </div>
 
       <div className="container-custom py-6">
+        <div className="flex justify-between items-end mb-8">
+          <div>
+            <h2 className="text-2xl font-black text-gray-900 font-display uppercase tracking-tight">Order History</h2>
+            <p className="text-sm font-bold text-gray-400 mt-1">Manage and track your recent orders</p>
+          </div>
+          <button 
+            onClick={() => navigate('/products')}
+            className="bg-gray-900 text-white px-6 py-3 rounded-xl font-bold text-sm flex items-center gap-2 hover:bg-black transition-all shadow-lg shadow-black/10"
+          >
+            <ShoppingBag className="h-4 w-4" />
+            Shop More
+          </button>
+        </div>
+
         {filteredOrders.length > 0 ? (
-          <div className="space-y-4">
+          <div className="space-y-6">
             {filteredOrders.map((order) => (
-              <div key={order.id} className="space-y-3">
-                {order.items.map((item, idx) => (
-                  <div
-                    key={`${order.id}-${idx}`}
-                    className="bg-white rounded-2xl p-4 flex items-center gap-4 shadow-sm border border-gray-100 relative"
-                  >
-                    <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-50 flex-shrink-0 border border-gray-100">
-                      <img 
-                        src={getProxyUrl(item.images[0])} 
-                        alt={item.name} 
-                        className="w-full h-full object-cover" 
-                      />
-                    </div>
-                    
-                    <div className="flex-1 min-w-0">
-                      <div className="flex justify-between items-start">
-                        <h3 className="text-sm font-bold text-gray-900 line-clamp-1 leading-tight">
-                          {item.name}
-                        </h3>
-                        <div className="relative">
-                          <button 
-                            onClick={() => setShowOptions(showOptions === `${order.id}-${idx}` ? null : `${order.id}-${idx}`)}
-                            className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
-                          >
-                            <MoreVertical className="h-4 w-4 text-gray-400" />
-                          </button>
-                          
-                          <AnimatePresence>
-                            {showOptions === `${order.id}-${idx}` && (
-                              <motion.div
-                                initial={{ opacity: 0, scale: 0.95, y: -10 }}
-                                animate={{ opacity: 1, scale: 1, y: 0 }}
-                                exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                                className="absolute right-0 top-full mt-1 w-40 bg-white rounded-xl shadow-xl border border-gray-100 z-40 py-1 overflow-hidden"
-                              >
-                                <Link
-                                  to={`/order-confirmation/${order.id}`}
-                                  className="w-full flex items-center gap-2 px-4 py-2 text-xs font-bold text-gray-700 hover:bg-gray-50 transition-colors"
-                                >
-                                  <Eye className="h-4 w-4" />
-                                  View Products
-                                </Link>
-                                <button
-                                  onClick={() => {
-                                    setOrderToDelete(order.id);
-                                    setShowOptions(null);
-                                  }}
-                                  className="w-full flex items-center gap-2 px-4 py-2 text-xs font-bold text-red-600 hover:bg-red-50 transition-colors"
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                  Delete
-                                </button>
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center justify-between mt-1">
-                        <p className="text-xs font-black text-gray-900">
-                          {formatPrice(item.discountPrice || item.price)}
-                        </p>
-                        <p className="text-[10px] font-bold text-gray-400">
-                          Quantity: {item.quantity}
-                        </p>
-                      </div>
-                      
-                      <div className="flex justify-end mt-2">
-                        {getStatusBadge(order.status)}
-                      </div>
-                    </div>
+              <div key={order.id} className="bg-gray-50/50 rounded-3xl overflow-hidden shadow-sm border border-gray-200">
+                {/* Order Header */}
+                <div className="bg-white/50 px-6 py-5 border-b border-gray-100 grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div>
+                    <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Order ID</p>
+                    <p className="text-base font-black text-gray-900 uppercase">#{order.id.slice(-8)}</p>
                   </div>
-                ))}
+                  <div>
+                    <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Date</p>
+                    <p className="text-base font-bold text-gray-900">
+                      {new Date(order.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Status</p>
+                    {getStatusBadge(order.status)}
+                  </div>
+                  <div className="text-right md:text-left">
+                    <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Total</p>
+                    <p className="text-xl font-black text-primary">{formatPrice(order.total)}</p>
+                  </div>
+                </div>
+
+                {/* Order Body */}
+                <div className="p-6 flex flex-col md:flex-row items-center gap-8">
+                  {/* First Item Image */}
+                  <div className="w-20 h-20 rounded-2xl overflow-hidden bg-gray-50 flex-shrink-0 border border-gray-100 shadow-sm">
+                    <img 
+                      src={getProxyUrl(order.items[0].images[0])} 
+                      alt={order.items[0].name} 
+                      className="w-full h-full object-cover" 
+                    />
+                  </div>
+
+                  {/* Tracking Status Bar */}
+                  <div className="flex-1 w-full">
+                    <TrackingStatus status={order.status} />
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex flex-col gap-2 w-full md:w-auto">
+                    <button
+                      onClick={() => navigate(`/order-confirmation/${order.id}`)}
+                      className="flex items-center justify-center gap-2 px-6 py-3 bg-gray-900 text-white rounded-xl font-bold text-xs hover:bg-black transition-all shadow-md"
+                    >
+                      View Details
+                      <Eye className="h-4 w-4" />
+                    </button>
+                    
+                    {order.status !== 'cancelled' && order.status !== 'delivered' && !order.refundRequest && (
+                      <button
+                        onClick={() => setOrderToRefund(order.id)}
+                        className="flex items-center justify-center gap-2 px-6 py-3 bg-red-50 text-red-600 rounded-xl font-bold text-xs hover:bg-red-100 transition-all border border-red-100"
+                      >
+                        <Undo2 className="h-4 w-4" />
+                        Request Refund
+                      </button>
+                    )}
+
+                    {order.refundRequest && (
+                      <div className="flex items-center justify-center gap-2 px-6 py-3 bg-orange-50 text-orange-600 rounded-xl font-bold text-[10px] border border-orange-100 uppercase tracking-tighter">
+                        Refund {order.refundRequest.status}
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             ))}
           </div>
@@ -235,6 +314,42 @@ export default function OrderHistory() {
           </div>
         )}
       </div>
+
+      {/* Refund Request Modal */}
+      <Modal
+        isOpen={!!orderToRefund}
+        onClose={() => setOrderToRefund(null)}
+        title="Request Refund"
+      >
+        <div className="space-y-6">
+          <p className="text-sm font-bold text-gray-600">
+            Please tell us why you want to request a refund for this order.
+          </p>
+          
+          <textarea
+            className="w-full bg-gray-50 border border-gray-200 rounded-2xl p-4 text-sm font-medium outline-none focus:bg-white focus:border-primary transition-all min-h-[120px]"
+            placeholder="Reason for refund..."
+            value={refundReason}
+            onChange={(e) => setRefundReason(e.target.value)}
+          />
+
+          <div className="flex gap-4">
+            <button
+              onClick={() => setOrderToRefund(null)}
+              className="flex-1 py-3 bg-gray-100 text-gray-500 rounded-xl font-bold text-sm hover:bg-gray-200 transition-all"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleRefundRequest}
+              disabled={isSubmittingRefund || !refundReason.trim()}
+              className="flex-1 py-3 bg-primary text-white rounded-xl font-bold text-sm shadow-lg shadow-primary/20 hover:bg-primary-dark transition-all disabled:opacity-50"
+            >
+              {isSubmittingRefund ? 'Submitting...' : 'Submit Request'}
+            </button>
+          </div>
+        </div>
+      </Modal>
 
       {/* Delete Confirmation Modal */}
       <Modal

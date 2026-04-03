@@ -82,7 +82,7 @@ export default function AdminCoupons() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-[#0a0a0a]">
-        <Loader2 className="h-12 w-12 text-emerald-500 animate-spin" />
+        <Loader2 className="h-12 w-12 text-primary animate-spin" />
       </div>
     );
   }
@@ -96,7 +96,7 @@ export default function AdminCoupons() {
         </div>
         <button
           onClick={() => setIsAdding(!isAdding)}
-          className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl font-black transition-all shadow-lg shadow-emerald-600/20"
+          className="flex items-center gap-2 bg-primary-dark hover:bg-primary text-white px-6 py-3 rounded-xl font-black transition-all shadow-lg shadow-primary-dark/20"
         >
           {isAdding ? <Clock className="h-5 w-5" /> : <Plus className="h-5 w-5" />}
           {isAdding ? 'Cancel' : 'Add New Coupon'}
@@ -114,7 +114,7 @@ export default function AdminCoupons() {
                   value={newCoupon.code}
                   onChange={(e) => setNewCoupon({ ...newCoupon, code: e.target.value })}
                   placeholder="SUMMER20"
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-emerald-500 transition-colors font-bold text-white"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-primary transition-colors font-bold text-white"
                   required
                 />
               </div>
@@ -123,7 +123,7 @@ export default function AdminCoupons() {
                 <select
                   value={newCoupon.type}
                   onChange={(e) => setNewCoupon({ ...newCoupon, type: e.target.value as 'percentage' | 'fixed' })}
-                  className="w-full bg-[#111111] border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-emerald-500 transition-colors font-bold text-white"
+                  className="w-full bg-[#111111] border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-primary transition-colors font-bold text-white"
                 >
                   <option value="percentage">Percentage (%)</option>
                   <option value="fixed">Fixed Amount (৳)</option>
@@ -138,7 +138,7 @@ export default function AdminCoupons() {
                     type="number"
                     value={newCoupon.value}
                     onChange={(e) => setNewCoupon({ ...newCoupon, value: Number(e.target.value) })}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 pl-10 focus:outline-none focus:border-emerald-500 transition-colors font-bold"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 pl-10 focus:outline-none focus:border-primary transition-colors font-bold"
                     required
                   />
                   {newCoupon.type === 'percentage' ? (
@@ -155,7 +155,7 @@ export default function AdminCoupons() {
                     type="number"
                     value={newCoupon.minOrderAmount}
                     onChange={(e) => setNewCoupon({ ...newCoupon, minOrderAmount: Number(e.target.value) })}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 pl-10 focus:outline-none focus:border-emerald-500 transition-colors font-bold"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 pl-10 focus:outline-none focus:border-primary transition-colors font-bold"
                   />
                   <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
                 </div>
@@ -167,7 +167,7 @@ export default function AdminCoupons() {
                     type="date"
                     value={newCoupon.expiryDate}
                     onChange={(e) => setNewCoupon({ ...newCoupon, expiryDate: e.target.value })}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 pl-10 focus:outline-none focus:border-emerald-500 transition-colors font-bold"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 pl-10 focus:outline-none focus:border-primary transition-colors font-bold"
                     required
                   />
                   <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
@@ -179,13 +179,13 @@ export default function AdminCoupons() {
                   type="number"
                   value={newCoupon.usageLimit}
                   onChange={(e) => setNewCoupon({ ...newCoupon, usageLimit: Number(e.target.value) })}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-emerald-500 transition-colors font-bold"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-primary transition-colors font-bold"
                 />
               </div>
             </div>
             <button
               type="submit"
-              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-4 rounded-xl font-black transition-all shadow-lg shadow-emerald-600/20"
+              className="w-full bg-primary-dark hover:bg-primary text-white py-4 rounded-xl font-black transition-all shadow-lg shadow-primary-dark/20"
             >
               Create Coupon
             </button>
@@ -211,8 +211,8 @@ export default function AdminCoupons() {
                 <tr key={coupon.id} className="hover:bg-white/5 transition-colors group">
                   <td className="px-8 py-6">
                     <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 bg-emerald-500/10 rounded-xl flex items-center justify-center">
-                        <Tag className="h-5 w-5 text-emerald-500" />
+                      <div className="h-10 w-10 bg-primary/10 rounded-xl flex items-center justify-center">
+                        <Tag className="h-5 w-5 text-primary" />
                       </div>
                       <span className="font-black text-white tracking-wider">{coupon.code}</span>
                     </div>
@@ -228,7 +228,7 @@ export default function AdminCoupons() {
                       <span className="text-white font-bold">{coupon.usedCount} / {coupon.usageLimit}</span>
                       <div className="w-24 h-1.5 bg-white/10 rounded-full mt-1 overflow-hidden">
                         <div 
-                          className="h-full bg-emerald-500" 
+                          className="h-full bg-primary" 
                           style={{ width: `${Math.min((coupon.usedCount / coupon.usageLimit) * 100, 100)}%` }}
                         />
                       </div>

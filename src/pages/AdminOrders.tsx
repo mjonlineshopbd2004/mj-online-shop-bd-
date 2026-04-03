@@ -66,7 +66,7 @@ export default function AdminOrders() {
       case 'pending': return 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20';
       case 'processing': return 'bg-blue-500/10 text-blue-500 border-blue-500/20';
       case 'shipped': return 'bg-orange-500/10 text-orange-500 border-orange-500/20';
-      case 'delivered': return 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20';
+      case 'delivered': return 'bg-primary/10 text-primary border-primary/20';
       case 'cancelled': return 'bg-red-500/10 text-red-500 border-red-500/20';
       case 'refunded': return 'bg-purple-500/10 text-purple-500 border-purple-500/20';
       default: return 'bg-white/5 text-gray-400 border-white/10';
@@ -102,7 +102,7 @@ export default function AdminOrders() {
             className={cn(
               "px-6 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all border",
               statusFilter === status 
-                ? "bg-emerald-600 border-emerald-600 text-white shadow-lg shadow-emerald-600/20" 
+                ? "bg-primary-dark border-primary-dark text-white shadow-lg shadow-primary-dark/20" 
                 : "bg-white/5 border-white/10 text-gray-400 hover:bg-white/10"
             )}
           >
@@ -117,11 +117,11 @@ export default function AdminOrders() {
           <input
             type="text"
             placeholder="Search orders by ID, customer name, or phone..."
-            className="w-full bg-white/5 border border-white/10 rounded-xl px-12 py-4 outline-none focus:border-emerald-500 transition-all font-bold text-white"
+            className="w-full bg-white/5 border border-white/10 rounded-xl px-12 py-4 outline-none focus:border-primary transition-all font-bold text-white"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 group-focus-within:text-emerald-500 transition-colors" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 group-focus-within:text-primary transition-colors" />
         </div>
         <button className="bg-white/5 border border-white/10 p-4 rounded-xl hover:bg-white/10 transition-all text-gray-400">
           <Filter className="h-5 w-5" />
@@ -159,7 +159,7 @@ export default function AdminOrders() {
                         </div>
                       )}
                       <div>
-                        <p className="font-black text-white group-hover:text-emerald-500 transition-colors">#{order.id.slice(-8).toUpperCase()}</p>
+                        <p className="font-black text-white group-hover:text-primary transition-colors">#{order.id.slice(-8).toUpperCase()}</p>
                         <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest">{order.paymentMethod}</p>
                       </div>
                     </div>
@@ -188,7 +188,7 @@ export default function AdminOrders() {
                             <button
                               key={status}
                               onClick={() => handleStatusChange(order.id, status)}
-                              className="flex items-center w-full px-4 py-2 text-xs text-gray-400 hover:bg-white/5 hover:text-emerald-500 capitalize font-black transition-colors"
+                              className="flex items-center w-full px-4 py-2 text-xs text-gray-400 hover:bg-white/5 hover:text-primary capitalize font-black transition-colors"
                             >
                               {status}
                             </button>
@@ -200,7 +200,7 @@ export default function AdminOrders() {
                   <td className="px-8 py-6 text-right">
                     <button 
                       onClick={() => setSelectedOrder(order)}
-                      className="p-3 text-gray-500 hover:text-emerald-500 hover:bg-emerald-500/10 rounded-xl transition-all"
+                      className="p-3 text-gray-500 hover:text-primary hover:bg-primary/10 rounded-xl transition-all"
                     >
                       <Eye className="h-5 w-5" />
                     </button>
@@ -256,13 +256,13 @@ export default function AdminOrders() {
                       <span className="font-black text-white uppercase text-sm">{selectedOrder.paymentMethod}</span>
                       <span className={cn(
                         "px-2 py-0.5 rounded text-[10px] font-black uppercase",
-                        selectedOrder.paymentStatus === 'paid' ? "bg-emerald-500/10 text-emerald-500" : "bg-yellow-500/10 text-yellow-500"
+                        selectedOrder.paymentStatus === 'paid' ? "bg-primary/10 text-primary" : "bg-yellow-500/10 text-yellow-500"
                       )}>
                         {selectedOrder.paymentStatus}
                       </span>
                     </div>
                     {selectedOrder.transactionId && (
-                      <p className="text-xs font-black text-emerald-500 mt-2">TXID: {selectedOrder.transactionId}</p>
+                      <p className="text-xs font-black text-primary mt-2">TXID: {selectedOrder.transactionId}</p>
                     )}
                   </div>
                   <div className="bg-white/5 p-6 rounded-3xl space-y-3 border border-white/5">
@@ -275,7 +275,7 @@ export default function AdminOrders() {
                 {selectedOrder.paymentScreenshot && (
                   <div className="space-y-4">
                     <h3 className="text-lg font-black text-white flex items-center gap-2">
-                      <ImageIcon className="h-5 w-5 text-emerald-500" />
+                      <ImageIcon className="h-5 w-5 text-primary" />
                       Payment Screenshot
                     </h3>
                     <div className="bg-white/5 p-4 rounded-3xl border border-white/5 max-w-sm">
@@ -293,7 +293,7 @@ export default function AdminOrders() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                   <div className="space-y-4">
                     <h3 className="text-lg font-black text-white flex items-center gap-2">
-                      <User className="h-5 w-5 text-emerald-500" />
+                      <User className="h-5 w-5 text-primary" />
                       Customer Information
                     </h3>
                     <div className="bg-white/5 p-8 rounded-3xl space-y-6 border border-white/5">
@@ -313,7 +313,7 @@ export default function AdminOrders() {
                   </div>
                   <div className="space-y-4">
                     <h3 className="text-lg font-black text-white flex items-center gap-2">
-                      <MapPin className="h-5 w-5 text-emerald-500" />
+                      <MapPin className="h-5 w-5 text-primary" />
                       Shipping Address
                     </h3>
                     <div className="bg-white/5 p-8 rounded-3xl h-full border border-white/5">
@@ -327,8 +327,8 @@ export default function AdminOrders() {
                 {selectedOrder.customerNote && (
                   <div className="space-y-4">
                     <h3 className="text-lg font-black text-white">Customer Note</h3>
-                    <div className="bg-emerald-500/5 p-6 rounded-3xl border border-emerald-500/10">
-                      <p className="text-emerald-500 font-bold italic">"{selectedOrder.customerNote}"</p>
+                    <div className="bg-primary/5 p-6 rounded-3xl border border-primary/10">
+                      <p className="text-primary font-bold italic">"{selectedOrder.customerNote}"</p>
                     </div>
                   </div>
                 )}
@@ -343,12 +343,12 @@ export default function AdminOrders() {
                           <img src={getProxyUrl(item.images[0])} alt="" className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="font-black text-white text-lg truncate group-hover:text-emerald-500 transition-colors">{item.name}</p>
+                          <p className="font-black text-white text-lg truncate group-hover:text-primary transition-colors">{item.name}</p>
                           <p className="text-xs text-gray-500 font-black uppercase tracking-widest mt-1">
                             {item.selectedSize && `Size: ${item.selectedSize}`} 
                             {item.selectedColor && ` | Color: ${item.selectedColor}`}
                           </p>
-                          <p className="text-sm text-emerald-500 font-black mt-2">Qty: {item.quantity} × {formatPrice(item.discountPrice || item.price)}</p>
+                          <p className="text-sm text-primary font-black mt-2">Qty: {item.quantity} × {formatPrice(item.discountPrice || item.price)}</p>
                         </div>
                         <p className="font-black text-white text-xl">{formatPrice((item.discountPrice || item.price) * item.quantity)}</p>
                       </div>
@@ -374,7 +374,7 @@ export default function AdminOrders() {
                   )}
                   <div className="border-t border-white/5 pt-6 flex justify-between items-center">
                     <span className="text-xl font-black">Total</span>
-                    <span className="text-3xl font-black text-emerald-500">{formatPrice(selectedOrder.total)}</span>
+                    <span className="text-3xl font-black text-primary">{formatPrice(selectedOrder.total)}</span>
                   </div>
                 </div>
               </div>
@@ -399,14 +399,14 @@ export default function AdminOrders() {
                         toast.error('Failed to update payment status');
                       }
                     }}
-                    className="bg-emerald-600 text-white px-8 py-4 rounded-xl font-black hover:bg-emerald-700 transition-all flex items-center gap-2 shadow-lg shadow-emerald-600/20"
+                    className="bg-primary-dark text-white px-8 py-4 rounded-xl font-black hover:bg-primary transition-all flex items-center gap-2 shadow-lg shadow-primary-dark/20"
                   >
                     <CheckCircle2 className="h-5 w-5" />
                     Mark as Paid
                   </button>
                 )}
                 <div className="relative group">
-                  <button className="bg-emerald-600 text-white px-8 py-4 rounded-xl font-black hover:bg-emerald-700 transition-all flex items-center gap-2 shadow-lg shadow-emerald-600/20">
+                  <button className="bg-primary-dark text-white px-8 py-4 rounded-xl font-black hover:bg-primary transition-all flex items-center gap-2 shadow-lg shadow-primary-dark/20">
                     <span>Update Status</span>
                     <ChevronDown className="h-5 w-5" />
                   </button>
@@ -416,7 +416,7 @@ export default function AdminOrders() {
                         <button
                           key={status}
                           onClick={() => handleStatusChange(selectedOrder.id, status)}
-                          className="flex items-center w-full px-4 py-3 text-xs text-gray-400 hover:bg-white/5 hover:text-emerald-500 capitalize font-black transition-colors"
+                          className="flex items-center w-full px-4 py-3 text-xs text-gray-400 hover:bg-white/5 hover:text-primary capitalize font-black transition-colors"
                         >
                           {status}
                         </button>
