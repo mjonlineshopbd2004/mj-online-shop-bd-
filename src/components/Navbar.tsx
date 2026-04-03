@@ -143,90 +143,60 @@ export default function Navbar() {
       </div>
 
       {/* Main Header */}
-      <div className="bg-white py-5 border-b border-gray-100">
-        <div className="container-custom flex items-center justify-between gap-8">
-          {/* Logo & Shop Name */}
-          <Link to="/" className="flex items-center gap-3 flex-shrink-0 group">
-            <div className="relative">
-              {settings.logoUrl && !logoError ? (
-                <img 
-                  src={getProxyUrl(settings.logoUrl)} 
-                  alt={settings.storeName} 
-                  className="h-10 md:h-12 w-auto transition-transform group-hover:scale-105" 
-                  onError={() => setLogoError(true)}
-                />
-              ) : (
-                <div className="w-10 h-10 md:w-12 md:h-12 bg-primary rounded-xl flex items-center justify-center text-white font-bold text-xl md:text-2xl shadow-lg shadow-primary/20">
-                  {settings.storeName.charAt(0)}
-                </div>
-              )}
-            </div>
-            <div className="flex flex-col">
-              <h1 className="text-sm md:text-xl font-bold tracking-tight text-gray-900 leading-none uppercase font-display">
-                {settings.storeName}
-              </h1>
-              <p className="hidden md:block text-[9px] font-semibold text-gray-500 uppercase tracking-[0.15em] mt-1 font-sans">{settings.shopTagline || 'Premium Online Shop'}</p>
-            </div>
+      <div className="bg-white py-3 border-b border-gray-100">
+        <div className="container-custom flex items-center justify-between gap-4">
+          {/* Logo */}
+          <Link to="/" className="flex-shrink-0">
+            {settings.logoUrl && !logoError ? (
+              <img 
+                src={getProxyUrl(settings.logoUrl)} 
+                alt={settings.storeName} 
+                className="h-10 w-auto" 
+                onError={() => setLogoError(true)}
+              />
+            ) : (
+              <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-primary/20">
+                {settings.storeName.charAt(0)}
+              </div>
+            )}
           </Link>
 
-          {/* Hotline */}
-          <div className="hidden xl:flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center text-primary shadow-sm border border-gray-100">
-              <Phone className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest leading-none mb-1.5 font-sans">Hotline Number</p>
-              <p className="text-xl font-bold text-gray-900 leading-none font-display tracking-tight">{settings.phone}</p>
-            </div>
-          </div>
-
-          {/* Search - Smaller and centered */}
-          <div className="hidden lg:flex flex-1 justify-center px-4 max-w-xs">
-            <div className="relative w-full flex items-center gap-2">
-              <div className="relative flex-1 flex items-center">
-                <form onSubmit={handleSearch} className="w-full">
-                  <input
-                    type="text"
-                    placeholder="Search products..."
-                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 outline-none focus:bg-white focus:border-primary/30 transition-all text-xs font-medium pr-10"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
-                </form>
-                {settings.enableImageSearch !== false && (
-                  <button 
-                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-primary/10 rounded-lg transition-all disabled:opacity-50 group/imgsearch"
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={isSearching}
-                    title="Search by image"
-                  >
-                    {isSearching ? (
-                      <Loader2 className="h-3 w-3 animate-spin text-primary" />
-                    ) : (
-                      <Camera className="h-3 w-3 text-primary group-hover/imgsearch:scale-110 transition-transform" />
-                    )}
-                  </button>
-                )}
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  className="hidden"
-                  accept="image/*"
-                  onChange={handleImageSearch}
-                />
-              </div>
+          {/* Search - Mobile compact */}
+          <div className="flex-1 max-w-md">
+            <form onSubmit={handleSearch} className="relative flex items-center">
+              <input
+                type="text"
+                placeholder="Search"
+                className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-2 outline-none focus:bg-white focus:border-primary/30 transition-all text-xs font-medium pr-10"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
               <button 
-                className="bg-primary hover:bg-primary-dark text-white p-2 rounded-xl font-bold transition-all shadow-lg shadow-primary/20 border border-primary-dark/10 flex items-center justify-center"
-                onClick={() => handleSearch()}
+                type="submit"
+                className="absolute right-10 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-primary"
               >
                 <Search className="h-4 w-4" />
               </button>
-            </div>
+              
+              {settings.enableImageSearch !== false && (
+                <button 
+                  type="button"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-primary/10 rounded-lg transition-all disabled:opacity-50"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isSearching}
+                >
+                  {isSearching ? (
+                    <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                  ) : (
+                    <Camera className="h-4 w-4 text-gray-400" />
+                  )}
+                </button>
+              )}
+            </form>
           </div>
 
           {/* Actions */}
-          <div className="flex items-center gap-2 md:gap-3">
-            {/* Admin Dashboard Link (Visible only to admins) */}
+          <div className="hidden md:flex items-center gap-2 md:gap-3">
             {isAdmin && (
               <Link 
                 to="/admin" 
@@ -252,7 +222,6 @@ export default function Navbar() {
                   </Link>
                 </div>
                 
-                {/* Dropdown */}
                 <div className="absolute top-full right-0 mt-2 w-48 bg-white border border-gray-100 rounded-xl shadow-xl py-2 opacity-0 invisible group-hover/account:opacity-100 group-hover/account:visible transition-all z-50">
                   <Link to="/profile" className="flex items-center gap-3 px-4 py-2 text-sm font-bold text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors">
                     <User className="h-4 w-4" />
@@ -316,11 +285,6 @@ export default function Navbar() {
                 <p className="text-xs font-black text-gray-900 leading-none">Total: {totalItems}</p>
               </div>
             </Link>
-
-            {/* Mobile Menu Toggle */}
-            <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="md:hidden p-2 text-gray-600">
-              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </button>
           </div>
         </div>
       </div>
@@ -385,35 +349,6 @@ export default function Navbar() {
             </div>
           </div>
         </div>
-      </div>
-
-      {/* Mobile Search Bar - Visible only on mobile */}
-      <div className="lg:hidden px-4 pb-4 bg-white border-b border-gray-100">
-        <form onSubmit={handleSearch} className="relative flex items-center group">
-          <input
-            type="text"
-            placeholder="Search products..."
-            className="w-full bg-gray-100 border-2 border-transparent focus:border-primary focus:bg-white rounded-full py-2.5 pl-10 pr-12 outline-none transition-all text-sm font-medium"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-          <Search className="absolute left-3.5 h-4 w-4 text-gray-400 group-focus-within:text-primary transition-colors" />
-          
-          {settings.enableImageSearch !== false && (
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={isSearching}
-              className="absolute right-2 p-1.5 text-gray-400 hover:text-primary hover:bg-primary/10 rounded-full transition-all disabled:opacity-50"
-            >
-              {isSearching ? (
-                <Loader2 className="h-4 w-4 animate-spin text-primary" />
-              ) : (
-                <Camera className="h-4 w-4" />
-              )}
-            </button>
-          )}
-        </form>
       </div>
 
       {/* Mobile Menu */}

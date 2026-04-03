@@ -7,13 +7,29 @@
   --font-serif: "Playfair Display", serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
   
-  --color-primary: var(--primary, #10b981);
-  --color-primary-dark: var(--primary-dark, #059669);
+  --color-primary: var(--primary, #d12053);
+  --color-primary-dark: var(--primary-dark, #b01a45);
   --color-secondary: #ff9933;
   --color-accent: #f15a29;
 }
 
+/* Hide scrollbars for all elements */
+* {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+*::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
+}
+
 @layer base {
+  html, body {
+    @apply overflow-x-hidden;
+    width: 100%;
+    position: relative;
+  }
+
   body {
     @apply font-sans text-gray-900 bg-[#f8f9fa] antialiased selection:bg-primary/20 selection:text-primary;
     line-height: 1.6;

@@ -78,6 +78,16 @@ export default function Home() {
   return (
     <div className="space-y-20 pb-20">
       <HeroSection />
+      
+      {/* Shipping Service Bar */}
+      <div className="container-custom -mt-10 relative z-10">
+        <div className="bg-pink-50 border border-pink-100 rounded-2xl p-4 flex items-center justify-between shadow-sm">
+          <p className="text-sm font-bold text-gray-900">Looking for Shipping Service</p>
+          <button className="bg-[#003d4d] text-white px-6 py-2 rounded-full font-bold text-xs flex items-center gap-2 hover:bg-[#002d3d] transition-all">
+            Click Here <ArrowRight className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
 
       {/* Features Bar */}
       <section className="border-b border-gray-100 bg-white">
@@ -125,35 +135,35 @@ export default function Home() {
 
       {/* Categories */}
       <section className="container-custom">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
           <div>
-            <h2 className="section-title">Shop by Category</h2>
-            <p className="section-subtitle italic">Explore our wide range of premium products</p>
+            <h2 className="text-2xl font-black text-gray-900 tracking-tight font-display uppercase">Top Category</h2>
           </div>
-          <div className="h-1 w-24 bg-primary rounded-full"></div>
+          <div className="h-1 w-24 bg-primary rounded-full hidden md:block"></div>
         </div>
-        <div className="grid grid-cols-3 md:grid-cols-6 gap-3 md:gap-4">
+        <div className="grid grid-cols-3 md:grid-cols-6 lg:grid-cols-8 gap-4 md:gap-6">
           {(settings.categories && settings.categories.length > 0 ? settings.categories : CATEGORIES).map((category, idx) => {
             const name = typeof category === 'string' ? category : category.name;
-            const image = typeof category === 'string' ? `https://picsum.photos/seed/${category}/600/800` : category.image;
+            const image = typeof category === 'string' ? `https://picsum.photos/seed/${category}/200/200` : category.image;
             
             return (
               <Link
                 key={name}
                 to={`/products?category=${encodeURIComponent(name)}`}
-                className="group relative h-40 md:h-48 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 rounded-2xl md:rounded-[1.5rem]"
+                className="group flex flex-col items-center gap-2"
               >
-                <img
-                  src={getProxyUrl(image || `https://picsum.photos/seed/${name}/600/800`)}
-                  alt={name}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000"
-                  referrerPolicy="no-referrer"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-gray-900/80 via-transparent to-transparent opacity-40 group-hover:opacity-70 transition-opacity"></div>
-                <div className="absolute bottom-3 left-3 right-3 md:bottom-4 md:left-4 md:right-4">
-                  <h3 className="text-xs md:text-base font-bold text-white mb-1 group-hover:translate-x-1 transition-transform tracking-tight leading-tight">{name}</h3>
-                  <div className="h-0.5 w-6 bg-primary group-hover:w-full transition-all duration-500"></div>
+                <div className="relative w-full aspect-square overflow-hidden rounded-full border-2 border-gray-100 group-hover:border-primary transition-all duration-300 shadow-sm group-hover:shadow-md">
+                  <img
+                    src={getProxyUrl(image || `https://picsum.photos/seed/${name}/200/200`)}
+                    alt={name}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    referrerPolicy="no-referrer"
+                  />
+                  <div className="absolute bottom-0 left-0 right-0 bg-orange-50/90 py-0.5">
+                    <p className="text-[8px] font-bold text-orange-600 text-center">From 80৳</p>
+                  </div>
                 </div>
+                <h3 className="text-[10px] md:text-sm font-bold text-gray-900 text-center group-hover:text-primary transition-colors tracking-tight leading-tight">{name}</h3>
               </Link>
             );
           })}
@@ -212,13 +222,15 @@ export default function Home() {
 
       {/* Trending Products */}
       <section className="container-custom">
-        <div className="flex justify-between items-end mb-12">
-          <div>
-            <h2 className="section-title">Trending Now</h2>
-            <p className="section-subtitle">What everyone is buying right now</p>
+        <div className="flex justify-between items-center mb-8">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white shadow-lg">
+              <Star className="h-4 w-4 fill-current" />
+            </div>
+            <h2 className="text-xl font-black text-gray-900 tracking-tight font-display uppercase">Trending Products</h2>
           </div>
-          <Link to="/products" className="text-orange-600 font-bold flex items-center hover:underline">
-            View All <ArrowRight className="ml-2 h-5 w-5" />
+          <Link to="/products" className="bg-primary/5 text-primary px-4 py-2 rounded-full font-bold text-xs flex items-center gap-2 hover:bg-primary hover:text-white transition-all">
+            View More <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-2 md:gap-3">

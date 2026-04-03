@@ -1,49 +1,77 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, ShoppingBag, ShoppingCart, Heart, User } from 'lucide-react';
+import { Layers, ShoppingCart, Heart, LayoutDashboard } from 'lucide-react';
+import { useSettings } from '../contexts/SettingsContext';
 import { useCart } from '../contexts/CartContext';
 import { useWishlist } from '../contexts/WishlistContext';
-import { cn } from '../lib/utils';
+import { cn, getProxyUrl } from '../lib/utils';
 
 export default function BottomNav() {
   const location = useLocation();
+  const { settings } = useSettings();
   const { totalItems } = useCart();
   const { items: wishlistItems } = useWishlist();
 
   const navItems = [
-    { name: 'Home', path: '/', icon: Home },
-    { name: 'Shop', path: '/products', icon: ShoppingBag },
+    { name: 'Categories', path: '/categories', icon: Layers },
     { name: 'Cart', path: '/cart', icon: ShoppingCart, badge: totalItems },
+    { name: 'Home', path: '/', isLogo: true },
     { name: 'Wishlist', path: '/wishlist', icon: Heart, badge: wishlistItems.length },
-    { name: 'Profile', path: '/profile', icon: User },
+    { name: 'Dashboard', path: '/profile', icon: LayoutDashboard },
   ];
 
   return (
-    <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 z-50 px-2 py-1 shadow-[0_-4px_12px_rgba(0,0,0,0.05)]">
-      <div className="flex justify-around items-center">
+    <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white z-50 px-2 py-1 shadow-[0_-8px_30px_rgba(0,0,0,0.08)] border-t border-gray-50">
+      <div className="flex justify-around items-center h-14">
         {navItems.map((item) => {
           const isActive = location.pathname === item.path;
           const Icon = item.icon;
           
+          if (item.isLogo) {
+            return (
+              <Link
+                key={item.name}
+                to="/"
+                className="flex flex-col items-center justify-center -translate-y-6 bg-white p-1 rounded-full shadow-xl border-4 border-white w-16 h-16 transition-transform active:scale-95"
+              >
+                <div className="w-full h-full rounded-full overflow-hidden bg-white flex items-center justify-center border border-gray-100">
+                  {settings.logoUrl ? (
+                    <img 
+                      src={getProxyUrl(settings.logoUrl)} 
+                      alt="Logo" 
+                      className="w-full h-full object-contain"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-primary rounded-full flex items-center justify-center text-white font-black text-xl">
+                      {settings.storeName.charAt(0)}
+                    </div>
+                  )}
+                </div>
+              </Link>
+            );
+          }
+
           return (
             <Link
               key={item.name}
               to={item.path}
-              className={cn(
-                "flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all relative",
-                isActive ? "text-primary" : "text-gray-400"
-              )}
+              className="flex-1 flex flex-col items-center justify-center transition-all relative"
             >
               <div className={cn(
                 "p-1 rounded-lg transition-all",
-                isActive && "bg-primary/10"
+                isActive ? "text-primary" : "text-gray-400"
               )}>
-                <Icon className={cn("h-5 w-5", isActive && "stroke-[2.5px]")} />
+                {Icon && <Icon className={cn("h-6 w-6", isActive && "stroke-[2.5px]")} />}
               </div>
-              <span className="text-[10px] font-bold mt-0.5">{item.name}</span>
+              <span className={cn(
+                "text-[10px] font-bold mt-0.5",
+                isActive ? "text-primary" : "text-gray-500"
+              )}>
+                {item.name}
+              </span>
               
               {item.badge !== undefined && item.badge > 0 && (
-                <span className="absolute top-1 right-2 bg-primary text-white text-[8px] font-black rounded-full h-4 w-4 flex items-center justify-center border-2 border-white">
+                <span className="absolute top-0 right-1/4 bg-primary text-white text-[8px] font-black rounded-full h-4 w-4 flex items-center justify-center border-2 border-white">
                   {item.badge}
                 </span>
               )}
