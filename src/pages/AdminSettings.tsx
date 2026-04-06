@@ -232,6 +232,7 @@ export default function AdminSettings() {
           {[
             { id: 'general', label: 'General', icon: Store },
             { id: 'features', label: 'Features', icon: SettingsIcon },
+            { id: 'ai-scraper', label: 'AI Scraper', icon: Globe },
             { id: 'payments', label: 'Payments', icon: CreditCard },
             { id: 'banners', label: 'Banners', icon: ImageIcon },
             { id: 'delivery', label: 'Delivery', icon: Truck },
@@ -464,6 +465,88 @@ export default function AdminSettings() {
               )}
               Save Changes
             </button>
+          </div>
+        </section>
+
+        {/* AI Scraper Settings */}
+        <section id="ai-scraper" className="bg-emerald-500/5 rounded-[32px] p-8 border border-emerald-500/10 shadow-2xl space-y-8">
+          <div className="flex items-center space-x-4 pb-6 border-b border-emerald-500/10">
+            <div className="p-3 bg-emerald-500/10 rounded-2xl">
+              <Globe className="h-7 w-7 text-emerald-500" />
+            </div>
+            <h2 className="text-xl font-black uppercase tracking-widest text-emerald-500">AI Scraper Settings</h2>
+          </div>
+
+          <div className="bg-[#1a1a1a] p-8 rounded-[28px] border border-white/10 space-y-6">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+              <div className="space-y-2 flex-1">
+                <h3 className="font-black text-white text-lg">Gemini API Configuration</h3>
+                <p className="text-xs text-gray-500 font-black uppercase tracking-wider">
+                  The scraper uses Gemini AI to extract product details from URLs.
+                </p>
+                <div className="mt-4 space-y-2">
+                  <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Custom API Key (Optional)</label>
+                  <input
+                    type="password"
+                    value={settings.geminiApiKey || ''}
+                    onChange={(e) => updateSettings({ ...settings, geminiApiKey: e.target.value })}
+                    placeholder="AIzaSy..."
+                    className="w-full px-4 py-3 bg-black/40 border border-white/10 rounded-xl font-mono text-sm text-emerald-500 focus:outline-none focus:border-emerald-500/50 transition-all"
+                  />
+                  <p className="text-[10px] text-gray-600 font-bold italic">
+                    If your environment key is leaked, you can provide a new one here. This key takes priority.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-4 self-end">
+                <button
+                  onClick={async () => {
+                    const toastId = toast.loading('Testing API Key...');
+                    try {
+                      const idToken = await user?.getIdToken();
+                      const response = await fetch('/api/scraper/status', {
+                        headers: { 'Authorization': `Bearer ${idToken}` }
+                      });
+                      const data = await response.json();
+                      
+                      if (data.status === 'active') {
+                        toast.success('API Key is active and working!', { id: toastId });
+                      } else if (data.status === 'leaked') {
+                        toast.error('API Key is LEAKED. Please use a different key.', { id: toastId });
+                      } else if (data.status === 'quota_exceeded') {
+                        toast.warning('API Quota Exceeded. Try again later.', { id: toastId });
+                      } else if (data.status === 'missing') {
+                        toast.error('API Key is missing or invalid.', { id: toastId });
+                      } else {
+                        toast.error(`API Key Error: ${data.error || 'Unknown error'}`, { id: toastId });
+                      }
+                    } catch (error) {
+                      toast.error('Failed to test API key', { id: toastId });
+                    }
+                  }}
+                  className="px-6 py-3 bg-white/5 border border-white/10 hover:bg-white/10 rounded-xl font-black text-xs uppercase tracking-widest transition-all flex items-center gap-2"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  Test API Key
+                </button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-white/5">
+              <div className="bg-black/20 p-6 rounded-2xl border border-white/5 space-y-2">
+                <span className="text-[10px] font-black text-gray-600 uppercase tracking-widest">Environment Variable</span>
+                <code className="block text-sm font-mono text-emerald-500">GEMINI_API_KEY</code>
+                <p className="text-[10px] text-gray-500 font-bold italic">Set this in your environment variables to enable AI scraping.</p>
+              </div>
+              <div className="bg-black/20 p-6 rounded-2xl border border-white/5 space-y-2">
+                <span className="text-[10px] font-black text-gray-600 uppercase tracking-widest">Current Status</span>
+                <div className="flex items-center gap-2">
+                  <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="text-sm font-black text-gray-300 uppercase tracking-wider">Managed by Server</span>
+                </div>
+                <p className="text-[10px] text-gray-500 font-bold italic">The server automatically re-initializes if the key is updated.</p>
+              </div>
+            </div>
           </div>
         </section>
 

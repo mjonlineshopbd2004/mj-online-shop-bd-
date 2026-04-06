@@ -126,12 +126,12 @@ export default function AdminTransactions() {
                 <tr key={transaction.id} className="hover:bg-white/5 transition-colors group">
                   <td className="px-8 py-6">
                     <p className="font-mono text-xs text-primary font-black">
-                      {transaction.transactionId || `#${transaction.id.slice(-8).toUpperCase()}`}
+                      {transaction.transactionId || `#${transaction.id}`}
                     </p>
                   </td>
                   <td className="px-8 py-6">
                     <p className="font-bold text-white">{transaction.customerName}</p>
-                    <p className="text-[10px] text-gray-500 uppercase tracking-widest font-black">Order #{transaction.id.slice(-6).toUpperCase()}</p>
+                    <p className="text-[10px] text-gray-500 uppercase tracking-widest font-black">Order #{transaction.id}</p>
                   </td>
                   <td className="px-8 py-6">
                     <p className="font-black text-white text-lg">{formatPrice(transaction.payableAmount)}</p>
@@ -198,7 +198,7 @@ export default function AdminTransactions() {
                 <div className="grid grid-cols-2 gap-8">
                   <div>
                     <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Order ID</p>
-                    <p className="font-black text-white">#{selectedTransaction.id.toUpperCase()}</p>
+                    <p className="font-black text-white">#{selectedTransaction.id}</p>
                   </div>
                   <div>
                     <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Transaction ID</p>

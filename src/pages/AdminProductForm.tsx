@@ -172,13 +172,25 @@ export default function AdminProductForm() {
       } else {
         const text = await response.text();
         console.error('Non-JSON response received from /api/scraper/product:', text);
+        
         if (response.status === 403) {
-          throw new Error('The server is blocking our request (403 Forbidden). Please try again later or manually add the product.');
+          throw new Error('The server is blocking our request (403 Forbidden). This often happens when the website detects automated scraping. Please try again later or manually add the product.');
         }
+        
+        if (text.includes('FUNCTION_INVOCATION_FAILED')) {
+          throw new Error('The server took too long to respond (Vercel timeout). This often happens with complex websites. Please try again or use a different URL.');
+        }
+        
         throw new Error(`Server returned an unexpected response format (${response.status}).`);
       }
 
       if (!response.ok) {
+        if (response.status === 429) {
+          throw new Error('AI Quota Exceeded. The free AI limit has been reached. Please try again in a few minutes.');
+        }
+        if (data.error === 'API_KEY_LEAKED') {
+          throw new Error('Your Gemini API key has been reported as leaked by Google. Please update it in the Settings menu.');
+        }
         throw new Error(data.message || 'Failed to fetch product data');
       }
 

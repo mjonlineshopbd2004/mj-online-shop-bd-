@@ -87,7 +87,7 @@ export default function OrderConfirmation() {
                 ? 'There was an issue with your payment.' 
                 : 'Your order has been placed successfully.'}
             </p>
-            <p className="mt-4 text-orange-200 font-bold uppercase tracking-widest text-sm">Order ID: #{order.id.slice(-8).toUpperCase()}</p>
+            <p className="mt-4 text-orange-200 font-bold uppercase tracking-widest text-sm">Order ID: #{order.id}</p>
           </div>
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl"></div>
         </div>

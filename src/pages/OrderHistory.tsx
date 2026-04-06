@@ -238,7 +238,7 @@ export default function OrderHistory() {
                 <div className="bg-white/50 px-6 py-5 border-b border-gray-100 grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div>
                     <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Order ID</p>
-                    <p className="text-base font-black text-gray-900 uppercase">#{order.id.slice(-8)}</p>
+                    <p className="text-base font-black text-gray-900 uppercase">#{order.id}</p>
                   </div>
                   <div>
                     <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Date</p>

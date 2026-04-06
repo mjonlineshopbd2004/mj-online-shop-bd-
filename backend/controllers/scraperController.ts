@@ -2,14 +2,40 @@ import { Request, Response } from 'express';
 import * as cheerio from 'cheerio';
 import { GoogleGenAI, Type } from "@google/genai";
 
+import { getDb } from '../config/firebase';
+
 let aiClient: GoogleGenAI | null = null;
 
-const getAiClient = () => {
-  if (!aiClient) {
-    // Priority: GEMINI_API_KEY -> API_KEY -> CUSTOM_GEMINI_API_KEY
-    let apiKey = (process.env.GEMINI_API_KEY || process.env.API_KEY || process.env.CUSTOM_GEMINI_API_KEY || '').trim();
+/**
+ * Gets or initializes the Gemini AI client.
+ * Priority: 
+ * 1. Firestore settings (site/geminiApiKey)
+ * 2. Environment variables (GEMINI_API_KEY, API_KEY, CUSTOM_GEMINI_API_KEY)
+ */
+const getAiClient = async () => {
+  if (aiClient) return aiClient;
+
+  let apiKey = '';
+
+  // 1. Try Firestore first
+  try {
+    const db = getDb();
+    const settingsDoc = await db.collection('settings').doc('site').get();
+    if (settingsDoc.exists) {
+      const data = settingsDoc.data();
+      if (data?.geminiApiKey && data.geminiApiKey.startsWith('AIzaSy')) {
+        apiKey = data.geminiApiKey.trim();
+        console.log('Using Gemini API Key from Firestore settings');
+      }
+    }
+  } catch (error) {
+    console.error('Error fetching Gemini API key from Firestore:', error);
+  }
+
+  // 2. Fallback to environment variables
+  if (!apiKey) {
+    apiKey = (process.env.GEMINI_API_KEY || process.env.API_KEY || process.env.CUSTOM_GEMINI_API_KEY || '').trim();
     
-    // Check for common placeholders or invalid keys
     const isPlaceholder = !apiKey || 
                          apiKey.includes('TODO') || 
                          apiKey.includes('YOUR_API_KEY') || 
@@ -18,49 +44,87 @@ const getAiClient = () => {
                          !apiKey.startsWith('AIzaSy');
 
     if (isPlaceholder) {
-      console.warn('GEMINI_API_KEY is a placeholder or invalid. Checking fallback API_KEY...');
       const fallbackKey = (process.env.API_KEY || process.env.CUSTOM_GEMINI_API_KEY || '').trim();
       if (fallbackKey && fallbackKey.startsWith('AIzaSy')) {
         apiKey = fallbackKey;
-        console.log('Using fallback API_KEY.');
-      } else {
-        console.error('CRITICAL: No valid Gemini API key found.');
       }
-    } else {
-      console.log(`Gemini AI Client initialized. Key Prefix: ${apiKey.substring(0, 6)}...`);
     }
-    
-    aiClient = new GoogleGenAI({ apiKey: apiKey });
   }
+
+  if (!apiKey || !apiKey.startsWith('AIzaSy')) {
+    console.error('CRITICAL: No valid Gemini API key found.');
+    // We still initialize with whatever we have to let the SDK throw its own error if needed
+    // or we can throw here. Let's throw to be explicit.
+    throw new Error('Gemini API key is not configured. Please set GEMINI_API_KEY in environment variables or Admin Settings.');
+  }
+
+  aiClient = new GoogleGenAI({ apiKey });
   return aiClient;
 };
 
+// Function to reset AI client (useful if a key is reported as leaked)
+const resetAiClient = () => {
+  aiClient = null;
+};
+
 export const getScraperStatus = async (req: Request, res: Response) => {
-  let apiKey = (process.env.GEMINI_API_KEY || process.env.API_KEY || process.env.CUSTOM_GEMINI_API_KEY || '').trim();
-  
-  const isPlaceholder = !apiKey || 
-                       apiKey.includes('TODO') || 
-                       apiKey.includes('YOUR_API_KEY') || 
-                       apiKey.includes('Free Tier') ||
-                       apiKey.length < 10 ||
-                       !apiKey.startsWith('AIzaSy');
+  try {
+    const ai = await getAiClient();
+    
+    // Perform a minimal test call to verify the key is not leaked or expired
+    await ai.models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: "hi",
+      config: { maxOutputTokens: 1 }
+    });
+    
+    // Get the key prefix for display (we need to know which key we're using)
+    // Since aiClient is private, we might need a way to get the prefix or just assume it's active
+    res.json({ 
+      configured: true, 
+      status: 'active'
+    });
+  } catch (error: any) {
+    console.error('AI Key test failed:', error.message);
+    
+    const isLeaked = error.message?.includes('leaked') || error.status === 'PERMISSION_DENIED' || error.code === 403;
+    const isQuota = error.message?.includes('quota') || error.status === 'RESOURCE_EXHAUSTED' || error.code === 429;
+    const isMissing = error.message?.includes('not configured');
 
-  if (isPlaceholder) {
-    const fallbackKey = (process.env.API_KEY || process.env.CUSTOM_GEMINI_API_KEY || '').trim();
-    if (fallbackKey && fallbackKey.startsWith('AIzaSy')) {
-      apiKey = fallbackKey;
+    if (isMissing) {
+      return res.json({ configured: false, status: 'missing' });
     }
-  }
+    
+    if (isLeaked) {
+      resetAiClient();
+      return res.json({ 
+        configured: true, 
+        status: 'leaked',
+        error: 'Your API key has been reported as leaked. Please use another API key.'
+      });
+    }
+    
+    if (isQuota) {
+      return res.json({ 
+        configured: true, 
+        status: 'quota_exceeded',
+        error: 'API quota exceeded. Please try again later.'
+      });
+    }
 
-  const isConfigured = !!(apiKey && apiKey.startsWith('AIzaSy') && apiKey.length > 10);
-  res.json({ configured: isConfigured, prefix: apiKey.substring(0, 6) });
+    res.json({ 
+      configured: true, 
+      status: 'error',
+      error: error.message
+    });
+  }
 };
 
 export const scrapeProduct = async (req: Request, res: Response) => {
   const { url } = req.body;
   console.log('Scraping request received for URL:', url);
 
-  const ai = getAiClient();
+  const ai = await getAiClient();
 
   if (!url) {
     console.warn('Scraping failed: No URL provided');
@@ -100,7 +164,7 @@ export const scrapeProduct = async (req: Request, res: Response) => {
       // If the HTML is very short or looks like a challenge/block page, try search fallback
       if (html.length < 1000 || html.toLowerCase().includes('captcha') || html.toLowerCase().includes('challenge-platform') || html.toLowerCase().includes('security check')) {
         console.warn('HTML content looks suspicious or too short, triggering search fallback...');
-        return await performSearchFallback(url, res, ai);
+        return await performSearchFallback(url, res, ai, html);
       }
     } catch (fetchError: any) {
       console.error('Direct fetch failed:', fetchError.message);
@@ -133,13 +197,13 @@ export const scrapeProduct = async (req: Request, res: Response) => {
     // If the text content is still too thin after cleaning, trigger search fallback
     if (textContent.length < 300) {
       console.warn('Cleaned text content is too short, triggering search fallback...');
-      return await performSearchFallback(url, res, ai);
+      return await performSearchFallback(url, res, ai, html);
     }
 
     console.log('Using Gemini to parse product data (Content length:', textContent.length, ')...');
     
     try {
-      const geminiResponse = await ai.models.generateContent({
+    const geminiResponse = await (await getAiClient()).models.generateContent({
         model: "gemini-3-flash-preview",
         contents: `Extract the ORIGINAL product information from this page:
         URL: ${url}
@@ -203,7 +267,7 @@ export const scrapeProduct = async (req: Request, res: Response) => {
       // If price is 0 or no images, it's likely a failure, trigger search fallback
       if ((!data.price || data.price === 0) || !data.images || data.images.length === 0) {
         console.warn('Gemini parsed 0 price or no images, triggering search fallback...');
-        return await performSearchFallback(url, res, ai);
+        return await performSearchFallback(url, res, ai, html);
       }
 
       console.log('Gemini successfully parsed data:', data.name);
@@ -223,7 +287,18 @@ export const scrapeProduct = async (req: Request, res: Response) => {
       });
     } catch (geminiError: any) {
       console.error('Gemini parsing failed, triggering search fallback:', geminiError.message);
-      return await performSearchFallback(url, res, ai);
+      
+      // Check for leaked key error
+      if (geminiError.message?.includes('leaked') || geminiError.status === 'PERMISSION_DENIED') {
+        console.error('CRITICAL: Gemini API key reported as leaked.');
+        resetAiClient();
+        return res.status(400).json({ 
+          message: 'Your Gemini API key has been reported as leaked by Google. Please update your API key in the Settings menu.',
+          error: 'API_KEY_LEAKED'
+        });
+      }
+
+      return await performSearchFallback(url, res, ai, html);
     }
   } catch (error: any) {
     console.error('Scraping error:', error.message);
@@ -233,10 +308,10 @@ export const scrapeProduct = async (req: Request, res: Response) => {
 };
 
 // Helper function for Gemini Search Fallback
-async function performSearchFallback(url: string, res: Response, ai: any) {
+async function performSearchFallback(url: string, res: Response, ai: any, html?: string) {
   console.log('Attempting Gemini Search fallback for URL:', url);
   try {
-    const searchResponse = await ai.models.generateContent({
+    const searchResponse = await (await getAiClient()).models.generateContent({
       model: "gemini-3-flash-preview",
       contents: `Find the EXACT ORIGINAL product details for this URL: ${url}. 
       
@@ -293,15 +368,50 @@ async function performSearchFallback(url: string, res: Response, ai: any) {
     });
   } catch (searchError: any) {
     console.error('Gemini Search fallback failed:', searchError.message);
-    // If search fails, try Cheerio as absolute last resort
-    return await performCheerioFallback(url, res, '');
+    
+    // Check for leaked key error
+    if (searchError.message?.includes('leaked') || searchError.status === 'PERMISSION_DENIED') {
+      console.error('CRITICAL: Gemini API key reported as leaked in fallback.');
+      resetAiClient();
+      return res.status(400).json({ 
+        message: 'Your Gemini API key has been reported as leaked by Google. Please update your API key in the Settings menu.',
+        error: 'API_KEY_LEAKED'
+      });
+    }
+
+    const isQuotaError = searchError.message?.includes('quota') || 
+                        searchError.message?.includes('429') || 
+                        searchError.status === 'RESOURCE_EXHAUSTED';
+
+    if (isQuotaError) {
+      console.warn('Gemini API quota exceeded. Falling back to basic extraction.');
+      // If we have HTML, try basic extraction, otherwise inform user about quota
+      if (html && html.length > 500) {
+        return await performCheerioFallback(url, res, html, 'AI quota reached. Using basic extraction.');
+      } else {
+        return res.status(429).json({ 
+          message: 'AI quota exceeded (Free Tier limit). Please try again in a few minutes or use a different URL.',
+          error: 'QUOTA_EXCEEDED'
+        });
+      }
+    }
+    
+    // If search fails for other reasons, try Cheerio as absolute last resort
+    return await performCheerioFallback(url, res, html || '');
   }
 }
 
 // Helper function for Cheerio Fallback
-async function performCheerioFallback(url: string, res: Response, html: string) {
+async function performCheerioFallback(url: string, res: Response, html: string, customMessage?: string) {
   console.log('Attempting Cheerio fallback for URL:', url);
   try {
+    if (!html || html.length < 100) {
+      return res.status(404).json({ 
+        message: customMessage || 'Could not fetch website content and AI fallback failed.',
+        error: 'FETCH_FAILED'
+      });
+    }
+
     const $ = cheerio.load(html);
     const name = $('.product-title').text().trim() || $('h1').first().text().trim() || $('title').text().trim() || $('.title').first().text().trim();
     
@@ -350,7 +460,7 @@ async function performCheerioFallback(url: string, res: Response, html: string) 
       images: finalImages.length > 0 ? finalImages : ['https://picsum.photos/seed/product/800/800'],
       category: 'Imported',
       sourceUrl: url,
-      message: 'Limited data extracted via fallback.'
+      message: customMessage || 'Limited data extracted via fallback.'
     });
   } catch (e: any) {
     return res.status(500).json({ message: 'All extraction methods failed.', error: e.message });

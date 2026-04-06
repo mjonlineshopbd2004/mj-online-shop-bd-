@@ -114,13 +114,31 @@ export default function AdminProductImporter() {
       }
 
       if (!response.ok) {
+        if (response.status === 429) {
+          toast.error('AI Quota Exceeded. The free AI limit has been reached. Please try again in a few minutes or use a different URL.', {
+            duration: 6000
+          });
+          setLoading(false);
+          return;
+        }
+        if (data.error === 'API_KEY_LEAKED') {
+          toast.error('Your Gemini API key has been reported as leaked by Google. Please update it in the Settings menu.', {
+            duration: 10000
+          });
+          setLoading(false);
+          return;
+        }
         throw new Error(data.message || 'Failed to fetch product data');
       }
 
       if (data.error === 'GEMINI_API_KEY_INVALID') {
-        toast.warning('AI is partially working. Please set a valid GEMINI_API_KEY in Vercel for full original details.', {
+        toast.warning('AI is partially working. Please set a valid GEMINI_API_KEY for full original details.', {
           duration: 10000
         });
+      }
+
+      if (data.message) {
+        toast.info(data.message, { duration: 5000 });
       }
       
       // Map backend fields to frontend fields

@@ -26,6 +26,9 @@ service cloud.firestore {
     // Collection: settings
     // Fields: storeName, phone, email, address, facebook, instagram, youtube, twitter, deliveryChargeInside, deliveryChargeOutside
     //
+    // Collection: counters
+    // Fields: value
+    //
     // ===============================================================
 
     // Helper Functions
@@ -177,6 +180,10 @@ service cloud.firestore {
 
     match /otps/{email} {
       allow read, write: if false; // Only accessible via Admin SDK
+    }
+    
+    match /counters/{counterId} {
+      allow read, write: if isAdmin();
     }
   }
 }

@@ -184,7 +184,7 @@ export default function ProductDetails() {
     <div className="container-custom py-12">
       <div className="flex flex-col lg:flex-row gap-12 mb-24">
         {/* Image Gallery */}
-        <div className="lg:w-1/2 space-y-4">
+        <div className="lg:w-[38%] space-y-4">
           <div className="relative aspect-[4/5] rounded-[2rem] overflow-hidden bg-gray-50 border border-gray-100 group">
             <img
               src={getProxyUrl(product.images[activeImage])}
@@ -263,10 +263,10 @@ export default function ProductDetails() {
         </div>
 
         {/* Product Info */}
-        <div className="lg:w-1/2">
+        <div className="lg:w-[62%]">
           <div className="mb-8">
             <p className="text-orange-600 font-bold uppercase tracking-[0.2em] text-sm mb-4">{product.category}</p>
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 leading-tight tracking-tight">{product.name}</h1>
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4 leading-tight tracking-tight">{product.name}</h1>
             <div className="flex items-center space-x-4">
               <div className="flex items-center bg-yellow-50 px-3 py-1 rounded-full">
                 <Star className="h-4 w-4 text-yellow-500 fill-current mr-1" />
@@ -298,21 +298,6 @@ export default function ProductDetails() {
           <p className="text-gray-600 text-lg leading-relaxed mb-10 border-b border-gray-100 pb-10">
             {product.description}
           </p>
-
-          {/* Specifications */}
-          {product.specifications && product.specifications.length > 0 && (
-            <div className="mb-10 pb-10 border-b border-gray-100">
-              <h3 className="text-sm font-bold text-gray-900 uppercase tracking-widest mb-6">Product Specifications</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {product.specifications.map((spec, idx) => (
-                  <div key={idx} className="flex justify-between items-center p-4 bg-gray-50 rounded-2xl border border-gray-100">
-                    <span className="text-gray-500 font-bold text-sm">{spec.key}</span>
-                    <span className="text-gray-900 font-black text-sm">{spec.value}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
 
           <div className="space-y-8 mb-10">
             {/* Color Selection */}
@@ -482,6 +467,21 @@ export default function ProductDetails() {
           </div>
         </div>
       </div>
+
+      {/* Specifications Section */}
+      {product.specifications && product.specifications.length > 0 && (
+        <section className="pt-24 border-t border-gray-100">
+          <h2 className="text-3xl font-bold text-gray-900 mb-8 tracking-tight">Product Specifications</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {product.specifications.map((spec, idx) => (
+              <div key={idx} className="flex flex-col p-6 bg-gray-50 rounded-3xl border border-gray-100">
+                <span className="text-gray-500 font-bold text-xs uppercase tracking-widest mb-2">{spec.key}</span>
+                <span className="text-gray-900 font-black text-lg">{spec.value}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Reviews Section */}
       <section className="pt-24 border-t border-gray-100 mb-24">

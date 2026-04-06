@@ -73,6 +73,7 @@ export interface SiteSettings {
   bankAccountNumber: string;
   bankAccountName: string;
   primaryColor: string;
+  geminiApiKey: string;
   bannerTextColor: string;
   bannerBgColor: string;
   banners: Banner[];
@@ -128,6 +129,7 @@ export const defaultSettings: SiteSettings = {
   bankAccountNumber: '123.456.7890',
   bankAccountName: 'MJ Online Shop',
   primaryColor: '#10b981',
+  geminiApiKey: '',
   bannerTextColor: '#ffffff',
   bannerBgColor: '#111827',
   banners: [],

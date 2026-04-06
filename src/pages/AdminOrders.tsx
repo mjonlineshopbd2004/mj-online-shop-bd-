@@ -159,7 +159,7 @@ export default function AdminOrders() {
                         </div>
                       )}
                       <div>
-                        <p className="font-black text-white group-hover:text-primary transition-colors">#{order.id.slice(-8).toUpperCase()}</p>
+                        <p className="font-black text-white group-hover:text-primary transition-colors">#{order.id}</p>
                         <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest">{order.paymentMethod} ({order.paymentType})</p>
                       </div>
                     </div>
@@ -226,7 +226,7 @@ export default function AdminOrders() {
               <div className="p-8 border-b border-white/5 flex justify-between items-center bg-white/5">
                 <div>
                   <h2 className="text-2xl font-black text-white">Order Details</h2>
-                  <p className="text-gray-500 font-black uppercase tracking-widest text-[10px]">#{selectedOrder.id.toUpperCase()}</p>
+                  <p className="text-gray-500 font-black uppercase tracking-widest text-[10px]">#{selectedOrder.id}</p>
                 </div>
                 <button
                   onClick={() => setSelectedOrder(null)}

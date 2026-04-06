@@ -29,8 +29,24 @@ export const createOrder = async (req: any, res: Response) => {
 
   try {
     const db = getDb();
+    let orderId = '';
+    
+    // Generate sequential order ID starting from 2026
+    await db.runTransaction(async (transaction) => {
+      const counterRef = db.collection('counters').doc('order_id');
+      const counterDoc = await transaction.get(counterRef);
+      
+      let nextId = 2026;
+      if (counterDoc.exists) {
+        nextId = counterDoc.data()?.value || 2026;
+      }
+      
+      orderId = nextId.toString();
+      transaction.set(counterRef, { value: nextId + 1 });
+    });
+
     const newOrder: Order = {
-      id: db.collection('orders').doc().id,
+      id: orderId,
       userId: req.user.uid,
       customerName,
       customerEmail: req.user.email,

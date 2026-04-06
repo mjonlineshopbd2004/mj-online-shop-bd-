@@ -39,6 +39,15 @@
       },
       "required": ["name", "price", "category", "stock"]
     },
+    "Counter": {
+      "title": "Counter",
+      "description": "Sequential counter for IDs.",
+      "type": "object",
+      "properties": {
+        "value": { "type": "integer" }
+      },
+      "required": ["value"]
+    },
     "Order": {
       "title": "Order",
       "description": "Customer order details.",
@@ -177,6 +186,10 @@
     "/settings/site": {
       "schema": "SiteSettings",
       "description": "Store contact and delivery info."
+    },
+    "/counters/{counterId}": {
+      "schema": "Counter",
+      "description": "Sequential counters for IDs."
     }
   }
 }
