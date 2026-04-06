@@ -9,7 +9,7 @@ import { useCart } from '../contexts/CartContext';
 import { useWishlist } from '../contexts/WishlistContext';
 import { useAuth } from '../contexts/AuthContext';
 import { motion, AnimatePresence } from 'motion/react';
-import { Star, ShoppingCart, ShoppingBag, Heart, Truck, ShieldCheck, RefreshCw, ChevronRight, Check, ChevronLeft, Plus, Minus, MessageSquare, Send } from 'lucide-react';
+import { Star, ShoppingCart, ShoppingBag, Heart, Truck, ShieldCheck, RefreshCw, ChevronRight, Check, ChevronLeft, Plus, Minus, MessageSquare, Send, Store } from 'lucide-react';
 import { toast } from 'sonner';
 import ProductCard from '../components/ProductCard';
 
@@ -237,10 +237,10 @@ export default function ProductDetails() {
   };
 
   return (
-    <div className="container-custom py-12">
-      <div className="flex flex-col lg:flex-row gap-12 mb-24">
+    <div className="container-custom py-4 lg:py-12">
+      <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 mb-12 lg:mb-24">
         {/* Image Gallery */}
-        <div className="lg:w-[38%] space-y-4">
+        <div className="w-full lg:w-[38%] max-w-[450px] mx-auto lg:max-w-none space-y-4">
           <div 
             className="relative aspect-[4/5] rounded-[2rem] overflow-hidden bg-gray-50 border border-gray-100 group cursor-zoom-in"
             onClick={() => setIsZoomed(!isZoomed)}
@@ -338,17 +338,17 @@ export default function ProductDetails() {
             </div>
           )}
 
-          {/* Product Specifications (Small Table Style) */}
+          {/* Product Specifications (Table Style) */}
           {product.specifications && product.specifications.length > 0 && (
-            <div className="mt-12 overflow-hidden rounded-xl border border-gray-100 shadow-sm">
-              <div className="bg-[#003d3d] px-4 py-2">
-                <h3 className="text-[10px] font-black text-white uppercase tracking-widest text-center">Specification</h3>
+            <div className="mt-12 overflow-hidden rounded-2xl border border-gray-100 shadow-sm bg-white">
+              <div className="bg-[#003d3d] px-6 py-3">
+                <h3 className="text-xs font-black text-white uppercase tracking-widest text-center">Specification</h3>
               </div>
               <div className="divide-y divide-gray-100">
                 {product.specifications.map((spec, idx) => (
-                  <div key={idx} className="flex justify-between items-center px-4 py-2 bg-white hover:bg-gray-50 transition-colors">
-                    <span className="text-[10px] text-gray-500 font-bold uppercase tracking-tight">{spec.key}</span>
-                    <span className="text-[10px] text-gray-900 font-black text-right">{spec.value}</span>
+                  <div key={idx} className="flex justify-between items-center px-6 py-3 hover:bg-gray-50 transition-colors">
+                    <span className="text-[10px] sm:text-xs text-gray-500 font-bold uppercase tracking-tight pr-4">{spec.key}</span>
+                    <span className="text-[10px] sm:text-xs text-gray-900 font-black text-right">{spec.value}</span>
                   </div>
                 ))}
               </div>
@@ -359,6 +359,14 @@ export default function ProductDetails() {
         {/* Product Info */}
         <div className="lg:w-[62%]">
           <div className="mb-8">
+            {product.vendor && (
+              <div className="flex items-center gap-2 mb-2">
+                <Store className="h-4 w-4 text-orange-600" />
+                <span className="text-xs font-black text-orange-600 uppercase tracking-widest">
+                  Vendor: {product.vendor}
+                </span>
+              </div>
+            )}
             <p className="text-orange-600 font-bold uppercase tracking-[0.2em] text-sm mb-4">{product.category}</p>
             <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4 leading-tight tracking-tight">{product.name}</h1>
             <div className="flex items-center space-x-4">
@@ -388,10 +396,6 @@ export default function ProductDetails() {
               </span>
             )}
           </div>
-
-          <p className="text-gray-600 text-lg leading-relaxed mb-10 border-b border-gray-100 pb-10">
-            {product.description}
-          </p>
 
           <div className="space-y-8 mb-10">
             {/* Color Selection */}
@@ -505,34 +509,44 @@ export default function ProductDetails() {
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-4">
-            <button
-              onClick={handleAddToCart}
-              disabled={product.stock <= 0}
-              className="flex-1 bg-white text-orange-600 border-2 border-orange-600 py-4 rounded-2xl font-bold text-lg hover:bg-orange-50 transition-all flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <ShoppingCart className="h-5 w-5" />
-              <span>Add to Cart</span>
-            </button>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => toggleWishlist(product)}
+                className={cn(
+                  "py-4 rounded-2xl border-2 transition-all flex items-center justify-center space-x-2",
+                  isInWishlist(product.id)
+                    ? "bg-red-50 border-red-500 text-red-500"
+                    : "bg-white border-gray-100 text-gray-400 hover:border-red-500 hover:text-red-500"
+                )}
+              >
+                <Heart className={cn("h-5 w-5", isInWishlist(product.id) && "fill-current")} />
+                <span className="font-bold text-sm">Wishlist</span>
+              </button>
+              <button
+                onClick={handleAddToCart}
+                disabled={product.stock <= 0}
+                className="bg-white text-orange-600 border-2 border-orange-600 py-4 rounded-2xl font-bold text-sm hover:bg-orange-50 transition-all flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <ShoppingCart className="h-5 w-5" />
+                <span>Cart</span>
+              </button>
+            </div>
             <button
               onClick={handleBuyNow}
               disabled={product.stock <= 0}
-              className="flex-1 bg-orange-600 text-white py-4 rounded-2xl font-bold text-lg shadow-xl shadow-orange-100 hover:bg-orange-700 transition-all flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg-orange-600 text-white py-4 rounded-2xl font-bold text-sm shadow-lg shadow-orange-100 hover:bg-orange-700 transition-all flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <ShoppingBag className="h-5 w-5" />
               <span>Buy Now</span>
             </button>
-            <button
-              onClick={() => toggleWishlist(product)}
-              className={cn(
-                "px-6 py-4 rounded-2xl border-2 transition-all flex items-center justify-center",
-                isInWishlist(product.id)
-                  ? "bg-red-50 border-red-500 text-red-500"
-                  : "bg-white border-gray-100 text-gray-400 hover:border-red-500 hover:text-red-500"
-              )}
-            >
-              <Heart className={cn("h-6 w-6", isInWishlist(product.id) && "fill-current")} />
-            </button>
+          </div>
+
+          <div className="mb-10 border-b border-gray-100 pb-10">
+            <h3 className="text-sm font-bold text-gray-900 uppercase tracking-widest mb-4">Description</h3>
+            <p className="text-gray-600 text-base leading-relaxed">
+              {product.description}
+            </p>
           </div>
 
           {/* Trust Badges */}
@@ -701,7 +715,7 @@ export default function ProductDetails() {
               <p className="text-gray-500 font-medium">You might also like these suggestions</p>
             </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-8">
             {relatedProducts.map(p => (
               <ProductCard key={p.id} product={p} />
             ))}

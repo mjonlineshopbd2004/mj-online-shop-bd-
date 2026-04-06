@@ -9,6 +9,7 @@ import {
   Plus, 
   CheckCircle2, 
   AlertCircle, 
+  Store,
   Image as ImageIcon,
   DollarSign,
   Type as TypeIcon,
@@ -30,6 +31,7 @@ interface ImportedProduct {
   images: string[];
   category: string;
   sourceUrl: string;
+  vendor?: string;
   videoUrl?: string;
   sizes?: string[];
   colors?: string[];
@@ -153,6 +155,7 @@ export default function AdminProductImporter() {
         images: data.images,
         category: data.category,
         videoUrl: data.videoUrl,
+        vendor: data.vendor,
         sourceUrl: url,
         sizes: data.sizes,
         colors: data.colors,
@@ -195,6 +198,7 @@ export default function AdminProductImporter() {
         stock: 100,
         featured: false,
         trending: false,
+        vendor: product.vendor || '',
         rating: 5,
         reviewsCount: 0,
         createdAt: new Date().toISOString(),
@@ -258,6 +262,25 @@ export default function AdminProductImporter() {
     const colors = [...(product.colors || [])];
     colors[index] = value;
     updateProductField('colors', colors);
+  };
+
+  const addSpecification = () => {
+    if (!product) return;
+    const specifications = [...(product.specifications || []), { key: '', value: '' }];
+    updateProductField('specifications', specifications);
+  };
+
+  const removeSpecification = (index: number) => {
+    if (!product) return;
+    const specifications = (product.specifications || []).filter((_, i) => i !== index);
+    updateProductField('specifications', specifications);
+  };
+
+  const updateSpecification = (index: number, field: 'key' | 'value', value: string) => {
+    if (!product) return;
+    const specifications = [...(product.specifications || [])];
+    specifications[index] = { ...specifications[index], [field]: value };
+    updateProductField('specifications', specifications);
   };
 
   return (
@@ -438,9 +461,15 @@ export default function AdminProductImporter() {
                           type="number"
                           value={product.price}
                           onChange={(e) => updateProductField('price', Number(e.target.value))}
-                          className="w-full bg-emerald-500/5 border border-emerald-500/20 rounded-xl py-3 pl-10 pr-4 text-xl font-black text-emerald-500 focus:outline-none focus:border-emerald-500 transition-all"
+                          className={cn(
+                            "w-full bg-emerald-500/5 border rounded-xl py-3 pl-10 pr-4 text-xl font-black focus:outline-none transition-all",
+                            product.price === 0 ? "border-red-500/50 text-red-500 animate-pulse" : "border-emerald-500/20 text-emerald-500 focus:border-emerald-500"
+                          )}
                         />
                       </div>
+                      {product.price === 0 && (
+                        <p className="text-[10px] text-red-500 font-bold uppercase tracking-wider">Price not detected! Please enter manually.</p>
+                      )}
                     </div>
                     <div className="space-y-2">
                       <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Offer Price (Original)</label>
@@ -557,6 +586,63 @@ export default function AdminProductImporter() {
                       onChange={(e) => updateProductField('description', e.target.value)}
                       className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-sm text-gray-300 leading-relaxed font-medium focus:outline-none focus:border-emerald-500 transition-all resize-none custom-scrollbar"
                     />
+                  </div>
+
+                  {/* Specifications Section */}
+                  <div className="space-y-4 pt-4 border-t border-white/5">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest">Specifications</h3>
+                      <button 
+                        onClick={addSpecification}
+                        className="flex items-center gap-2 px-3 py-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-500 rounded-lg transition-all text-[10px] font-bold uppercase tracking-wider"
+                      >
+                        <Plus className="h-3 w-3" />
+                        Add Spec
+                      </button>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 gap-3">
+                      {product.specifications?.map((spec, idx) => (
+                        <div key={idx} className="flex items-center gap-3 group">
+                          <input
+                            type="text"
+                            value={spec.key}
+                            onChange={(e) => updateSpecification(idx, 'key', e.target.value)}
+                            placeholder="Key (e.g. Material)"
+                            className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-xs font-bold focus:outline-none focus:border-emerald-500"
+                          />
+                          <input
+                            type="text"
+                            value={spec.value}
+                            onChange={(e) => updateSpecification(idx, 'value', e.target.value)}
+                            placeholder="Value (e.g. Cotton)"
+                            className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-xs font-bold focus:outline-none focus:border-emerald-500"
+                          />
+                          <button 
+                            onClick={() => removeSpecification(idx)}
+                            className="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl transition-all opacity-0 group-hover:opacity-100"
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                        </div>
+                      ))}
+                      {(!product.specifications || product.specifications.length === 0) && (
+                        <p className="text-[10px] text-gray-600 italic font-bold">No specifications added yet.</p>
+                      )}
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Vendor / Brand</label>
+                        <div className="relative">
+                          <input
+                            type="text"
+                            value={product.vendor || ''}
+                            onChange={(e) => setProduct({ ...product, vendor: e.target.value })}
+                            className="w-full bg-white/5 border border-white/10 focus:border-emerald-500 rounded-xl px-4 py-3 pl-10 outline-none transition-all font-bold text-sm"
+                            placeholder="e.g. Nike, Apple, Daraz"
+                          />
+                          <Store className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-600" />
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
 

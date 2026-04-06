@@ -274,10 +274,11 @@ export const scrapeProduct = async (req: Request, res: Response) => {
         5. images: Extract ALL high-quality product image URLs. IGNORE any images that are logos, icons, headers, footers, or advertisements. Only extract actual product photos from the main product gallery or description.
         6. videoUrl: Extract the product video URL if available (e.g., YouTube, direct mp4 link).
         7. category: The product category.
-        8. sizes/colors: Available variations (e.g., ["S", "M", "L"], ["Red", "Blue"]).
-        9. specifications: Key-value pairs of product specs (e.g., [{"key": "Material", "value": "Cotton"}]).`,
+        8. vendor: The brand or seller name (e.g., "Nike", "Apple", or the store name).
+        9. sizes/colors: Available variations (e.g., ["S", "M", "L"], ["Red", "Blue"]).
+        10. specifications: Key-value pairs of product specs (e.g., [{"key": "Material", "value": "Cotton"}]).`,
         config: {
-          systemInstruction: "You are a professional product data extractor. Your goal is to extract the most accurate and original information. Look specifically for JSON-LD scripts or meta tags for price and images. IGNORE LOGOS AND SITE ICONS. If the price is in a foreign currency (like Chinese Yuan ¥ or USD $), convert it to Bangladeshi Taka (BDT) using current approximate rates (e.g., 1 CNY = 16 BDT, 1 USD = 115 BDT). If the price is 0 or missing, try to find it in the text. Return ONLY a valid JSON object.",
+          systemInstruction: "You are a professional product data extractor. Your goal is to extract the most accurate and original information. For Daraz, look for the price in elements with classes like 'pdp-price', 'pdp-price_type_normal', or 'pdp-product-price'. For 1688, look for the price in 'price-text' or 'price-num'. If the price is in a foreign currency (like Chinese Yuan ¥ or USD $), convert it to Bangladeshi Taka (BDT) using current approximate rates (e.g., 1 CNY = 16 BDT, 1 USD = 115 BDT). If the price is 0 or missing, try to find it in the text. For specifications, look for product details, features, or technical specs. For vendor, look for the brand name or shop name. Return ONLY a valid JSON object. IGNORE LOGOS AND SITE ICONS.",
           responseMimeType: "application/json",
           maxOutputTokens: 3000,
           responseSchema: {
@@ -287,6 +288,7 @@ export const scrapeProduct = async (req: Request, res: Response) => {
               price: { type: Type.NUMBER },
               originalPrice: { type: Type.STRING },
               category: { type: Type.STRING },
+              vendor: { type: Type.STRING },
               description: { type: Type.STRING },
               images: {
                 type: Type.ARRAY,
@@ -375,14 +377,15 @@ async function performSearchFallback(url: string, res: Response, ai: any, html?:
       REQUIRED FIELDS:
       1. name: The full original product title.
       2. originalPrice: The price in the original currency (e.g., ¥, $, or local).
-      3. price: Convert the original price to BDT (1 CNY = 16 BDT, 1 USD = 115 BDT).
+      3. price: Convert the original price to BDT (1 CNY = 16 BDT, 1 USD = 115 BDT). For Daraz, look for 'pdp-price' or 'pdp-product-price'.
       4. description: A detailed summary of the product features.
       5. images: Extract ALL high-quality product image URLs. DO NOT include logos, site banners, or unrelated icons. Focus on the product gallery.
       6. videoUrl: Extract the product video URL if available (e.g., YouTube, direct mp4 link).
       7. category: The product category.
-      8. sizes/colors: Available variations.`,
+      8. vendor: The brand or seller name.
+      9. sizes/colors: Available variations.`,
       config: {
-        systemInstruction: "You are a professional product data specialist. Your goal is to find the most accurate and original information. Use Google Search and URL Context to bypass blocks. IGNORE LOGOS AND SITE ICONS. Return ONLY a valid JSON object. Do not guess; find real data.",
+        systemInstruction: "You are a professional product data specialist. Your goal is to find the most accurate and original information. For Daraz, look for 'Color Family' for colors and 'Specifications' for specs. For vendor, look for the brand name or shop name. Use Google Search and URL Context to bypass blocks. IGNORE LOGOS AND SITE ICONS. Return ONLY a valid JSON object. Do not guess; find real data.",
         tools: [{ urlContext: {} }, { googleSearch: {} }],
         toolConfig: { includeServerSideToolInvocations: true },
         responseMimeType: "application/json",
@@ -394,6 +397,7 @@ async function performSearchFallback(url: string, res: Response, ai: any, html?:
             price: { type: Type.NUMBER },
             originalPrice: { type: Type.STRING },
             category: { type: Type.STRING },
+            vendor: { type: Type.STRING },
             description: { type: Type.STRING },
             images: {
               type: Type.ARRAY,
@@ -406,6 +410,16 @@ async function performSearchFallback(url: string, res: Response, ai: any, html?:
             colors: {
               type: Type.ARRAY,
               items: { type: Type.STRING }
+            },
+            specifications: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  key: { type: Type.STRING },
+                  value: { type: Type.STRING }
+                }
+              }
             },
             videoUrl: { type: Type.STRING }
           },
@@ -485,8 +499,12 @@ async function performCheerioFallback(url: string, res: Response, html: string, 
     let name = '';
     let price = 0;
     let originalPrice = '';
+    let vendor = '';
     let description = '';
     const images: string[] = [];
+    const sizes: string[] = [];
+    const colors: string[] = [];
+    const specifications: { key: string; value: string }[] = [];
 
     if (url.includes('amazon.')) {
       name = $('#productTitle').text().trim();
@@ -495,6 +513,7 @@ async function performCheerioFallback(url: string, res: Response, html: string, 
       if (priceWhole) price = parseFloat(priceWhole.replace(/[^0-9.]/g, '')) + (parseFloat(priceFraction) / 100 || 0);
       const amazonOriginalPrice = $('.a-text-strike').first().text().trim();
       if (amazonOriginalPrice) originalPrice = amazonOriginalPrice;
+      vendor = $('.a-link-normal[id="bylineInfo"]').text().trim() || $('.a-link-normal[id="brand"]').text().trim();
       description = $('#feature-bullets').text().trim() || $('#productDescription').text().trim();
       
       // Amazon main images
@@ -502,16 +521,40 @@ async function performCheerioFallback(url: string, res: Response, html: string, 
       if (landingImage) images.push(landingImage);
     } else if (url.includes('daraz.')) {
       name = $('.pdp-mod-product-badge-title').text().trim() || $('#pdp-product-title').text().trim();
-      const darazPriceText = $('.pdp-price_type_normal').text().trim() || $('.pdp-price').first().text().trim();
+      const darazPriceText = $('.pdp-price_type_normal').text().trim() || $('.pdp-price').first().text().trim() || $('.pdp-product-price').text().trim();
       if (darazPriceText) price = parseFloat(darazPriceText.replace(/[^0-9.]/g, ''));
-      const darazOriginalPrice = $('.pdp-price_type_deleted').first().text().trim();
+      const darazOriginalPrice = $('.pdp-price_type_deleted').first().text().trim() || $('.pdp-price-old').text().trim();
       if (darazOriginalPrice) originalPrice = darazOriginalPrice;
+      vendor = $('.pdp-product-brand__brand-link').text().trim() || $('.pdp-link_theme_blue').first().text().trim();
       description = $('.pdp-product-detail').text().trim() || $('.pdp-common-info').text().trim();
       
+      // Daraz specific color extraction
+      const colorFamily = $('.pdp-mod-product-info-section-item:contains("Color Family") .pdp-mod-product-info-section-item-value').text().trim() || 
+                          $('.sku-prop-content-header:contains("Color Family")').next().text().trim() ||
+                          $('.sku-name').text().trim() ||
+                          $('.sku-variable-name-text').text().trim();
+      if (colorFamily && !colors.includes(colorFamily)) colors.push(colorFamily);
+      
+      // Daraz price
+      const darazPrice = $('.pdp-price').first().text().trim() || 
+                        $('.pdp-product-price').first().text().trim() || 
+                        $('.pdp-price_type_normal').first().text().trim();
+      if (darazPrice) {
+        price = parseFloat(darazPrice.replace(/[^0-9.]/g, ''));
+        originalPrice = $('.pdp-price_type_deleted').first().text().trim();
+      }
+
       // Daraz images
       $('.pdp-mod-common-image').each((i, el) => {
         const src = $(el).attr('src') || $(el).attr('data-src');
         if (src) images.push(src);
+      });
+
+      // Daraz specifications
+      $('.pdp-mod-product-info-section-item').each((i, el) => {
+        const key = $(el).find('.pdp-mod-product-info-section-item-name').text().trim();
+        const value = $(el).find('.pdp-mod-product-info-section-item-value').text().trim();
+        if (key && value) specifications.push({ key, value });
       });
     } else if (url.includes('1688.com')) {
       name = $('.d-title').text().trim() || $('h1').first().text().trim();
@@ -535,23 +578,43 @@ async function performCheerioFallback(url: string, res: Response, html: string, 
       });
     }
 
-    // Extract Sizes and Colors
-    const sizes: string[] = [];
-    const colors: string[] = [];
-    
     // Common patterns for sizes/colors
-    $('.sku-item, .sku-value, .prop-item, .size-item, .color-item, button, span, .pdp-mod-product-info-section-item').each((i, el) => {
-      const text = $(el).text().trim();
-      if (!text || text.length > 30) return;
+    $('.sku-item, .sku-value, .prop-item, .size-item, .color-item, button, span, .pdp-mod-product-info-section-item, .sku-variable-name-text, .sku-name, .pdp-mod-product-info-section-item-value').each((i, el) => {
+      let text = $(el).text().trim();
+      if (!text || text.length > 50) return;
       
+      // Special case for "Color Family: Magenta" or separate label/value
+      if (text.includes('Color Family')) {
+        const parts = text.split(':');
+        if (parts.length > 1) {
+          const colorVal = parts[1].trim();
+          if (colorVal && !colors.includes(colorVal)) colors.push(colorVal);
+        } else {
+          // Check next sibling or parent's next sibling
+          const nextVal = $(el).next().text().trim() || $(el).parent().next().find('.pdp-mod-product-info-section-item-value').text().trim();
+          if (nextVal && nextVal.length < 30 && !colors.includes(nextVal)) colors.push(nextVal);
+        }
+        return;
+      }
+
       const lower = text.toLowerCase();
       const isSize = lower.match(/^(s|m|l|xl|xxl|xxxl|[2-4]xl|[0-9]{2,3})$/) || 
                      $(el).closest('[class*="size"], [id*="size"]').length > 0;
       const isColor = $(el).closest('[class*="color"], [id*="color"]').length > 0 || 
+                      $(el).closest('[class*="sku-variable-name"]').length > 0 ||
+                      $(el).closest('[class*="sku-name"]').length > 0 ||
+                      $(el).hasClass('pdp-mod-product-info-section-item-value') ||
                       $(el).css('background-color') || $(el).find('[style*="background"]').length > 0;
 
       if (isSize && !sizes.includes(text)) sizes.push(text);
-      if (isColor && !colors.includes(text)) colors.push(text);
+      if (isColor) {
+        if (text && !colors.includes(text)) colors.push(text);
+        // Check for image alt/title in color section
+        $(el).find('img').each((j, img) => {
+          const alt = $(img).attr('alt') || $(img).attr('title');
+          if (alt && !colors.includes(alt)) colors.push(alt);
+        });
+      }
     });
 
     // Fallback: Extract from description text
@@ -590,7 +653,7 @@ async function performCheerioFallback(url: string, res: Response, html: string, 
       });
     }
 
-    if (!name) name = $('.product-title').text().trim() || $('h1').first().text().trim() || $('title').text().trim() || $('.title').first().text().trim();
+    if (!name) name = $('.pdp-mod-product-badge-title').text().trim() || $('#pdp-product-title').text().trim() || $('.product-title').text().trim() || $('h1').first().text().trim() || $('title').text().trim() || $('.title').first().text().trim();
     
     if (price === 0) {
       let priceText = '';
@@ -601,7 +664,8 @@ async function performCheerioFallback(url: string, res: Response, html: string, 
         '.current-price', '.product-price', '.price', '.a-price-whole',
         '[data-price]', '.sku-price', '.item-price', '.sale-price',
         '.pdp-mod-product-price .pdp-price', '.product-info-price .price',
-        '.price-container .price', '.product-single__price', '.product-price-value'
+        '.price-container .price', '.product-single__price', '.product-price-value',
+        '.pdp-product-price'
       ];
       
       for (const selector of priceSelectors) {
@@ -630,7 +694,8 @@ async function performCheerioFallback(url: string, res: Response, html: string, 
       const originalPriceSelectors = [
         '.pdp-price_type_deleted', '.a-text-strike', '.original-price', 
         '.old-price', '.list-price', '.strike-price', '.price-old',
-        '.compare-at-price', '.product-price-old', '.was-price'
+        '.compare-at-price', '.product-price-old', '.was-price',
+        '.pdp-price-old'
       ];
       for (const selector of originalPriceSelectors) {
         const text = $(selector).first().text().trim();
@@ -717,11 +782,13 @@ async function performCheerioFallback(url: string, res: Response, html: string, 
       name: name || 'Unknown Product',
       price: price || 0,
       originalPrice: originalPrice || '',
+      vendor: vendor || '',
       description: description ? description.substring(0, 1000) : 'No description found.',
       images: finalImages.length > 0 ? finalImages : ['https://picsum.photos/seed/product/800/800'],
       category: category || 'Imported',
       sizes: sizes.length > 0 ? sizes : [],
       colors: colors.length > 0 ? colors : [],
+      specifications: specifications.length > 0 ? specifications : [],
       videoUrl: videoUrl || '',
       sourceUrl: url,
       message: customMessage || 'Limited data extracted via fallback.'

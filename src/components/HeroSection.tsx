@@ -9,8 +9,28 @@ export default function HeroSection() {
   const { settings } = useSettings();
   const [bannerError, setBannerError] = React.useState(false);
   const [smallBannerError, setSmallBannerError] = React.useState(false);
+  const [currentIndex, setCurrentIndex] = React.useState(0);
   const banners = settings.banners || [];
   const smallBanners = settings.smallBanners || [];
+
+  // Auto-slide effect
+  React.useEffect(() => {
+    if (banners.length <= 1) return;
+
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % banners.length);
+    }, 4000);
+
+    return () => clearInterval(interval);
+  }, [banners.length]);
+
+  const currentBanner = banners[currentIndex] || {
+    image: "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=1000",
+    title: "Premium Collection",
+    subtitle: "Quality products for your lifestyle",
+    topText: "New Arrival",
+    link: "/products"
+  };
 
   return (
     <div className="container-custom pt-4 pb-4 md:py-8">
@@ -18,42 +38,52 @@ export default function HeroSection() {
         {/* Main Left Banner */}
         <div className="lg:col-span-2 relative overflow-hidden bg-[#f3f9fb] group rounded-2xl md:rounded-none h-[220px] md:h-[400px] lg:h-full">
           <div className="absolute inset-0 z-0">
-            <img
-              src={getProxyUrl(banners[0]?.image && !bannerError ? banners[0].image : "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=1000")}
-              alt={banners[0]?.title || "Grocery Deals"}
-              className="w-full h-full object-cover object-right group-hover:scale-105 transition-transform duration-700"
-              referrerPolicy="no-referrer"
-              onError={() => setBannerError(true)}
-            />
+            <motion.div
+              key={currentIndex}
+              initial={{ opacity: 0, scale: 1.1 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.8 }}
+              className="w-full h-full"
+            >
+              <img
+                src={getProxyUrl(currentBanner.image && !bannerError ? currentBanner.image : "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=1000")}
+                alt={currentBanner.title}
+                className="w-full h-full object-cover object-right group-hover:scale-105 transition-transform duration-700"
+                referrerPolicy="no-referrer"
+                onError={() => setBannerError(true)}
+              />
+            </motion.div>
             {/* Gradient Overlay for better readability */}
             <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent"></div>
           </div>
           
           <div className="relative z-10 h-full flex flex-col justify-end px-6 md:px-16 py-8 md:py-12">
             <motion.div
+              key={`content-${currentIndex}`}
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
             >
-              {banners[0]?.topText && (
+              {currentBanner.topText && (
                 <p className="text-primary font-bold uppercase tracking-[0.3em] text-[8px] md:text-xs mb-2 md:mb-4 bg-white inline-block px-3 py-1 md:px-4 md:py-1.5 rounded-sm shadow-sm">
-                  {banners[0].topText}
+                  {currentBanner.topText}
                 </p>
               )}
               <h2 
                 className="text-2xl md:text-4xl font-bold mb-2 md:mb-4 leading-[1.2] tracking-tight text-white drop-shadow-lg font-display"
               >
-                {banners[0]?.title || "Premium Collection"}
+                {currentBanner.title}
               </h2>
-              {banners[0]?.subtitle && (
+              {currentBanner.subtitle && (
                 <p 
                   className="text-sm md:text-2xl font-medium mb-4 md:mb-8 max-w-lg text-white/90 drop-shadow-md font-sans"
                 >
-                  {banners[0].subtitle}
+                  {currentBanner.subtitle}
                 </p>
               )}
               <Link
-                to={banners[0]?.link || "/products"}
+                to={currentBanner.link || "/products"}
                 className="inline-flex items-center justify-center px-6 py-2.5 md:px-10 md:py-4 bg-primary text-white font-bold text-sm md:text-lg hover:bg-primary-dark transition-all shadow-2xl shadow-primary/40 group/btn rounded-sm font-sans"
               >
                 Shop Now
@@ -61,6 +91,21 @@ export default function HeroSection() {
               </Link>
             </motion.div>
           </div>
+
+          {/* Dots Indicator */}
+          {banners.length > 1 && (
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex gap-2">
+              {banners.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setCurrentIndex(idx)}
+                  className={`w-2 h-2 rounded-full transition-all ${
+                    currentIndex === idx ? 'bg-primary w-6' : 'bg-white/50'
+                  }`}
+                />
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Right Side Banner */}

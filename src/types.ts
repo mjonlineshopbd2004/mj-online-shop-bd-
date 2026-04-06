@@ -34,6 +34,7 @@ export interface Product {
   reviewsCount: number;
   featured?: boolean;
   trending?: boolean;
+  vendor?: string;
   specifications?: ProductSpecification[];
   createdAt: string;
   updatedAt?: string;

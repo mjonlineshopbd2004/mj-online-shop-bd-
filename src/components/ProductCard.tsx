@@ -112,39 +112,39 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         </button>
       </div>
 
-      <div className="p-2.5 flex flex-col flex-1">
-        <p className="text-[9px] font-bold text-primary uppercase tracking-[0.1em] mb-1 font-sans">{product.category}</p>
-        <h3 className="text-gray-900 font-bold text-sm line-clamp-2 mb-1 group-hover:text-primary transition-colors font-display tracking-tight leading-tight min-h-[2.5rem]">
+      <div className="p-2 flex flex-col flex-1">
+        <p className="text-[8px] font-bold text-primary uppercase tracking-[0.1em] mb-0.5 font-sans">{product.category}</p>
+        <h3 className="text-gray-900 font-bold text-xs line-clamp-2 mb-0.5 group-hover:text-primary transition-colors font-display tracking-tight leading-tight min-h-[2rem]">
           {product.name}
         </h3>
         
-        <div className="flex items-center space-x-1 mb-1.5">
+        <div className="flex items-center space-x-1 mb-1">
           <div className="flex text-yellow-400">
             {[...Array(5)].map((_, i) => (
-              <Star key={i} className={cn("h-2.5 w-2.5 fill-current", i >= Math.floor(product.rating) && "text-gray-200")} />
+              <Star key={i} className={cn("h-2 w-2 fill-current", i >= Math.floor(product.rating) && "text-gray-200")} />
             ))}
           </div>
-          <span className="text-[10px] font-bold text-gray-400 font-sans">({product.reviewsCount})</span>
+          <span className="text-[9px] font-bold text-gray-400 font-sans">({product.reviewsCount})</span>
         </div>
 
         <div className="mt-auto">
-          <div className="flex items-center gap-1 mb-1.5">
-            <span className="text-base font-black text-primary font-display tracking-tight">
+          <div className="flex items-center gap-1 mb-1">
+            <span className="text-sm font-black text-primary font-display tracking-tight">
               ৳ {formatPrice(product.discountPrice || product.price).replace(/[^0-9.]/g, '')}
             </span>
             {product.discountPrice && (
-              <span className="text-[10px] text-gray-400 line-through font-medium font-sans">
+              <span className="text-[9px] text-gray-400 line-through font-medium font-sans">
                 ৳ {formatPrice(product.price).replace(/[^0-9.]/g, '')}
               </span>
             )}
           </div>
           
-          <div className="space-y-1">
-            <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
+          <div className="space-y-0.5">
+            <div className="w-full h-1 bg-gray-100 rounded-full overflow-hidden">
               <div className="h-full bg-primary rounded-full" style={{ width: '75%' }}></div>
             </div>
             <div className="flex justify-end">
-              <p className="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">
+              <p className="text-[8px] font-bold text-gray-400 uppercase tracking-tighter">
                 {Math.floor(Math.random() * 5000) + 1000} Sold
               </p>
             </div>

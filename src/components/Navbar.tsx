@@ -179,18 +179,27 @@ export default function Navbar() {
               </button>
               
               {settings.enableImageSearch !== false && (
-                <button 
-                  type="button"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-primary/10 rounded-lg transition-all disabled:opacity-50"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isSearching}
-                >
-                  {isSearching ? (
-                    <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                  ) : (
-                    <Camera className="h-4 w-4 text-gray-400" />
-                  )}
-                </button>
+                <>
+                  <button 
+                    type="button"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-primary/10 rounded-lg transition-all disabled:opacity-50"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isSearching}
+                  >
+                    {isSearching ? (
+                      <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                    ) : (
+                      <Camera className="h-4 w-4 text-gray-400" />
+                    )}
+                  </button>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    className="hidden"
+                    accept="image/*"
+                    onChange={handleImageSearch}
+                  />
+                </>
               )}
             </form>
           </div>
