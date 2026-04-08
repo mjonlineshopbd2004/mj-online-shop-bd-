@@ -117,7 +117,7 @@ export default function OrderConfirmation() {
           </style>
         </head>
         <body onload="setTimeout(() => { window.print(); window.close(); }, 500);">
-          <div style="display: flex; justify-content: center;">
+          <div style="width: 100%; height: 100%;">
             ${printContent}
           </div>
         </body>
@@ -397,6 +397,8 @@ export default function OrderConfirmation() {
           position: 'absolute', 
           left: '-9999px', 
           top: 0, 
+          width: '794px',
+          height: '1123px',
           opacity: 0, 
           pointerEvents: 'none',
           backgroundColor: '#ffffff',

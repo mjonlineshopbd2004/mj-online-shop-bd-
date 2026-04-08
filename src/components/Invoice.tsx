@@ -32,10 +32,8 @@ export const Invoice = React.forwardRef<HTMLDivElement, InvoiceProps>(({ order, 
 
   const styles = {
     container: {
-      width: '210mm', // Exact A4 width
-      minWidth: '210mm',
-      height: '297mm', // Exact A4 height
-      minHeight: '297mm',
+      width: '100%',
+      height: '100%',
       margin: '0 auto',
       position: 'relative' as const,
       overflow: 'hidden' as const,
@@ -164,8 +162,10 @@ export const Invoice = React.forwardRef<HTMLDivElement, InvoiceProps>(({ order, 
     },
     bottomSection: {
       marginTop: 'auto',
-      paddingTop: '40px',
+      paddingTop: '20px',
       paddingBottom: '40px',
+      paddingLeft: '40px',
+      paddingRight: '40px',
       borderTop: `1px solid ${colors.gray100}`,
     }
   };
@@ -321,9 +321,10 @@ export const Invoice = React.forwardRef<HTMLDivElement, InvoiceProps>(({ order, 
             <span style={{ fontSize: '16px', fontWeight: '800', color: colors.navy }}>{formatPrice(order.total)}</span>
           </div>
         </div>
+      </div>
 
-        {/* Bottom Info Section (Fixed at bottom) */}
-        <div style={styles.bottomSection}>
+      {/* Bottom Info Section (Fixed at bottom) */}
+      <div style={styles.bottomSection}>
           <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr 1fr', gap: '30px' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
               <div>
@@ -387,7 +388,6 @@ export const Invoice = React.forwardRef<HTMLDivElement, InvoiceProps>(({ order, 
             </div>
           </div>
         </div>
-      </div>
 
       {/* Footer */}
       <div style={styles.footer}>

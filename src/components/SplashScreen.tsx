@@ -4,16 +4,29 @@ import { useSettings } from '../contexts/SettingsContext';
 import { getProxyUrl } from '../lib/utils';
 
 export default function SplashScreen() {
-  const { settings } = useSettings();
+  const { settings, loading } = useSettings();
   const [isVisible, setIsVisible] = useState(true);
   const [logoError, setLogoError] = useState(false);
 
   useEffect(() => {
+    // Minimum 2 seconds display time
     const timer = setTimeout(() => {
-      setIsVisible(false);
+      if (!loading) {
+        setIsVisible(false);
+      }
     }, 2000);
     return () => clearTimeout(timer);
-  }, []);
+  }, [loading]);
+
+  // Hide splash screen once loading is complete (if it took longer than 2s)
+  useEffect(() => {
+    if (!loading && isVisible) {
+      const timer = setTimeout(() => {
+        setIsVisible(false);
+      }, 500); // Small extra delay for smooth transition
+      return () => clearTimeout(timer);
+    }
+  }, [loading, isVisible]);
 
   return (
     <AnimatePresence>
@@ -34,7 +47,7 @@ export default function SplashScreen() {
             className="flex flex-col items-center gap-6"
           >
             <div className="relative">
-              {settings.logoUrl && !logoError ? (
+              {settings.logoUrl && !logoError && !loading ? (
                 <img 
                   src={getProxyUrl(settings.logoUrl)} 
                   alt={settings.storeName} 
@@ -43,7 +56,7 @@ export default function SplashScreen() {
                 />
               ) : (
                 <div className="w-24 h-24 bg-primary rounded-[2rem] flex items-center justify-center text-white font-bold text-5xl shadow-2xl shadow-primary/30">
-                  {settings.storeName.charAt(0)}
+                  {settings.storeName ? settings.storeName.charAt(0) : 'M'}
                 </div>
               )}
               <motion.div

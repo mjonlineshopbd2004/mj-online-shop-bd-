@@ -92,7 +92,7 @@ interface SettingsContextType {
 export const defaultSettings: SiteSettings = {
   storeName: 'MJ ONLINE SHOP BD',
   shopTagline: 'Premium Online Shop',
-  logoUrl: 'https://images.unsplash.com/photo-1472851294608-062f824d29cc?auto=format&fit=crop&q=80&w=200&h=200',
+  logoUrl: '',
   phone: '01610880813',
   whatsappNumber: '01610880813',
   paymentNumber: '01610880813',
@@ -134,15 +134,7 @@ export const defaultSettings: SiteSettings = {
   bannerBgColor: '#111827',
   banners: [],
   smallBanners: [],
-  categories: [
-    { name: 'Shoes', image: 'https://picsum.photos/seed/shoes/600/800' },
-    { name: 'Bags', image: 'https://picsum.photos/seed/bags/600/800' },
-    { name: 'Jewelry', image: 'https://picsum.photos/seed/jewelry/600/800' },
-    { name: 'Women\'s Clothing', image: 'https://picsum.photos/seed/women-clothing/600/800' },
-    { name: 'Watches', image: 'https://picsum.photos/seed/watches/600/800' },
-    { name: 'Electronics & Gadgets', image: 'https://picsum.photos/seed/electronics/600/800' },
-    { name: 'Home & Kitchen', image: 'https://picsum.photos/seed/kitchen/600/800' },
-  ],
+  categories: [],
   banks: [
     { id: 'nexus', name: 'Nexus', accountName: 'MJ Online Shop', accountNumber: '123.456.7890', logo: 'https://logo.clearbit.com/dutchbanglabank.com' },
     { id: 'citybank', name: 'City Bank', accountName: 'MJ Online Shop', accountNumber: '123.456.7890', logo: 'https://logo.clearbit.com/thecitybank.com' },
