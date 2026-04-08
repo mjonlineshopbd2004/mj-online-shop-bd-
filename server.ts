@@ -61,8 +61,14 @@ async function startServer() {
   // API Routes
   console.log('Registering API routes...');
   app.use('/api', (req, res, next) => {
+    const start = Date.now();
     console.log(`[${new Date().toISOString()}] API Request: ${req.method} ${req.url}`);
-    console.log('Headers:', JSON.stringify(req.headers));
+    
+    res.on('finish', () => {
+      const duration = Date.now() - start;
+      console.log(`[${new Date().toISOString()}] API Response: ${req.method} ${req.url} - Status: ${res.statusCode} - Duration: ${duration}ms`);
+    });
+    
     next();
   }, apiRoutes);
 

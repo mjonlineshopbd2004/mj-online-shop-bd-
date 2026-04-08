@@ -46,14 +46,14 @@ export default function UserDashboard() {
           >
             <ChevronLeft className="h-6 w-6 text-gray-600" />
           </button>
-          <h1 className="text-xl font-black text-gray-900 font-display uppercase tracking-tight">Dashboard</h1>
+          <h1 className="text-xl font-black text-gray-900 font-display uppercase tracking-tight">Account</h1>
         </div>
       </div>
 
       <div className="container-custom py-8">
         <div className="flex justify-between items-end mb-6">
           <div>
-            <h2 className="text-lg font-black text-gray-900 font-display uppercase tracking-tight tracking-widest">Dashboard</h2>
+            <h2 className="text-lg font-black text-gray-900 font-display uppercase tracking-tight tracking-widest">My Account</h2>
             <p className="text-xs font-bold text-gray-400 mt-1">Order Statistics</p>
           </div>
           <p className="text-xs font-bold text-gray-500">

@@ -112,33 +112,35 @@ export default function AdminOrders() {
             <title>Invoice - ${order.id}</title>
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
-            <script src="https://cdn.tailwindcss.com"></script>
             <style>
-              @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Dancing+Script:wght@700&display=swap');
               body { 
                 margin: 0; 
                 padding: 0; 
-                background-color: #f3f4f6;
+                background-color: white;
+                display: flex;
+                justify-content: center;
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
               }
               @media print {
-                body { background-color: white; }
-                .no-print { display: none; }
                 @page { 
                   size: A4; 
                   margin: 0; 
                 }
-                .no-print-bg { background-color: white !important; padding: 0 !important; }
+                body { margin: 0; }
+                .no-print { display: none; }
               }
               * { box-sizing: border-box; }
+              .print-container {
+                width: 210mm;
+                height: 297mm;
+                overflow: hidden;
+              }
             </style>
           </head>
-          <body onload="setTimeout(() => { window.print(); window.close(); }, 500);">
-            <div style="display: flex; justify-content: center; padding: 20px; background-color: #f3f4f6;" class="no-print-bg">
-              <div style="background-color: white; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);">
-                ${printContent}
-              </div>
+          <body onload="setTimeout(() => { window.print(); window.close(); }, 1000);">
+            <div class="print-container">
+              ${printContent}
             </div>
           </body>
         </html>
@@ -433,7 +435,7 @@ export default function AdminOrders() {
                         </span>
                       </div>
                       <p className="text-xs font-bold text-gray-400">
-                        Payable: <span className="text-primary">{formatPrice(selectedOrder.payableAmount)}</span> 
+                        Payable: <span className="text-primary">{formatPrice(selectedOrder.payableAmount || selectedOrder.total)}</span> 
                         {selectedOrder.paymentType === '50%' && ` (of ${formatPrice(selectedOrder.total)})`}
                       </p>
                     </div>
@@ -477,9 +479,15 @@ export default function AdminOrders() {
                         <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Name</p>
                         <p className="font-black text-white">{selectedOrder.customerName}</p>
                       </div>
-                      <div>
-                        <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Phone</p>
-                        <p className="font-black text-white">{selectedOrder.phone}</p>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Phone</p>
+                          <p className="font-black text-white">{selectedOrder.phone}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Emergency</p>
+                          <p className="font-black text-white">{selectedOrder.emergencyNumber || 'N/A'}</p>
+                        </div>
                       </div>
                       <div>
                         <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Email</p>
@@ -492,9 +500,23 @@ export default function AdminOrders() {
                       <MapPin className="h-5 w-5 text-primary" />
                       Shipping Address
                     </h3>
-                    <div className="bg-white/5 p-8 rounded-3xl h-full border border-white/5">
+                    <div className="bg-white/5 p-8 rounded-3xl h-full border border-white/5 space-y-4">
                       <p className="font-black text-white leading-relaxed">{selectedOrder.address}</p>
-                      <p className="mt-6 text-[10px] font-black text-gray-500 uppercase tracking-widest">Area: {selectedOrder.deliveryArea.replace('-', ' ')}</p>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">District</p>
+                          <p className="font-black text-white">{selectedOrder.district}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">City</p>
+                          <p className="font-black text-white">{selectedOrder.city}</p>
+                        </div>
+                      </div>
+                      <div className="pt-4 border-t border-white/5">
+                        <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Delivery Method</p>
+                        <p className="font-black text-primary">{selectedOrder.deliveryMethod}</p>
+                        <p className="mt-1 text-[10px] font-black text-gray-500 uppercase tracking-widest">Area: {selectedOrder.deliveryArea.replace('-', ' ')}</p>
+                      </div>
                     </div>
                   </div>
                 </div>

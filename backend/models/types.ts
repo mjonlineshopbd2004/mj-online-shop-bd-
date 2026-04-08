@@ -44,7 +44,11 @@ export interface Order {
   customerName: string;
   customerEmail: string;
   phone: string;
+  emergencyNumber?: string;
+  district: string;
+  city: string;
   address: string;
+  deliveryMethod: string;
   items: any[];
   subtotal: number;
   deliveryCharge: number;

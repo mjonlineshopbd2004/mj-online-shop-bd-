@@ -70,8 +70,13 @@ export default function Checkout() {
 
   const [formData, setFormData] = useState({
     name: profile?.displayName || user?.displayName || '',
+    email: profile?.email || user?.email || '',
     phone: profile?.phone || '',
+    emergencyNumber: '',
+    district: '',
+    city: '',
     address: profile?.address || '',
+    deliveryMethod: 'Home',
     deliveryArea: 'inside-dhaka' as 'inside-dhaka' | 'outside-dhaka',
     paymentMethod: 'bkash' as 'bkash' | 'nagad' | 'rocket',
     paymentType: '100%' as '50%' | '100%',
@@ -85,6 +90,7 @@ export default function Checkout() {
       setFormData(prev => ({
         ...prev,
         name: prev.name || profile.displayName || '',
+        email: prev.email || profile.email || '',
         phone: prev.phone || profile.phone || '',
         address: prev.address || profile.address || '',
       }));
@@ -128,7 +134,7 @@ export default function Checkout() {
       return;
     }
 
-    if (!formData.name || !formData.phone || !formData.address) {
+    if (!formData.name || !formData.phone || !formData.address || !formData.district || !formData.city) {
       toast.error('Please fill in all required fields');
       return;
     }
@@ -159,7 +165,7 @@ export default function Checkout() {
         Back to Cart
       </button>
 
-      <div className="flex flex-col lg:flex-row gap-12">
+      <div className="flex flex-col lg:flex-row gap-12 items-start">
         <div className="flex-1">
           <h1 className="text-4xl font-bold tracking-tight text-gray-900 mb-12">Checkout</h1>
 
@@ -171,43 +177,136 @@ export default function Checkout() {
                 <h2 className="text-2xl font-bold tracking-tight text-gray-900">Shipping Information</h2>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Name */}
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-gray-500 uppercase tracking-widest">Full Name</label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      required
-                      className="w-full bg-gray-50 border-2 border-transparent focus:border-orange-500 focus:bg-white rounded-2xl px-6 py-4 outline-none transition-all font-bold"
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    />
-                    <User className="absolute right-4 top-4 h-6 w-6 text-gray-300" />
-                  </div>
+                  <label className="text-sm font-bold text-gray-900 flex items-center gap-1">
+                    <span className="text-red-500">*</span> Name
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Enter your full name"
+                    className="w-full bg-white border border-gray-200 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 rounded-xl px-4 py-3 outline-none transition-all font-medium text-gray-700"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  />
                 </div>
+
+                {/* Phone */}
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-gray-500 uppercase tracking-widest">Phone Number</label>
-                  <div className="relative">
-                    <input
-                      type="tel"
-                      required
-                      placeholder="01XXXXXXXXX"
-                      className="w-full bg-gray-50 border-2 border-transparent focus:border-orange-500 focus:bg-white rounded-2xl px-6 py-4 outline-none transition-all font-bold"
-                      value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    />
-                    <Phone className="absolute right-4 top-4 h-6 w-6 text-gray-300" />
-                  </div>
+                  <label className="text-sm font-bold text-gray-900 flex items-center gap-1">
+                    <span className="text-red-500">*</span> Phone
+                  </label>
+                  <input
+                    type="tel"
+                    required
+                    placeholder="+8801XXXXXXXXX"
+                    className="w-full bg-white border border-gray-200 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 rounded-xl px-4 py-3 outline-none transition-all font-medium text-gray-700"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  />
                 </div>
+
+                {/* Email */}
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-gray-900 flex items-center gap-1">
+                    <span className="text-red-500">*</span> Email
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    placeholder="Enter your email"
+                    className="w-full bg-white border border-gray-200 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 rounded-xl px-4 py-3 outline-none transition-all font-medium text-gray-700"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  />
+                </div>
+
+                {/* Emergency Number */}
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-gray-900">
+                    Emergency Number
+                  </label>
+                  <input
+                    type="tel"
+                    placeholder="e.g. 017XXXXXXXX"
+                    className="w-full bg-white border border-gray-200 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 rounded-xl px-4 py-3 outline-none transition-all font-medium text-gray-700"
+                    value={formData.emergencyNumber}
+                    onChange={(e) => setFormData({ ...formData, emergencyNumber: e.target.value })}
+                  />
+                </div>
+
+                {/* District */}
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-gray-900 flex items-center gap-1">
+                    <span className="text-red-500">*</span> District
+                  </label>
+                  <select
+                    required
+                    className="w-full bg-white border border-gray-200 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 rounded-xl px-4 py-3 outline-none transition-all font-medium text-gray-700 appearance-none"
+                    value={formData.district}
+                    onChange={(e) => setFormData({ ...formData, district: e.target.value })}
+                  >
+                    <option value="">Select District</option>
+                    <option value="Dhaka">Dhaka</option>
+                    <option value="Chittagong">Chittagong</option>
+                    <option value="Rajshahi">Rajshahi</option>
+                    <option value="Khulna">Khulna</option>
+                    <option value="Barisal">Barisal</option>
+                    <option value="Sylhet">Sylhet</option>
+                    <option value="Rangpur">Rangpur</option>
+                    <option value="Mymensingh">Mymensingh</option>
+                  </select>
+                </div>
+
+                {/* City */}
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-gray-900 flex items-center gap-1">
+                    <span className="text-red-500">*</span> City
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Enter your city"
+                    className="w-full bg-white border border-gray-200 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 rounded-xl px-4 py-3 outline-none transition-all font-medium text-gray-700"
+                    value={formData.city}
+                    onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                  />
+                </div>
+
+                {/* Address */}
                 <div className="md:col-span-2 space-y-2">
-                  <label className="text-sm font-bold text-gray-500 uppercase tracking-widest">Full Address</label>
+                  <label className="text-sm font-bold text-gray-900 flex items-center gap-1">
+                    <span className="text-red-500">*</span> Address
+                  </label>
                   <textarea
                     required
-                    rows={3}
-                    className="w-full bg-gray-50 border-2 border-transparent focus:border-orange-500 focus:bg-white rounded-2xl px-6 py-4 outline-none transition-all font-bold"
+                    rows={2}
+                    placeholder="House - 07, Road - 2/A, Sector - 4, Uttara, Dhaka - 1230"
+                    className="w-full bg-white border border-gray-200 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 rounded-xl px-4 py-3 outline-none transition-all font-medium text-gray-700"
                     value={formData.address}
                     onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                   />
                 </div>
+
+                {/* Delivery Method */}
+                <div className="md:col-span-2 space-y-2">
+                  <label className="text-sm font-bold text-gray-900 flex items-center gap-1">
+                    <span className="text-red-500">*</span> Delivery Method
+                  </label>
+                  <select
+                    required
+                    className="w-full bg-white border border-gray-200 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 rounded-xl px-4 py-3 outline-none transition-all font-medium text-gray-700 appearance-none"
+                    value={formData.deliveryMethod}
+                    onChange={(e) => setFormData({ ...formData, deliveryMethod: e.target.value })}
+                  >
+                    <option value="Home">Home</option>
+                    <option value="Office">Office</option>
+                    <option value="Pickup">Pickup</option>
+                  </select>
+                </div>
+
+                {/* Customer Note */}
                 <div className="md:col-span-2 space-y-2">
                   <label className="text-sm font-bold text-gray-500 uppercase tracking-widest">Customer Note (Optional)</label>
                   <textarea

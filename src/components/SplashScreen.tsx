@@ -56,7 +56,7 @@ export default function SplashScreen() {
                 />
               ) : (
                 <div className="w-24 h-24 bg-primary rounded-[2rem] flex items-center justify-center text-white font-bold text-5xl shadow-2xl shadow-primary/30">
-                  {settings.storeName ? settings.storeName.charAt(0) : 'M'}
+                  {settings.storeName && !loading ? settings.storeName.charAt(0) : 'M'}
                 </div>
               )}
               <motion.div

@@ -98,11 +98,12 @@ export default function OrderConfirmation() {
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
           <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
           <style>
-            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Dancing+Script:wght@700&display=swap');
             body { 
               margin: 0; 
               padding: 0; 
               background-color: white;
+              display: flex;
+              justify-content: center;
               -webkit-print-color-adjust: exact !important;
               print-color-adjust: exact !important;
             }
@@ -112,12 +113,18 @@ export default function OrderConfirmation() {
                 margin: 0; 
               }
               body { margin: 0; }
+              .no-print { display: none; }
             }
             * { box-sizing: border-box; }
+            .print-container {
+              width: 210mm;
+              height: 297mm;
+              overflow: hidden;
+            }
           </style>
         </head>
-        <body onload="setTimeout(() => { window.print(); window.close(); }, 500);">
-          <div style="width: 100%; height: 100%;">
+        <body onload="setTimeout(() => { window.print(); window.close(); }, 1000);">
+          <div class="print-container">
             ${printContent}
           </div>
         </body>

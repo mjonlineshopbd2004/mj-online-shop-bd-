@@ -400,23 +400,22 @@ export default function ProductDetails() {
           <div className="space-y-8 mb-10">
             {/* Color Selection */}
             {((product.colors && product.colors.length > 0) || (product.colorVariants && product.colorVariants.length > 0)) && (
-              <div>
-                <div className="flex items-center gap-2 mb-4">
-                  <h3 className="text-sm font-bold text-gray-900 uppercase tracking-widest">Color Family</h3>
-                  <span className="text-sm font-bold text-gray-400">:</span>
-                  <span className="text-sm font-bold text-gray-900">{selectedColor || 'Select Color'}</span>
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <h3 className="text-base font-medium text-gray-500">Color Family</h3>
+                  <span className="text-base font-bold text-gray-900">{selectedColor || 'Select Color'}</span>
                 </div>
                 <div className="flex flex-wrap gap-3">
-                  {/* Text-based colors */}
-                  {product.colors?.map(color => (
+                  {/* Text-based colors (only show if no image variants) */}
+                  {(!product.colorVariants || product.colorVariants.length === 0) && product.colors?.map(color => (
                     <button
                       key={color}
                       onClick={() => setSelectedColor(color)}
                       className={cn(
-                        "px-6 py-3 rounded-xl font-bold transition-all border-2",
+                        "px-6 py-2.5 rounded-lg font-bold transition-all border-2 text-sm",
                         selectedColor === color
                           ? "border-orange-500 bg-orange-50 text-orange-600 shadow-sm"
-                          : "bg-white border-gray-100 text-gray-600 hover:border-gray-900"
+                          : "bg-white border-gray-100 text-gray-600 hover:border-gray-400"
                       )}
                     >
                       {color}
@@ -427,12 +426,22 @@ export default function ProductDetails() {
                   {product.colorVariants?.map((variant, idx) => (
                     <button
                       key={idx}
-                      onClick={() => setSelectedColor(variant.name)}
+                      onClick={() => {
+                        setSelectedColor(variant.name);
+                        // Find if this image exists in the main images array to sync activeImage
+                        const imgIdx = product.images.findIndex(img => img === variant.image);
+                        if (imgIdx !== -1) {
+                          setActiveImage(imgIdx);
+                        } else {
+                          // If not in main images, we could potentially add it or just show it
+                          // For now, let's just update the selection
+                        }
+                      }}
                       className={cn(
-                        "relative w-16 h-16 rounded-xl overflow-hidden border-2 transition-all group",
+                        "relative w-14 h-14 rounded-md overflow-hidden border-2 transition-all group",
                         selectedColor === variant.name
-                          ? "border-orange-500 shadow-md scale-105"
-                          : "border-gray-100 opacity-80 hover:opacity-100 hover:border-gray-300"
+                          ? "border-orange-500 shadow-sm"
+                          : "border-gray-200 opacity-90 hover:opacity-100 hover:border-gray-400"
                       )}
                       title={variant.name}
                     >
@@ -449,8 +458,9 @@ export default function ProductDetails() {
                         }}
                       />
                       {selectedColor === variant.name && (
-                        <div className="absolute bottom-0 right-0 bg-orange-500 text-white p-0.5 rounded-tl-lg">
-                          <Check className="h-3 w-3" />
+                        <div className="absolute bottom-0 right-0 w-6 h-6 overflow-hidden">
+                          <div className="absolute bottom-0 right-0 w-full h-full bg-orange-500 transform rotate-45 translate-x-1/2 translate-y-1/2"></div>
+                          <Check className="absolute bottom-0.5 right-0.5 h-2.5 w-2.5 text-white z-10" />
                         </div>
                       )}
                     </button>

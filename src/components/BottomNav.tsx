@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Layers, ShoppingCart, Heart, LayoutDashboard } from 'lucide-react';
+import { Layers, ShoppingCart, Heart, User } from 'lucide-react';
 import { useSettings } from '../contexts/SettingsContext';
 import { useCart } from '../contexts/CartContext';
 import { useWishlist } from '../contexts/WishlistContext';
@@ -18,7 +18,7 @@ export default function BottomNav() {
     { name: 'Cart', path: '/cart', icon: ShoppingCart, badge: totalItems },
     { name: 'Home', path: '/', isLogo: true },
     { name: 'Wishlist', path: '/wishlist', icon: Heart, badge: wishlistItems.length },
-    { name: 'Account', path: '/profile', icon: LayoutDashboard },
+    { name: 'Account', path: '/profile', icon: User },
   ];
 
   return (

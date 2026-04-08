@@ -206,9 +206,9 @@ export default function Navbar() {
 
           {/* Actions */}
           <div className="hidden md:flex items-center gap-2 md:gap-3">
-            {user && (
+            {user && isAdmin && (
               <Link 
-                to={isAdmin ? "/admin" : "/profile/dashboard"} 
+                to="/admin" 
                 className="flex items-center gap-2 px-3 py-2 bg-white text-red-600 rounded-xl border border-red-200 font-bold hover:bg-red-50 transition-all shadow-sm text-xs"
               >
                 <LayoutDashboard className="h-4 w-4" />

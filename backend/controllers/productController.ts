@@ -22,7 +22,7 @@ export const createProduct = async (req: Request, res: Response) => {
     specifications
   } = req.body;
 
-  if (!name || !price || !category || !stock) {
+  if (!name || price === undefined || price === null || !category || stock === undefined || stock === null) {
     return res.status(400).json({ message: 'Name, price, category, and stock are required' });
   }
 

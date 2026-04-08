@@ -134,7 +134,7 @@ export default function AdminTransactions() {
                     <p className="text-[10px] text-gray-500 uppercase tracking-widest font-black">Order #{transaction.id}</p>
                   </td>
                   <td className="px-8 py-6">
-                    <p className="font-black text-white text-lg">{formatPrice(transaction.payableAmount)}</p>
+                    <p className="font-black text-white text-lg">{formatPrice(transaction.payableAmount || transaction.total)}</p>
                     <div className="flex items-center gap-2 mt-1">
                       <span className={cn(
                         "px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest",
@@ -215,7 +215,7 @@ export default function AdminTransactions() {
                   </div>
                   <div>
                     <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Amount Paid</p>
-                    <p className="text-2xl font-black text-primary">{formatPrice(selectedTransaction.payableAmount)}</p>
+                    <p className="text-2xl font-black text-primary">{formatPrice(selectedTransaction.payableAmount || selectedTransaction.total)}</p>
                     <p className="text-[10px] text-gray-500 font-bold mt-1">
                       {selectedTransaction.paymentType} of {formatPrice(selectedTransaction.total)}
                     </p>

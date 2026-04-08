@@ -90,6 +90,9 @@ export default function AdminProductImporter() {
         return;
       }
 
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 60000); // 60s timeout
+
       const response = await fetch('/api/scraper/product', {
         method: 'POST',
         headers: {
@@ -98,8 +101,9 @@ export default function AdminProductImporter() {
           'X-Requested-With': 'XMLHttpRequest',
           'Accept': 'application/json'
         },
-        body: JSON.stringify({ url })
-      });
+        body: JSON.stringify({ url }),
+        signal: controller.signal
+      }).finally(() => clearTimeout(timeoutId));
 
       const contentType = response.headers.get('content-type');
       let data;
@@ -110,8 +114,8 @@ export default function AdminProductImporter() {
         const text = await response.text();
         console.error('Non-JSON response from scraper:', text);
         
-        if (text.includes('FUNCTION_INVOCATION_FAILED')) {
-          throw new Error('The server took too long to respond (Vercel timeout). This often happens with complex websites. Please try again or use a different URL.');
+        if (text.includes('FUNCTION_INVOCATION_FAILED') || text.includes('Gateway Timeout')) {
+          throw new Error('The server took too long to respond. This often happens with complex websites or slow connections. Please try again or use a different URL.');
         }
         
         throw new Error(`Server returned an unexpected response: ${text.substring(0, 100)}...`);
@@ -166,7 +170,11 @@ export default function AdminProductImporter() {
       toast.success('Product details extracted successfully!');
     } catch (error: any) {
       console.error('Extraction error:', error);
-      toast.error(error.message || 'Failed to extract product details. Please check the URL and try again.');
+      if (error.name === 'AbortError') {
+        toast.error('The request timed out. The scraper is taking too long to process this URL. Please try again or use a different URL.');
+      } else {
+        toast.error(error.message || 'Failed to extract product details. Please check the URL and try again.');
+      }
     } finally {
       setLoading(false);
     }

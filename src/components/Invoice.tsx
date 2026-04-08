@@ -32,8 +32,8 @@ export const Invoice = React.forwardRef<HTMLDivElement, InvoiceProps>(({ order, 
 
   const styles = {
     container: {
-      width: '100%',
-      height: '100%',
+      width: '210mm',
+      height: '297mm',
       margin: '0 auto',
       position: 'relative' as const,
       overflow: 'hidden' as const,
@@ -163,10 +163,11 @@ export const Invoice = React.forwardRef<HTMLDivElement, InvoiceProps>(({ order, 
     bottomSection: {
       marginTop: 'auto',
       paddingTop: '20px',
-      paddingBottom: '40px',
+      paddingBottom: '20px',
       paddingLeft: '40px',
       paddingRight: '40px',
       borderTop: `1px solid ${colors.gray100}`,
+      backgroundColor: colors.white,
     }
   };
 
@@ -262,7 +263,11 @@ export const Invoice = React.forwardRef<HTMLDivElement, InvoiceProps>(({ order, 
             <h3 style={styles.addressTitle}>Ship To:</h3>
             <div style={{ fontSize: '12px', lineHeight: '1.4', color: colors.gray700 }}>
               <p style={{ fontWeight: '700', margin: 0 }}>{order.address}</p>
-              <p style={{ fontSize: '10px', fontWeight: '700', color: colors.gray500, marginTop: '2px' }}>Delivery Area: {order.deliveryArea}</p>
+              <p style={{ margin: 0 }}>City: {order.city}, District: {order.district}</p>
+              <p style={{ margin: 0 }}>Emergency: {order.emergencyNumber || 'N/A'}</p>
+              <p style={{ fontSize: '10px', fontWeight: '700', color: colors.gray500, marginTop: '2px' }}>
+                Delivery Area: {order.deliveryArea} | Method: {order.deliveryMethod}
+              </p>
             </div>
           </div>
         </div>

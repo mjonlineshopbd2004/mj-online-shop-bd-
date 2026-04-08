@@ -8,7 +8,11 @@ export const createOrder = async (req: any, res: Response) => {
     items, 
     customerName, 
     phone, 
+    emergencyNumber,
+    district,
+    city,
     address, 
+    deliveryMethod,
     paymentMethod, 
     deliveryArea, 
     discount, 
@@ -23,7 +27,7 @@ export const createOrder = async (req: any, res: Response) => {
     customerNote
   } = req.body;
 
-  if (!items || items.length === 0 || !customerName || !phone || !address || !paymentMethod) {
+  if (!items || items.length === 0 || !customerName || !phone || !address || !paymentMethod || !district || !city) {
     return res.status(400).json({ message: 'Missing required order fields' });
   }
 
@@ -51,7 +55,11 @@ export const createOrder = async (req: any, res: Response) => {
       customerName,
       customerEmail: req.user.email,
       phone,
+      emergencyNumber: emergencyNumber || '',
+      district,
+      city,
       address,
+      deliveryMethod: deliveryMethod || 'Home',
       items,
       subtotal,
       deliveryCharge,

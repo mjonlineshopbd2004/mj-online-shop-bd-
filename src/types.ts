@@ -58,7 +58,11 @@ export interface Order {
   customerName: string;
   customerEmail: string;
   phone: string;
+  emergencyNumber?: string;
+  district: string;
+  city: string;
   address: string;
+  deliveryMethod: string;
   items: CartItem[];
   subtotal: number;
   deliveryCharge: number;
@@ -71,6 +75,7 @@ export interface Order {
   paymentStatus: 'pending' | 'paid';
   deliveryArea: DeliveryArea;
   transactionId?: string;
+  paymentScreenshot?: string;
   customerNote?: string;
   refundRequest?: {
     reason: string;

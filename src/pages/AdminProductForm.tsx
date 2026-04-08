@@ -325,6 +325,26 @@ export default function AdminProductForm() {
   const handleSubmit = async (e?: React.FormEvent | React.MouseEvent) => {
     if (e) e.preventDefault();
     
+    if (!formData.name?.trim()) {
+      toast.error('Product name is required');
+      return;
+    }
+
+    if (!formData.category) {
+      toast.error('Category is required');
+      return;
+    }
+
+    if (formData.price === undefined || formData.price === null || formData.price < 0) {
+      toast.error('Valid price is required');
+      return;
+    }
+
+    if (formData.stock === undefined || formData.stock === null || formData.stock < 0) {
+      toast.error('Valid stock level is required');
+      return;
+    }
+
     if (!formData.images || formData.images.length === 0) {
       toast.error('At least one product image is required');
       return;
