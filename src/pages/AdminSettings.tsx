@@ -515,6 +515,8 @@ export default function AdminSettings() {
                         toast.error('API Key is LEAKED. Please use a different key.', { id: toastId });
                       } else if (data.status === 'quota_exceeded') {
                         toast.warning('API Quota Exceeded. Try again later.', { id: toastId });
+                      } else if (data.status === 'overloaded') {
+                        toast.warning('Gemini API is currently overloaded. Please try again in a few moments.', { id: toastId });
                       } else if (data.status === 'missing') {
                         toast.error('API Key is missing or invalid.', { id: toastId });
                       } else {

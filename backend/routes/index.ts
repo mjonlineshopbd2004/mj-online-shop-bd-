@@ -132,15 +132,20 @@ router.get('/admin/test-drive', authenticate, authorize(['admin']), async (req, 
     try {
       const drive = (googleDriveService as any).drive;
       const folderId = (googleDriveService as any).currentConfig?.folderId;
+      const email = (googleDriveService as any).currentConfig?.email;
       
       if (!folderId) {
         throw new Error('Folder ID is missing in configuration');
       }
 
+      console.log(`Testing Drive access for folder: ${folderId} with email: ${email}`);
+
       const response = await drive.files.list({
         q: `'${folderId}' in parents and trashed = false`,
-        pageSize: 1,
-        fields: 'files(id, name)'
+        pageSize: 5,
+        fields: 'files(id, name)',
+        supportsAllDrives: true,
+        includeItemsFromAllDrives: true
       });
 
       res.json({ 
@@ -148,16 +153,31 @@ router.get('/admin/test-drive', authenticate, authorize(['admin']), async (req, 
         message: 'Google Drive service is initialized and folder access is verified.',
         folderId,
         filesFound: response.data.files?.length || 0,
+        files: response.data.files,
         env: envStatus
       });
     } catch (driveError: any) {
       console.error('Drive access verification failed:', driveError);
+      
+      let message = `Google Drive is initialized but folder access failed: ${driveError.message}`;
+      let details = driveError.message;
+
+      if (driveError.message.includes('File not found') || driveError.code === 404) {
+        details = `The folder ID "${(googleDriveService as any).currentConfig?.folderId}" was not found or is not accessible. 
+          
+          FIX:
+          1. Open the folder in Google Drive.
+          2. Click "Share".
+          3. Add the service account email: ${(googleDriveService as any).currentConfig?.email}
+          4. Grant "Editor" access.`;
+      } else if (driveError.message.includes('quota')) {
+        details = `Storage Quota Exceeded. Service accounts have 0GB quota. You MUST share a folder with the service account and upload to THAT folder (using its ID), not to the root "My Drive".`;
+      }
+
       res.status(400).json({
         status: 'error',
-        message: `Google Drive is initialized but folder access failed: ${driveError.message}`,
-        details: driveError.message.includes('File not found') 
-          ? `The folder ID "${(googleDriveService as any).currentConfig?.folderId}" was not found. Please ensure you have shared this folder with the service account email: ${(googleDriveService as any).currentConfig?.email}`
-          : driveError.message,
+        message,
+        details,
         env: envStatus
       });
     }

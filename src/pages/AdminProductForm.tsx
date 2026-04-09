@@ -188,6 +188,9 @@ export default function AdminProductForm() {
         if (response.status === 429) {
           throw new Error('AI Quota Exceeded. The free AI limit has been reached. Please try again in a few minutes.');
         }
+        if (response.status === 503) {
+          throw new Error('Gemini API is currently overloaded. Please try again in a few moments.');
+        }
         if (data.error === 'API_KEY_LEAKED') {
           throw new Error('Your Gemini API key has been reported as leaked by Google. Please update it in the Settings menu.');
         }
@@ -209,6 +212,7 @@ export default function AdminProductForm() {
         sourceUrl: data.sourceUrl || prev.sourceUrl,
         sizes: data.sizes && data.sizes.length > 0 ? data.sizes : prev.sizes,
         colors: data.colors && data.colors.length > 0 ? data.colors : prev.colors,
+        colorVariants: data.colorVariants && data.colorVariants.length > 0 ? data.colorVariants : prev.colorVariants,
         category: data.category || prev.category,
         videoUrl: data.videoUrl || prev.videoUrl,
         specifications: data.specifications && data.specifications.length > 0 ? data.specifications : prev.specifications
@@ -305,6 +309,21 @@ export default function AdminProductForm() {
       ...prev,
       colorVariants: [...(prev.colorVariants || []), { name: '', image: '' }]
     }));
+  };
+
+  const generateVariantsFromImages = () => {
+    if (!formData.images || formData.images.length === 0) {
+      toast.error('Please add some images first');
+      return;
+    }
+    
+    const newVariants = formData.images.map((img, idx) => ({
+      name: formData.colors?.[idx] || '',
+      image: img
+    }));
+    
+    setFormData(prev => ({ ...prev, colorVariants: newVariants }));
+    toast.success(`Generated ${newVariants.length} color variants from images`);
   };
 
   const updateColorVariant = (index: number, field: 'name' | 'image', value: string) => {
@@ -687,14 +706,27 @@ export default function AdminProductForm() {
               {/* Color Variants (with Images) */}
               <div className="col-span-full space-y-4 pt-4 border-t border-white/5">
                 <div className="flex items-center justify-between">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Color Variants (with Images)</label>
-                  <button
-                    type="button"
-                    onClick={addColorVariant}
-                    className="p-1.5 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-all"
-                  >
-                    <Plus className="h-4 w-4" />
-                  </button>
+                  <div className="flex flex-col">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-500">Color Variants (with Images)</label>
+                    <p className="text-[10px] text-gray-600 font-bold italic mt-1">Link specific images to color names for the thumbnail selector</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={generateVariantsFromImages}
+                      className="px-3 py-1.5 bg-emerald-500/10 text-emerald-500 rounded-lg hover:bg-emerald-500/20 transition-all text-[10px] font-black uppercase tracking-widest flex items-center gap-2"
+                    >
+                      <ImageIcon className="h-3 w-3" />
+                      Auto-Generate
+                    </button>
+                    <button
+                      type="button"
+                      onClick={addColorVariant}
+                      className="p-1.5 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-all"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </button>
+                  </div>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {formData.colorVariants?.map((variant, idx) => (

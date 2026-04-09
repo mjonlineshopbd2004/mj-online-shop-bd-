@@ -68,15 +68,32 @@ const resetAiClient = () => {
 };
 
 // Helper for calling Gemini with retry logic
-async function callGeminiWithRetry(ai: any, params: any, maxRetries = 1) {
+async function callGeminiWithRetry(ai: any, params: any, maxRetries = 2) {
   let lastError: any;
   for (let i = 0; i <= maxRetries; i++) {
     try {
       return await ai.models.generateContent(params);
     } catch (error: any) {
       lastError = error;
-      const isQuota = error.message?.includes('quota') || error.status === 'RESOURCE_EXHAUSTED' || error.code === 429;
-      const isTransient = error.status === 'UNAVAILABLE' || error.code === 503 || error.code === 504;
+      
+      // Attempt to parse JSON error message if it looks like one
+      let errorCode = error.code;
+      let errorStatus = error.status;
+      let errorMessage = error.message || '';
+      
+      if (errorMessage.trim().startsWith('{')) {
+        try {
+          const parsed = JSON.parse(errorMessage);
+          if (parsed.error) {
+            errorCode = parsed.error.code || errorCode;
+            errorStatus = parsed.error.status || errorStatus;
+            errorMessage = parsed.error.message || errorMessage;
+          }
+        } catch (e) {}
+      }
+
+      const isQuota = errorMessage.toLowerCase().includes('quota') || errorStatus === 'RESOURCE_EXHAUSTED' || errorCode === 429;
+      const isTransient = errorStatus === 'UNAVAILABLE' || errorCode === 503 || errorCode === 504 || errorMessage.includes('high demand');
       
       if (isQuota) {
         // Try to extract retry delay if available
@@ -102,7 +119,7 @@ async function callGeminiWithRetry(ai: any, params: any, maxRetries = 1) {
       
       if (isTransient && i < maxRetries) {
         const delay = Math.pow(2, i) * 1000;
-        console.log(`Transient error, retrying in ${delay}ms...`);
+        // Silent retry for transient errors to avoid cluttering logs with "errors"
         await new Promise(resolve => setTimeout(resolve, delay));
         continue;
       }
@@ -123,9 +140,26 @@ export const getScraperStatus = async (req: Request, res: Response) => {
         model: "gemini-3.1-flash-lite-preview",
         contents: "hi",
         config: { maxOutputTokens: 1 }
-      }, 0); // No retries for status check
+      }, 1); // Allow 1 retry for status check
     } catch (error: any) {
-      const isQuota = error.message?.includes('quota') || error.status === 'RESOURCE_EXHAUSTED' || error.code === 429;
+      let errorMessage = error.message || '';
+      let errorCode = error.code;
+      let errorStatus = error.status;
+
+      if (errorMessage.trim().startsWith('{')) {
+        try {
+          const parsed = JSON.parse(errorMessage);
+          if (parsed.error) {
+            errorCode = parsed.error.code || errorCode;
+            errorStatus = parsed.error.status || errorStatus;
+            errorMessage = parsed.error.message || errorMessage;
+          }
+        } catch (e) {}
+      }
+
+      const isQuota = errorMessage.toLowerCase().includes('quota') || errorStatus === 'RESOURCE_EXHAUSTED' || errorCode === 429;
+      const isOverloaded = errorStatus === 'UNAVAILABLE' || errorCode === 503 || errorMessage.includes('high demand');
+
       if (isQuota) {
         return res.json({ 
           configured: true, 
@@ -133,6 +167,15 @@ export const getScraperStatus = async (req: Request, res: Response) => {
           error: 'Gemini API quota exceeded (Free Tier). AI features are limited.'
         });
       }
+
+      if (isOverloaded) {
+        return res.json({
+          configured: true,
+          status: 'overloaded',
+          error: 'Gemini API is currently overloaded. Please try again in a few moments.'
+        });
+      }
+
       throw error;
     }
     
@@ -276,9 +319,10 @@ export const scrapeProduct = async (req: Request, res: Response) => {
         7. category: The product category.
         8. vendor: The brand or seller name (e.g., "Nike", "Apple", or the store name).
         9. sizes/colors: Available variations (e.g., ["S", "M", "L"], ["Red", "Blue"]).
-        10. specifications: Key-value pairs of product specs (e.g., [{"key": "Material", "value": "Cotton"}]).`,
+        10. colorVariants: A list of objects containing the color name and its specific image URL (e.g., [{"name": "Red", "image": "https://example.com/red.jpg"}]). This is CRITICAL for matching colors to photos.
+        11. specifications: Key-value pairs of product specs (e.g., [{"key": "Material", "value": "Cotton"}]).`,
         config: {
-          systemInstruction: "You are a professional product data extractor. Your goal is to extract the most accurate and original information. For Daraz, look for the price in elements with classes like 'pdp-price', 'pdp-price_type_normal', or 'pdp-product-price'. For 1688, look for the price in 'price-text' or 'price-num'. If the price is in a foreign currency (like Chinese Yuan ¥ or USD $), convert it to Bangladeshi Taka (BDT) using current approximate rates (e.g., 1 CNY = 16 BDT, 1 USD = 115 BDT). If the price is 0 or missing, try to find it in the text. For specifications, look for product details, features, or technical specs. For vendor, look for the brand name or shop name. Return ONLY a valid JSON object. IGNORE LOGOS AND SITE ICONS.",
+          systemInstruction: "You are a professional product data extractor. Your goal is to extract the most accurate and original information. For Daraz, look for the price in elements with classes like 'pdp-price', 'pdp-price_type_normal', or 'pdp-product-price'. For 1688, look for the price in 'price-text' or 'price-num'. If the price is in a foreign currency (like Chinese Yuan ¥ or USD $), convert it to Bangladeshi Taka (BDT) using current approximate rates (e.g., 1 CNY = 16 BDT, 1 USD = 115 BDT). If the price is 0 or missing, try to find it in the text. For specifications, look for product details, features, or technical specs. For vendor, look for the brand name or shop name. For colorVariants, look for elements that link a color name to a thumbnail image (common in Daraz 'Color Family' section). Return ONLY a valid JSON object. IGNORE LOGOS AND SITE ICONS. If you see multiple prices, take the current discounted price.",
           responseMimeType: "application/json",
           maxOutputTokens: 3000,
           responseSchema: {
@@ -301,6 +345,16 @@ export const scrapeProduct = async (req: Request, res: Response) => {
               colors: {
                 type: Type.ARRAY,
                 items: { type: Type.STRING }
+              },
+              colorVariants: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    name: { type: Type.STRING },
+                    image: { type: Type.STRING }
+                  }
+                }
               },
               specifications: {
                 type: Type.ARRAY,
@@ -345,7 +399,14 @@ export const scrapeProduct = async (req: Request, res: Response) => {
         sourceUrl: url
       });
     } catch (geminiError: any) {
-      console.error('Gemini parsing failed, triggering search fallback:', geminiError.message);
+      const isQuota = geminiError.message?.toLowerCase().includes('quota') || geminiError.status === 'RESOURCE_EXHAUSTED' || geminiError.code === 429;
+      const isOverloaded = geminiError.status === 'UNAVAILABLE' || geminiError.code === 503 || geminiError.message?.includes('high demand');
+
+      if (isQuota || isOverloaded) {
+        console.warn(`Gemini ${isQuota ? 'quota' : 'overload'} reached during initial parse. Attempting search fallback...`);
+      } else {
+        console.error('Gemini parsing failed, triggering search fallback:', geminiError.message);
+      }
       
       // Check for leaked key error
       if (geminiError.message?.includes('leaked') || geminiError.status === 'PERMISSION_DENIED') {
@@ -383,9 +444,10 @@ async function performSearchFallback(url: string, res: Response, ai: any, html?:
       6. videoUrl: Extract the product video URL if available (e.g., YouTube, direct mp4 link).
       7. category: The product category.
       8. vendor: The brand or seller name.
-      9. sizes/colors: Available variations.`,
+      9. sizes/colors: Available variations.
+      10. colorVariants: A list of objects containing the color name and its specific image URL (e.g., [{"name": "Red", "image": "https://example.com/red.jpg"}]). This is CRITICAL for matching colors to photos.`,
       config: {
-        systemInstruction: "You are a professional product data specialist. Your goal is to find the most accurate and original information. For Daraz, look for 'Color Family' for colors and 'Specifications' for specs. For vendor, look for the brand name or shop name. Use Google Search and URL Context to bypass blocks. IGNORE LOGOS AND SITE ICONS. Return ONLY a valid JSON object. Do not guess; find real data.",
+        systemInstruction: "You are a professional product data specialist. Your goal is to find the most accurate and original information. For Daraz, look for 'Color Family' for colors and 'Specifications' for specs. For vendor, look for the brand name or shop name. Use Google Search and URL Context to bypass blocks. IGNORE LOGOS AND SITE ICONS. For colorVariants, look for elements that link a color name to a thumbnail image. Return ONLY a valid JSON object. Do not guess; find real data.",
         tools: [{ urlContext: {} }, { googleSearch: {} }],
         toolConfig: { includeServerSideToolInvocations: true },
         responseMimeType: "application/json",
@@ -411,6 +473,16 @@ async function performSearchFallback(url: string, res: Response, ai: any, html?:
               type: Type.ARRAY,
               items: { type: Type.STRING }
             },
+            colorVariants: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  name: { type: Type.STRING },
+                  image: { type: Type.STRING }
+                }
+              }
+            },
             specifications: {
               type: Type.ARRAY,
               items: {
@@ -432,12 +504,42 @@ async function performSearchFallback(url: string, res: Response, ai: any, html?:
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     const searchData = JSON.parse(jsonMatch ? jsonMatch[0] : text);
     
-    console.log('Gemini Search successfully found data:', searchData.name);
     return res.json({
       ...searchData,
       sourceUrl: url
     });
   } catch (searchError: any) {
+    const isQuotaError = searchError.message?.toLowerCase().includes('quota') || 
+                        searchError.message?.includes('429') || 
+                        searchError.status === 'RESOURCE_EXHAUSTED';
+    
+    const isOverloaded = searchError.status === 'UNAVAILABLE' || 
+                        searchError.code === 503 || 
+                        searchError.message?.includes('high demand');
+
+    if (isQuotaError || isOverloaded) {
+      console.warn(`Gemini Search fallback ${isQuotaError ? 'quota' : 'overload'} reached. Falling back to basic extraction.`);
+      
+      let retryMsg = isQuotaError 
+        ? 'AI Quota Exceeded (Free Tier limit: 20/day). Using basic extraction.' 
+        : 'AI Overloaded. Using basic extraction.';
+
+      if (isQuotaError && searchError.message?.includes('limit: 20')) {
+        retryMsg = 'AI Quota Exceeded: You have reached the 20 requests per day limit for the Gemini Free Tier. Using basic extraction.';
+      }
+
+      // If we have HTML, try basic extraction
+      if (html && html.length > 500) {
+        return await performCheerioFallback(url, res, html, retryMsg);
+      } else if (isQuotaError) {
+        return res.status(429).json({ 
+          message: retryMsg,
+          error: 'QUOTA_EXCEEDED',
+          retryAfter: searchError.details?.[0]?.retryDelay || '60s'
+        });
+      }
+    }
+
     console.error('Gemini Search fallback failed:', searchError.message);
     
     // Check for leaked key error
@@ -448,33 +550,6 @@ async function performSearchFallback(url: string, res: Response, ai: any, html?:
         message: 'Your Gemini API key has been reported as leaked by Google. Please update your API key in the Settings menu.',
         error: 'API_KEY_LEAKED'
       });
-    }
-
-    const isQuotaError = searchError.message?.includes('quota') || 
-                        searchError.message?.includes('429') || 
-                        searchError.status === 'RESOURCE_EXHAUSTED';
-
-    if (isQuotaError) {
-      console.warn('Gemini API quota exceeded. Falling back to basic extraction.');
-      
-      // Extract retry info if possible
-      let retryMsg = 'AI quota exceeded (Free Tier limit: 20/day). Please try again later.';
-      try {
-        if (searchError.message?.includes('limit: 20')) {
-          retryMsg = 'AI Quota Exceeded: You have reached the 20 requests per day limit for the Gemini Free Tier. Please wait until tomorrow or use a different API key.';
-        }
-      } catch (e) {}
-
-      // If we have HTML, try basic extraction
-      if (html && html.length > 500) {
-        return await performCheerioFallback(url, res, html, retryMsg);
-      } else {
-        return res.status(429).json({ 
-          message: retryMsg,
-          error: 'QUOTA_EXCEEDED',
-          retryAfter: searchError.details?.[0]?.retryDelay || '60s'
-        });
-      }
     }
     
     // If search fails for other reasons, try Cheerio as absolute last resort
@@ -656,6 +731,18 @@ async function performCheerioFallback(url: string, res: Response, html: string, 
     if (!name) name = $('.pdp-mod-product-badge-title').text().trim() || $('#pdp-product-title').text().trim() || $('.product-title').text().trim() || $('h1').first().text().trim() || $('title').text().trim() || $('.title').first().text().trim();
     
     if (price === 0) {
+      // Try meta tags first (very reliable)
+      const metaPrice = $('meta[property="product:price:amount"]').attr('content') || 
+                        $('meta[name="twitter:data1"]').attr('content') ||
+                        $('meta[property="og:price:amount"]').attr('content');
+      
+      if (metaPrice) {
+        const val = parseFloat(metaPrice.replace(/[^0-9.]/g, ''));
+        if (val > 0) price = val;
+      }
+    }
+
+    if (price === 0) {
       let priceText = '';
       
       // Try common price selectors
@@ -665,7 +752,9 @@ async function performCheerioFallback(url: string, res: Response, html: string, 
         '[data-price]', '.sku-price', '.item-price', '.sale-price',
         '.pdp-mod-product-price .pdp-price', '.product-info-price .price',
         '.price-container .price', '.product-single__price', '.product-price-value',
-        '.pdp-product-price'
+        '.pdp-product-price', '.price-box .price', '.special-price .price',
+        '.regular-price .price', '.price-wrapper .price', '.offer-price',
+        '.product-view-price', '.price-current', '.price-sales', '.price-regular'
       ];
       
       for (const selector of priceSelectors) {
@@ -674,6 +763,9 @@ async function performCheerioFallback(url: string, res: Response, html: string, 
           const val = parseFloat(text.replace(/[^0-9.]/g, ''));
           if (val > 0) {
             price = val;
+            // If it's a foreign currency, do a basic conversion
+            if (text.includes('¥') || text.includes('CNY')) price *= 16;
+            else if (text.includes('$') || text.includes('USD')) price *= 115;
             break;
           }
         }
@@ -721,6 +813,8 @@ async function performCheerioFallback(url: string, res: Response, html: string, 
       category = $('.breadcrumb_item_anchor').last().text().trim() || 'Imported';
     }
 
+    const colorVariants: { name: string; image: string }[] = [];
+
     // Extract Video URL
     let videoUrl = '';
     $('iframe, video, source').each((i, el) => {
@@ -731,6 +825,38 @@ async function performCheerioFallback(url: string, res: Response, html: string, 
         return false; // break
       }
     });
+
+    // Extract Color Variants Heuristically (e.g. Daraz, 1688)
+    const variantSelectors = [
+      '.sku-prop-content-item', '.sku-variable-item', '.pdp-mod-product-info-section-item',
+      '.sku-item', '.variant-item', '.color-item', '.swatch-item', '.pdp-product-sku-item',
+      '.sku-value-item', '.product-variant', '.color-swatch', '.swatch-anchor',
+      '.sku-prop-content-item-title', '.sku-name'
+    ];
+    
+    for (const selector of variantSelectors) {
+      $(selector).each((i, el) => {
+        const $el = $(el);
+        const name = $el.attr('title') || $el.attr('data-value') || $el.find('.sku-name, .variant-name, .color-name, .sku-prop-content-item-title').text().trim() || $el.text().trim();
+        const img = $el.find('img').attr('src') || $el.find('img').attr('data-src') || $el.css('background-image')?.replace(/url\(['"]?(.*?)['"]?\)/i, '$1');
+        
+        if (name && name.length < 50 && img && img !== 'none') {
+          let finalImg = img;
+          if (img.startsWith('//')) finalImg = 'https:' + img;
+          else if (img.startsWith('/')) finalImg = new URL(url).origin + img;
+          
+          if (!colorVariants.find(v => v.name === name)) {
+            colorVariants.push({ name, image: finalImg });
+          }
+          
+          // Also add variant images to the main images array if not already there
+          if (!images.includes(finalImg)) {
+            images.push(finalImg);
+          }
+        }
+      });
+      if (colorVariants.length > 0) break;
+    }
 
     const ogImage = $('meta[property="og:image"]').attr('content');
     if (ogImage && !ogImage.toLowerCase().includes('logo') && !ogImage.toLowerCase().includes('icon')) {
@@ -760,7 +886,7 @@ async function performCheerioFallback(url: string, res: Response, html: string, 
           lowerSrc.includes('main') ||
           lowerSrc.includes('gallery') ||
           lowerSrc.includes('media') ||
-          $(el).closest('.gallery, .product-image, .main-image, .swiper-slide, .preview, .thumb, .product-gallery, .image-viewer, #imgTagWrapperId, .imgTagWrapper, .image-container, .photo-container').length > 0
+          $(el).closest('.gallery, .product-image, .main-image, .swiper-slide, .preview, .thumb, .product-gallery, .image-viewer, #imgTagWrapperId, .imgTagWrapper, .image-container, .photo-container, .sku-prop-content-item, .pdp-mod-common-image').length > 0
         )) {
           if (!images.includes(finalSrc)) {
             images.push(finalSrc);
@@ -776,7 +902,7 @@ async function performCheerioFallback(url: string, res: Response, html: string, 
         const lower = img.toLowerCase();
         return !lower.includes('logo') && !lower.includes('icon') && !lower.includes('banner') && !lower.includes('sprite');
       })
-      .slice(0, 10);
+      .slice(0, 30);
 
     return res.json({
       name: name || 'Unknown Product',
@@ -788,6 +914,7 @@ async function performCheerioFallback(url: string, res: Response, html: string, 
       category: category || 'Imported',
       sizes: sizes.length > 0 ? sizes : [],
       colors: colors.length > 0 ? colors : [],
+      colorVariants: colorVariants,
       specifications: specifications.length > 0 ? specifications : [],
       videoUrl: videoUrl || '',
       sourceUrl: url,

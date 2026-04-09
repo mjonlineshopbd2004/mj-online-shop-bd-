@@ -47,8 +47,22 @@ export default function ProductDetails() {
 
         if (productData) {
           setProduct(productData);
-          if (productData.sizes?.length) setSelectedSize(productData.sizes[0]);
-          if (productData.colors?.length) setSelectedColor(productData.colors[0]);
+          
+          // Initialize selections
+          if (productData.sizes?.length) {
+            setSelectedSize(productData.sizes[0]);
+          }
+
+          if (productData.colorVariants?.length) {
+            setSelectedColor(productData.colorVariants[0].name);
+            // Sync active image with the first variant if possible
+            const imgIdx = productData.images.findIndex(img => img === productData.colorVariants[0].image);
+            if (imgIdx !== -1) {
+              setActiveImage(imgIdx);
+            }
+          } else if (productData.colors?.length) {
+            setSelectedColor(productData.colors[0]);
+          }
 
           // Fetch related
           const relatedQuery = query(
@@ -406,65 +420,64 @@ export default function ProductDetails() {
                   <span className="text-base font-bold text-gray-900">{selectedColor || 'Select Color'}</span>
                 </div>
                 <div className="flex flex-wrap gap-3">
-                  {/* Text-based colors (only show if no image variants) */}
-                  {(!product.colorVariants || product.colorVariants.length === 0) && product.colors?.map(color => (
-                    <button
-                      key={color}
-                      onClick={() => setSelectedColor(color)}
-                      className={cn(
-                        "px-6 py-2.5 rounded-lg font-bold transition-all border-2 text-sm",
-                        selectedColor === color
-                          ? "border-orange-500 bg-orange-50 text-orange-600 shadow-sm"
-                          : "bg-white border-gray-100 text-gray-600 hover:border-gray-400"
-                      )}
-                    >
-                      {color}
-                    </button>
-                  ))}
-                  
-                  {/* Image-based color variants */}
-                  {product.colorVariants?.map((variant, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => {
-                        setSelectedColor(variant.name);
-                        // Find if this image exists in the main images array to sync activeImage
-                        const imgIdx = product.images.findIndex(img => img === variant.image);
-                        if (imgIdx !== -1) {
-                          setActiveImage(imgIdx);
-                        } else {
-                          // If not in main images, we could potentially add it or just show it
-                          // For now, let's just update the selection
-                        }
-                      }}
-                      className={cn(
-                        "relative w-14 h-14 rounded-md overflow-hidden border-2 transition-all group",
-                        selectedColor === variant.name
-                          ? "border-orange-500 shadow-sm"
-                          : "border-gray-200 opacity-90 hover:opacity-100 hover:border-gray-400"
-                      )}
-                      title={variant.name}
-                    >
-                      <img 
-                        src={getProxyUrl(variant.image)} 
-                        alt={variant.name} 
-                        className="w-full h-full object-cover" 
-                        referrerPolicy="no-referrer" 
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          if (!target.src.includes('picsum.photos')) {
-                            target.src = `https://picsum.photos/seed/${product.id}-variant-${idx}/100/100`;
+                  {/* Image-based color variants (Prioritize these) */}
+                  {product.colorVariants && product.colorVariants.length > 0 ? (
+                    product.colorVariants.map((variant, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => {
+                          setSelectedColor(variant.name);
+                          // Find if this image exists in the main images array to sync activeImage
+                          const imgIdx = product.images.findIndex(img => img === variant.image);
+                          if (imgIdx !== -1) {
+                            setActiveImage(imgIdx);
                           }
                         }}
-                      />
-                      {selectedColor === variant.name && (
-                        <div className="absolute bottom-0 right-0 w-6 h-6 overflow-hidden">
-                          <div className="absolute bottom-0 right-0 w-full h-full bg-orange-500 transform rotate-45 translate-x-1/2 translate-y-1/2"></div>
-                          <Check className="absolute bottom-0.5 right-0.5 h-2.5 w-2.5 text-white z-10" />
-                        </div>
-                      )}
-                    </button>
-                  ))}
+                        className={cn(
+                          "relative w-14 h-14 rounded-md overflow-hidden border-2 transition-all group",
+                          selectedColor === variant.name
+                            ? "border-orange-500 shadow-sm"
+                            : "border-gray-200 opacity-90 hover:opacity-100 hover:border-gray-400"
+                        )}
+                        title={variant.name}
+                      >
+                        <img 
+                          src={getProxyUrl(variant.image)} 
+                          alt={variant.name} 
+                          className="w-full h-full object-cover" 
+                          referrerPolicy="no-referrer" 
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            if (!target.src.includes('picsum.photos')) {
+                              target.src = `https://picsum.photos/seed/${product.id}-variant-${idx}/100/100`;
+                            }
+                          }}
+                        />
+                        {selectedColor === variant.name && (
+                          <div className="absolute bottom-0 right-0 w-6 h-6 overflow-hidden">
+                            <div className="absolute bottom-0 right-0 w-full h-full bg-orange-500 transform rotate-45 translate-x-1/2 translate-y-1/2"></div>
+                            <Check className="absolute bottom-0.5 right-0.5 h-2.5 w-2.5 text-white z-10" />
+                          </div>
+                        )}
+                      </button>
+                    ))
+                  ) : (
+                    /* Text-based colors (only show if no image variants) */
+                    product.colors?.map(color => (
+                      <button
+                        key={color}
+                        onClick={() => setSelectedColor(color)}
+                        className={cn(
+                          "px-6 py-2.5 rounded-lg font-bold transition-all border-2 text-sm",
+                          selectedColor === color
+                            ? "border-orange-500 bg-orange-50 text-orange-600 shadow-sm"
+                            : "bg-white border-gray-100 text-gray-600 hover:border-gray-400"
+                        )}
+                      >
+                        {color}
+                      </button>
+                    ))
+                  )}
                 </div>
               </div>
             )}

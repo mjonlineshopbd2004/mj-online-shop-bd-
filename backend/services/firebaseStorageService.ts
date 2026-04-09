@@ -10,15 +10,26 @@ export class FirebaseStorageService {
       const bucket = storage.bucket();
       const destination = `products/${uuidv4()}_${fileName}`;
       
-      const [file] = await bucket.upload(filePath, {
-        destination,
+      console.log(`Attempting Firebase Storage upload to bucket: ${bucket.name}, destination: ${destination}`);
+
+      // Use file.save() for better reliability in some environments
+      const file = bucket.file(destination);
+      const fileBuffer = fs.readFileSync(filePath);
+      
+      await file.save(fileBuffer, {
         metadata: {
           contentType: mimeType,
         },
+        resumable: false, // Disable resumable for small files to avoid some Gaxios errors
       });
 
       // Make the file public
-      await file.makePublic();
+      try {
+        await file.makePublic();
+      } catch (publicError: any) {
+        console.warn('Could not make file public via ACL (Uniform bucket-level access might be enabled):', publicError.message);
+        // If makePublic fails, we still return the URL, as the bucket might be public by default
+      }
 
       // Return the public URL
       return `https://storage.googleapis.com/${bucket.name}/${destination}`;
@@ -30,6 +41,12 @@ export class FirebaseStorageService {
       if (error.code) {
         console.error('Firebase Storage Error Code:', error.code);
       }
+      
+      // Provide actionable advice for common errors
+      if (error.message?.includes('storage.objects.create')) {
+        console.error('CRITICAL: Service Account lacks "storage.objects.create" permission. Please grant "Storage Object Admin" or "Firebase Admin" role.');
+      }
+      
       return null;
     }
   }
