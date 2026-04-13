@@ -23,7 +23,10 @@ import {
   AlertTriangle,
   RefreshCw,
   RotateCcw,
-  Share2
+  Share2,
+  Gift,
+  ExternalLink,
+  ShieldCheck
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatPrice, cn, getProxyUrl } from '../lib/utils';
@@ -70,6 +73,23 @@ export default function AdminSettings() {
       }
     } catch (error) {
       toast.error('Failed to upload logo', { id: toastId });
+    }
+  };
+
+  const handleOfferPopupImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    const toastId = toast.loading('Uploading offer image...');
+    try {
+      const idToken = await user.getIdToken();
+      const url = await uploadFile(file, idToken);
+      if (url) {
+        setFormData({ ...formData, offerPopupImage: url });
+        toast.success('Offer image uploaded successfully', { id: toastId });
+      }
+    } catch (error) {
+      toast.error('Failed to upload offer image', { id: toastId });
     }
   };
 
@@ -234,6 +254,7 @@ export default function AdminSettings() {
             { id: 'features', label: 'Features', icon: SettingsIcon },
             { id: 'ai-scraper', label: 'AI Scraper', icon: Globe },
             { id: 'payments', label: 'Payments', icon: CreditCard },
+            { id: 'offer-popup', label: 'Offer Popup', icon: Gift },
             { id: 'banners', label: 'Banners', icon: ImageIcon },
             { id: 'delivery', label: 'Delivery', icon: Truck },
             { id: 'social', label: 'Social', icon: Share2 },
@@ -1021,6 +1042,126 @@ export default function AdminSettings() {
           </div>
         </section>
 
+        {/* Offer Popup Settings */}
+        <section id="offer-popup" className="bg-purple-500/5 rounded-[32px] p-8 border border-purple-500/10 shadow-2xl space-y-8">
+          <div className="flex items-center space-x-4 pb-6 border-b border-purple-500/10">
+            <div className="p-3 bg-purple-500/10 rounded-2xl">
+              <Gift className="h-7 w-7 text-purple-500" />
+            </div>
+            <h2 className="text-xl font-black uppercase tracking-widest text-purple-500">Offer Popup Settings</h2>
+          </div>
+
+          <div className="bg-[#1a1a1a] p-8 rounded-[28px] border border-white/10">
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <h3 className="font-black text-white text-lg">Enable Offer Popup</h3>
+                <p className="text-xs text-gray-500 font-black uppercase tracking-wider mt-1">Show a promotional popup to new visitors</p>
+              </div>
+              <button
+                onClick={() => setFormData({ ...formData, enableOfferPopup: !formData.enableOfferPopup })}
+                className={cn(
+                  "w-16 h-8 rounded-full transition-all relative",
+                  formData.enableOfferPopup ? "bg-purple-500" : "bg-gray-800"
+                )}
+              >
+                <div className={cn(
+                  "absolute top-1 w-6 h-6 bg-white rounded-full transition-all shadow-md",
+                  formData.enableOfferPopup ? "right-1" : "left-1"
+                )} />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-6">
+                <div className="space-y-3">
+                  <label className="text-xs font-black text-gray-400 uppercase tracking-[0.2em] ml-1">Popup Title</label>
+                  <input
+                    type="text"
+                    className="w-full bg-[#111111] border border-white/10 focus:border-purple-500 rounded-2xl px-6 py-4 outline-none transition-all font-bold text-base text-white"
+                    placeholder="Eid Dhamaka Sale!"
+                    value={formData.offerPopupTitle}
+                    onChange={(e) => setFormData({ ...formData, offerPopupTitle: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-3">
+                  <label className="text-xs font-black text-gray-400 uppercase tracking-[0.2em] ml-1">Popup Subtitle</label>
+                  <textarea
+                    className="w-full bg-[#111111] border border-white/10 focus:border-purple-500 rounded-2xl px-6 py-4 outline-none transition-all font-bold text-base text-white h-32 resize-none"
+                    placeholder="Enter offer description..."
+                    value={formData.offerPopupSubtitle}
+                    onChange={(e) => setFormData({ ...formData, offerPopupSubtitle: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-3">
+                  <label className="text-xs font-black text-gray-400 uppercase tracking-[0.2em] ml-1">Button Link</label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      className="w-full bg-[#111111] border border-white/10 focus:border-purple-500 rounded-2xl px-6 py-4 pl-14 outline-none transition-all font-bold text-base text-white"
+                      placeholder="/products"
+                      value={formData.offerPopupLink}
+                      onChange={(e) => setFormData({ ...formData, offerPopupLink: e.target.value })}
+                    />
+                    <ExternalLink className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-600" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex justify-between items-end">
+                  <label className="text-xs font-black text-gray-400 uppercase tracking-[0.2em] ml-1">Popup Image</label>
+                  <div className="text-[10px] font-black text-purple-500/80 uppercase text-right tracking-wider leading-none">
+                    Rec: 800x450px (16:9)<br/>Max: 2MB
+                  </div>
+                </div>
+                <div className="aspect-video bg-[#111111] rounded-[32px] border-2 border-dashed border-white/10 flex items-center justify-center overflow-hidden relative group/offerimg shadow-inner">
+                  {formData.offerPopupImage && getProxyUrl(formData.offerPopupImage) ? (
+                    <img 
+                      src={getProxyUrl(formData.offerPopupImage)!} 
+                      alt="Offer" 
+                      className="w-full h-full object-cover" 
+                      referrerPolicy="no-referrer"
+                    />
+                  ) : (
+                    <ImageIcon className="h-12 w-12 text-gray-800" />
+                  )}
+                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover/offerimg:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[2px]">
+                    <label className="cursor-pointer p-4 bg-purple-500 rounded-2xl text-white shadow-2xl hover:scale-110 transition-transform flex items-center gap-2">
+                      <Upload className="h-5 w-5" />
+                      <span className="font-black text-xs uppercase tracking-widest">Upload Image</span>
+                      <input type="file" className="hidden" accept="image/*" onChange={handleOfferPopupImageUpload} />
+                    </label>
+                  </div>
+                </div>
+                <div className="mt-4">
+                  <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Image URL</label>
+                  <input
+                    type="text"
+                    className="w-full bg-[#111111] border border-white/10 focus:border-purple-500 rounded-xl px-4 py-2 mt-1 outline-none transition-all font-bold text-xs text-blue-400"
+                    value={formData.offerPopupImage}
+                    onChange={(e) => setFormData({ ...formData, offerPopupImage: e.target.value })}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex justify-end pt-6 border-t border-purple-500/10">
+            <button
+              onClick={handleSave}
+              disabled={isSaving}
+              className="flex items-center px-6 py-3 bg-purple-600 text-white rounded-xl font-black text-base shadow-lg shadow-purple-600/20 hover:bg-purple-700 transition-all disabled:opacity-50 active:scale-95"
+            >
+              {isSaving ? (
+                <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+              ) : (
+                <Save className="h-4 w-4 mr-2" />
+              )}
+              Save Changes
+            </button>
+          </div>
+        </section>
+
         {/* Banner & Promotions */}
         <section id="banners" className="bg-emerald-500/5 rounded-[32px] p-8 border border-emerald-500/10 shadow-2xl space-y-8">
           <div className="flex items-center space-x-4 pb-6 border-b border-emerald-500/10">
@@ -1258,6 +1399,79 @@ export default function AdminSettings() {
               ))}
             </div>
           </div>
+          <div className="flex justify-end pt-6 border-t border-emerald-500/10">
+            <button
+              onClick={handleSave}
+              disabled={isSaving}
+              className="flex items-center px-6 py-3 bg-emerald-600 text-white rounded-xl font-black text-base shadow-lg shadow-emerald-600/20 hover:bg-emerald-700 transition-all disabled:opacity-50 active:scale-95"
+            >
+              {isSaving ? (
+                <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+              ) : (
+                <Save className="h-4 w-4 mr-2" />
+              )}
+              Save Changes
+            </button>
+          </div>
+        </section>
+
+        {/* Image Storage Settings */}
+        <section id="storage" className="bg-emerald-500/5 rounded-[32px] p-8 border border-emerald-500/10 shadow-2xl space-y-8">
+          <div className="flex items-center space-x-4 pb-6 border-b border-emerald-500/10">
+            <div className="p-3 bg-emerald-500/10 rounded-2xl">
+              <ImageIcon className="h-7 w-7 text-emerald-500" />
+            </div>
+            <h2 className="text-xl font-black uppercase tracking-widest text-emerald-500">Image Storage Settings</h2>
+          </div>
+
+          <div className="space-y-6">
+            <div className="bg-[#1a1a1a] p-6 rounded-[24px] border border-white/10 space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-black text-white text-base">ImgBB Integration (Recommended)</h3>
+                  <p className="text-sm text-gray-500 font-bold mt-1">ImgBB is a free image hosting service. It is the easiest way to store your product images.</p>
+                </div>
+                <a 
+                  href="https://api.imgbb.com/" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 text-xs font-black text-emerald-500 uppercase hover:underline"
+                >
+                  Get API Key <ExternalLink className="h-3 w-3" />
+                </a>
+              </div>
+              
+              <div className="space-y-3">
+                <label className="text-xs font-black text-gray-400 uppercase tracking-[0.2em] ml-1">ImgBB API Key</label>
+                <input
+                  type="text"
+                  className="w-full bg-black/40 border border-white/10 focus:border-emerald-500 rounded-xl px-6 py-4 outline-none transition-all font-bold text-base text-white"
+                  placeholder="Paste your ImgBB API Key here"
+                  value={formData.imgbbApiKey || ''}
+                  onChange={(e) => setFormData({ ...formData, imgbbApiKey: e.target.value })}
+                />
+                <p className="text-[10px] text-gray-500 font-bold">
+                  How to get: 1. Go to <a href="https://api.imgbb.com/" target="_blank" className="text-emerald-500">api.imgbb.com</a> 2. Create an account/Login 3. Copy your API Key.
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-blue-500/5 p-6 rounded-[24px] border border-blue-500/10">
+              <div className="flex items-start gap-3">
+                <ShieldCheck className="h-5 w-5 text-blue-500 shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="text-sm font-black text-white uppercase tracking-widest">Storage Priority</h4>
+                  <p className="text-xs text-gray-500 font-bold mt-1 leading-relaxed">
+                    The system will try to upload in this order: <br/>
+                    1. <span className="text-emerald-500">ImgBB</span> (If API Key is provided) <br/>
+                    2. <span className="text-blue-500">Firebase Storage</span> (If enabled in Firebase Console) <br/>
+                    3. <span className="text-orange-500">Google Drive</span> (If configured in Google Sheet settings)
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div className="flex justify-end pt-6 border-t border-emerald-500/10">
             <button
               onClick={handleSave}

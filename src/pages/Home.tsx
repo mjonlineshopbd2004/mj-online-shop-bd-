@@ -18,6 +18,7 @@ export default function Home() {
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const trendingScrollRef = useRef<HTMLDivElement>(null);
 
   const scroll = (direction: 'left' | 'right', ref: React.RefObject<HTMLDivElement>) => {
     if (ref.current) {
@@ -40,6 +41,23 @@ export default function Home() {
 
     return () => {
       clearInterval(categoryInterval);
+    };
+  }, []);
+
+  useEffect(() => {
+    const trendingInterval = setInterval(() => {
+      if (trendingScrollRef.current) {
+        const { scrollLeft, scrollWidth, clientWidth } = trendingScrollRef.current;
+        if (scrollLeft + clientWidth >= scrollWidth - 10) {
+          trendingScrollRef.current.scrollTo({ left: 0, behavior: 'smooth' });
+        } else {
+          trendingScrollRef.current.scrollBy({ left: 180, behavior: 'smooth' });
+        }
+      }
+    }, 3500);
+
+    return () => {
+      clearInterval(trendingInterval);
     };
   }, []);
 
@@ -155,14 +173,19 @@ export default function Home() {
           </Link>
         </div>
         
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-2 md:gap-3">
+        <div 
+          ref={trendingScrollRef}
+          className="flex md:grid md:grid-cols-5 lg:grid-cols-6 gap-2 md:gap-3 overflow-x-auto no-scrollbar pb-4 md:pb-0 px-1 scroll-smooth"
+        >
           {loading ? (
             [...Array(8)].map((_, i) => (
-              <div key={i} className="animate-pulse bg-white rounded-2xl h-[280px]"></div>
+              <div key={i} className="flex-shrink-0 w-[160px] md:w-auto animate-pulse bg-white rounded-2xl h-[280px]"></div>
             ))
           ) : (
             trendingProducts.map(product => (
-              <ProductCard key={product.id} product={product} />
+              <div key={product.id} className="flex-shrink-0 w-[160px] md:w-auto">
+                <ProductCard product={product} />
+              </div>
             ))
           )}
         </div>

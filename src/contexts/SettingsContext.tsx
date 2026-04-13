@@ -77,6 +77,12 @@ export interface SiteSettings {
   geminiApiKey: string;
   bannerTextColor: string;
   bannerBgColor: string;
+  enableOfferPopup: boolean;
+  offerPopupTitle: string;
+  offerPopupSubtitle: string;
+  offerPopupImage: string;
+  offerPopupLink: string;
+  imgbbApiKey: string;
   banners: Banner[];
   smallBanners: Banner[];
   categories: Category[];
@@ -134,6 +140,12 @@ export const defaultSettings: SiteSettings = {
   geminiApiKey: '',
   bannerTextColor: '#ffffff',
   bannerBgColor: '#111827',
+  enableOfferPopup: true,
+  offerPopupTitle: 'Eid Dhamaka Sale!',
+  offerPopupSubtitle: 'Get up to 50% OFF on all premium collections. Limited time offer only for our online customers!',
+  offerPopupImage: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?auto=format&fit=crop&q=80&w=800',
+  offerPopupLink: '/products',
+  imgbbApiKey: '',
   banners: [],
   smallBanners: [],
   categories: [],

@@ -17,7 +17,8 @@ import {
   Clock, 
   Package,
   ChevronRight,
-  Camera
+  Camera,
+  MessageSquare
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Link } from 'react-router-dom';
@@ -79,6 +80,7 @@ export default function Profile() {
   const menuItems = [
     { name: 'Dashboard', icon: Home, path: '/profile/dashboard', color: 'text-gray-600' },
     { name: 'Orders', icon: ShoppingBag, path: '/orders', color: 'text-gray-600' },
+    { name: 'Support Chat', icon: MessageSquare, path: '/support', color: 'text-primary' },
     { name: 'Payments', icon: CreditCard, path: '/payments', color: 'text-gray-600' },
     { name: 'Delivery', icon: Package, path: '/delivery', color: 'text-gray-600' },
     { name: 'Settings', icon: Settings, path: '/profile/settings', color: 'text-gray-600' },

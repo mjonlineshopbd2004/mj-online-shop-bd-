@@ -137,7 +137,7 @@ export const getScraperStatus = async (req: Request, res: Response) => {
     // Perform a minimal test call
     try {
       await callGeminiWithRetry(ai, {
-        model: "gemini-3.1-flash-lite-preview",
+        model: "gemini-1.5-flash",
         contents: "hi",
         config: { maxOutputTokens: 1 }
       }, 1); // Allow 1 retry for status check
@@ -231,27 +231,53 @@ export const scrapeProduct = async (req: Request, res: Response) => {
   }
 
   let html = '';
-  try {
-    console.log('Fetching URL:', url);
+  let normalizedUrl = url;
+
+  // Normalize 1688 URLs
+  if (url.includes('1688.com')) {
+    // Convert mobile links to desktop if possible
+    if (url.includes('m.1688.com')) {
+      const offerIdMatch = url.match(/offer\/(\d+)\.html/);
+      if (offerIdMatch) {
+        normalizedUrl = `https://detail.1688.com/offer/${offerIdMatch[1]}.html`;
+      }
+    }
+    // Remove unnecessary tracking parameters
     try {
-      const response = await fetch(url, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
-          'Accept-Language': 'en-US,en;q=0.9,bn-BD;q=0.8,bn;q=0.7',
-          'Cache-Control': 'no-cache',
-          'Pragma': 'no-cache',
-          'sec-ch-ua': '"Chromium";v="122", "Not(A:Brand";v="24", "Google Chrome";v="122"',
-          'sec-ch-ua-mobile': '?0',
-          'sec-ch-ua-platform': '"Windows"',
-          'sec-fetch-dest': 'document',
-          'sec-fetch-mode': 'navigate',
-          'sec-fetch-site': 'none',
-          'sec-fetch-user': '?1',
-          'upgrade-insecure-requests': '1',
-          'Referer': 'https://www.google.com/',
-        },
-        signal: AbortSignal.timeout(10000), // Increased from 2000 to allow more time for slow sites
+      const urlObj = new URL(normalizedUrl);
+      const cleanUrl = `${urlObj.origin}${urlObj.pathname}`;
+      normalizedUrl = cleanUrl;
+    } catch (e) {}
+  }
+
+  try {
+    console.log('Fetching URL:', normalizedUrl);
+    try {
+      const fetchHeaders: Record<string, string> = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+        'Accept-Language': 'en-US,en;q=0.9,bn-BD;q=0.8,bn;q=0.7',
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache',
+        'sec-ch-ua': '"Chromium";v="123", "Not(A:Brand";v="24", "Google Chrome";v="123"',
+        'sec-ch-ua-mobile': '?0',
+        'sec-ch-ua-platform': '"Windows"',
+        'sec-fetch-dest': 'document',
+        'sec-fetch-mode': 'navigate',
+        'sec-fetch-site': 'none',
+        'sec-fetch-user': '?1',
+        'upgrade-insecure-requests': '1',
+        'Referer': 'https://www.google.com/',
+      };
+
+      if (normalizedUrl.includes('1688.com')) {
+        fetchHeaders['Referer'] = 'https://www.1688.com/';
+        fetchHeaders['Cookie'] = 'ali_ab=127.0.0.1.1710000000000.1; lid=user;'; // Minimal cookie to avoid some blocks
+      }
+
+      const response = await fetch(normalizedUrl, {
+        headers: fetchHeaders,
+        signal: AbortSignal.timeout(15000), 
       });
 
       if (!response.ok) {
@@ -304,9 +330,9 @@ export const scrapeProduct = async (req: Request, res: Response) => {
     try {
       const ai = await getAiClient();
       const geminiResponse = await callGeminiWithRetry(ai, {
-        model: "gemini-3.1-flash-lite-preview",
+        model: "gemini-1.5-flash",
         contents: `Extract the ORIGINAL product information from this page:
-        URL: ${url}
+        URL: ${normalizedUrl}
         HTML/Data Snippet: ${textContent}
         
         I need:
@@ -437,7 +463,7 @@ async function performSearchFallback(url: string, res: Response, ai: any, html?:
   console.log('Attempting Gemini Search fallback for URL:', url);
   try {
     const searchResponse = await callGeminiWithRetry(ai, {
-      model: "gemini-3.1-flash-lite-preview",
+      model: "gemini-1.5-flash",
       contents: `Find the EXACT ORIGINAL product details for this URL: ${url}. 
       
       REQUIRED FIELDS:
@@ -452,9 +478,8 @@ async function performSearchFallback(url: string, res: Response, ai: any, html?:
       9. sizes/colors: Available variations.
       10. colorVariants: A list of objects containing the color name and its specific image URL (e.g., [{"name": "Red", "image": "https://example.com/red.jpg"}]). This is CRITICAL for matching colors to photos.`,
       config: {
-        systemInstruction: "You are a professional product data specialist. Your goal is to find the most accurate and original information. For Daraz, look for 'Color Family' for colors and 'Specifications' for specs. For vendor, look for the brand name or shop name. Use Google Search and URL Context to bypass blocks. IGNORE LOGOS AND SITE ICONS. For colorVariants, look for elements that link a color name to a thumbnail image. Return ONLY a valid JSON object. Do not guess; find real data.",
-        tools: [{ urlContext: {} }, { googleSearch: {} }],
-        toolConfig: { includeServerSideToolInvocations: true },
+        systemInstruction: "You are a professional product data specialist. Your goal is to find the most accurate and original information. For 1688, use search to find the product details if the URL is blocked. For Daraz, look for 'Color Family' for colors and 'Specifications' for specs. For vendor, look for the brand name or shop name. Use Google Search and URL Context to bypass blocks. IGNORE LOGOS AND SITE ICONS. For colorVariants, look for elements that link a color name to a thumbnail image. Return ONLY a valid JSON object. Do not guess; find real data.",
+        tools: [{ googleSearch: {} }],
         responseMimeType: "application/json",
         maxOutputTokens: 2000,
         responseSchema: {

@@ -7,7 +7,7 @@ async function testKey() {
   try {
     const genAI = new GoogleGenAI({ apiKey });
     const response = await genAI.models.generateContent({
-      model: "gemini-3-flash-preview",
+      model: "gemini-1.5-flash",
       contents: "Hello, are you working?",
     });
     console.log('Success! Response:', response.text);

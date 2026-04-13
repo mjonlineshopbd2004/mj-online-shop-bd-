@@ -20,12 +20,23 @@ To use Google Drive as your media database for images and videos, follow these s
 7. Click **Add Key > Create New Key**.
 8. Select **JSON** and click **Create**. A file will be downloaded to your computer.
 
-## 4. Create a Google Drive Folder
-1. Go to your [Google Drive](https://drive.google.com/).
-2. Create a new folder (e.g., "Website Media").
-3. Open the folder and copy the **Folder ID** from the URL.
+## 4. Create a Google Drive Folder (IMPORTANT: Shared Drive Recommended)
+1. **Option A: Shared Drive (Best for Service Accounts)**
+   - Go to your [Google Drive](https://drive.google.com/).
+   - Click on **Shared Drives** in the sidebar.
+   - Click **New** and name it (e.g., "App Media").
+   - Click **Manage members** and add your **Service Account email** as a **Contributor** or **Content Manager**.
+   - Create a folder inside this Shared Drive and copy its **Folder ID** from the URL.
+
+2. **Option B: Regular Folder (May have quota issues)**
+   - Create a new folder in your "My Drive".
+   - **Share the folder** with your Service Account email and give it **Editor** access.
+   - Copy the **Folder ID** from the URL.
+   - *Note: Service accounts have 0GB quota. If you get a "storage quota" error, you MUST use Option A (Shared Drive).*
+
+3. **How to get the Folder ID:**
    - The URL looks like: `https://drive.google.com/drive/folders/YOUR_FOLDER_ID`
-4. **Share the folder** with your Service Account email (the one you created in step 3) and give it **Editor** access.
+   - Copy only the `YOUR_FOLDER_ID` part.
 
 ## 5. Set Environment Variables
 Add the following variables to your environment (e.g., in Vercel settings or your `.env` file):

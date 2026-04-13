@@ -285,6 +285,18 @@ const AdminGoogleSheetSettings: React.FC = () => {
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="p-6 border-b border-gray-100 bg-blue-50">
+          <div className="flex items-start gap-3">
+            <ShieldCheck className="w-6 h-6 text-blue-600 shrink-0 mt-0.5" />
+            <div>
+              <h3 className="font-bold text-blue-900">Firebase Storage: Primary Storage Active</h3>
+              <p className="text-sm text-blue-800 mt-1">
+                আপনার অ্যাপে এখন **Firebase Storage**-কে প্রধান স্টোরেজ হিসেবে সেট করা হয়েছে। এর ফলে গুগল ড্রাইভের "Quota" সমস্যা ছাড়াই আপনি ছবি আপলোড করতে পারবেন। গুগল ড্রাইভ এখন শুধুমাত্র ব্যাকআপ হিসেবে কাজ করবে।
+              </p>
+            </div>
+          </div>
+        </div>
+
         <div className="p-6 border-b border-gray-100 bg-red-50">
           <div className="flex items-start gap-3">
             <AlertTriangle className="w-6 h-6 text-red-600 shrink-0 mt-0.5" />

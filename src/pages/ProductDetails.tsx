@@ -9,7 +9,7 @@ import { useCart } from '../contexts/CartContext';
 import { useWishlist } from '../contexts/WishlistContext';
 import { useAuth } from '../contexts/AuthContext';
 import { motion, AnimatePresence } from 'motion/react';
-import { Star, ShoppingCart, ShoppingBag, Heart, Truck, ShieldCheck, RefreshCw, ChevronRight, Check, ChevronLeft, Plus, Minus, MessageSquare, Send, Store } from 'lucide-react';
+import { Star, ShoppingCart, ShoppingBag, Heart, Truck, ShieldCheck, RefreshCw, ChevronRight, Check, ChevronLeft, Plus, Minus, MessageSquare, Send, Store, Facebook, MessageCircle, Link, Share2 } from 'lucide-react';
 import { toast } from 'sonner';
 import ProductCard from '../components/ProductCard';
 
@@ -608,6 +608,47 @@ export default function ProductDetails() {
               <ShoppingBag className="h-5 w-5" />
               <span>Buy Now</span>
             </button>
+          </div>
+
+          {/* Social Share */}
+          <div className="mb-10 p-6 bg-gray-50 rounded-[2rem] border border-gray-100">
+            <div className="flex items-center gap-2 mb-4">
+              <Share2 className="h-4 w-4 text-gray-400" />
+              <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest">Share this Product</h3>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <button
+                onClick={() => {
+                  const url = window.location.href;
+                  window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
+                }}
+                className="flex items-center gap-2 px-5 py-2.5 bg-[#1877F2] text-white rounded-xl font-bold text-xs hover:bg-[#1877F2]/90 transition-all shadow-sm active:scale-95"
+              >
+                <Facebook className="h-4 w-4" />
+                Facebook
+              </button>
+              <button
+                onClick={() => {
+                  const url = window.location.href;
+                  const text = `Check out this product: ${product.name}`;
+                  window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text + ' ' + url)}`, '_blank');
+                }}
+                className="flex items-center gap-2 px-5 py-2.5 bg-[#25D366] text-white rounded-xl font-bold text-xs hover:bg-[#25D366]/90 transition-all shadow-sm active:scale-95"
+              >
+                <MessageCircle className="h-4 w-4" />
+                WhatsApp
+              </button>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(window.location.href);
+                  toast.success('Link copied to clipboard!');
+                }}
+                className="flex items-center gap-2 px-5 py-2.5 bg-white text-gray-600 border border-gray-200 rounded-xl font-bold text-xs hover:bg-gray-50 transition-all shadow-sm active:scale-95"
+              >
+                <Link className="h-4 w-4" />
+                Copy Link
+              </button>
+            </div>
           </div>
 
           <div className="mb-10 border-b border-gray-100 pb-10">

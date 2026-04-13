@@ -147,12 +147,11 @@ export class GoogleDriveService {
       if (error.message?.includes('storage quota') || (error.response?.data?.error?.message?.includes('storage quota'))) {
         const quotaError = `Google Drive Quota Error: Service Accounts have 0GB storage quota by default. 
           
-          CRITICAL FIX REQUIRED:
-          1. You MUST share a Google Drive folder with your Service Account email: ${email}
-          2. Grant that email "Editor" permissions on the folder.
-          3. Copy the Folder ID (the long string in the URL when you open the folder) and paste it into the Admin Settings.
-          4. Service accounts CANNOT upload to their own "My Drive" because they have no storage space.
-          5. If you have already shared the folder, ensure you are using the correct Folder ID and not the Spreadsheet ID.`;
+          HOW TO FIX THIS:
+          1. The BEST way: Use a "Shared Drive" (Team Drive). Create a Shared Drive, add your Service Account email (${email}) as a "Contributor" or "Content Manager", and use a folder ID from that Shared Drive.
+          2. Alternative: If you don't have Shared Drives, you MUST ensure the folder ID you provided is NOT owned by the service account itself.
+          3. Note: In regular Google Drive folders, files uploaded by the Service Account use the Service Account's quota (which is 0). Shared Drives are required for Service Accounts to have storage space.
+          4. Current Folder ID: ${folderId}`;
         console.error('--- GOOGLE DRIVE QUOTA ERROR ---');
         console.error(quotaError);
         console.error('--------------------------------');

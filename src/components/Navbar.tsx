@@ -65,7 +65,7 @@ export default function Navbar() {
 
       const ai = new GoogleGenAI({ apiKey });
       const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
+        model: "gemini-1.5-flash",
         contents: {
           parts: [
             { text: "Identify the fashion item in this image. Provide a list of 5-8 highly relevant English keywords that would likely appear in an e-commerce product title or description (e.g., 'leather handbag', 'blue denim jacket', 'silk saree'). Focus on specific attributes like color, material, and style. Output only the keywords separated by spaces, no punctuation." },

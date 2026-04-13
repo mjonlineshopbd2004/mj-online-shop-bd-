@@ -1,10 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Heart, ShoppingCart, ShoppingBag, Star } from 'lucide-react';
+import { Heart, ShoppingCart, ShoppingBag, Star, GitCompare } from 'lucide-react';
 import { Product } from '../types';
 import { formatPrice, calculateDiscount, cn, getProxyUrl, triggerHaptic } from '../lib/utils';
 import { useCart } from '../contexts/CartContext';
 import { useWishlist } from '../contexts/WishlistContext';
+import { useCompare } from '../contexts/CompareContext';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 
@@ -15,6 +16,7 @@ interface ProductCardProps {
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { addItem } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
+  const { addToCompare, isInCompare, removeFromCompare } = useCompare();
   const navigate = useNavigate();
   const discount = calculateDiscount(product.price, product.discountPrice);
 
@@ -37,6 +39,15 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       toast.info('Removed from wishlist');
     } else {
       toast.success('Added to wishlist');
+    }
+  };
+
+  const handleCompare = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (isInCompare(product.id)) {
+      removeFromCompare(product.id);
+    } else {
+      addToCompare(product);
     }
   };
 
@@ -75,18 +86,33 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         </div>
 
         {/* Wishlist Button */}
-        <button
-          onClick={(e) => {
-            triggerHaptic('medium');
-            handleWishlist(e);
-          }}
-          className={cn(
-            "absolute top-2 right-2 w-7 h-7 flex items-center justify-center rounded-full shadow-md transition-all duration-300 z-10 bg-white",
-            isInWishlist(product.id) ? "opacity-100" : "opacity-0 group-hover:opacity-100"
-          )}
-        >
-          <Heart className={cn("h-4 w-4", isInWishlist(product.id) ? "fill-red-500 text-red-500" : "text-gray-400")} />
-        </button>
+        <div className="absolute top-2 right-2 flex flex-col gap-2">
+          <button
+            onClick={(e) => {
+              triggerHaptic('medium');
+              handleWishlist(e);
+            }}
+            className={cn(
+              "w-7 h-7 flex items-center justify-center rounded-full shadow-md transition-all duration-300 z-10 bg-white",
+              isInWishlist(product.id) ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+            )}
+          >
+            <Heart className={cn("h-4 w-4", isInWishlist(product.id) ? "fill-red-500 text-red-500" : "text-gray-400")} />
+          </button>
+
+          <button
+            onClick={(e) => {
+              triggerHaptic('medium');
+              handleCompare(e);
+            }}
+            className={cn(
+              "w-7 h-7 flex items-center justify-center rounded-full shadow-md transition-all duration-300 z-10 bg-white",
+              isInCompare(product.id) ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+            )}
+          >
+            <GitCompare className={cn("h-4 w-4", isInCompare(product.id) ? "text-primary" : "text-gray-400")} />
+          </button>
+        </div>
 
         {/* Quick Actions Removed as requested */}
       </div>

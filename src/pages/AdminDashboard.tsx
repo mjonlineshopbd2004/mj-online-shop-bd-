@@ -24,7 +24,8 @@ import {
   Database,
   HardDrive,
   ExternalLink,
-  CreditCard
+  CreditCard,
+  MessageSquare
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import {
@@ -307,6 +308,7 @@ export default function AdminDashboard() {
               {[
                 { label: 'Products', icon: Package, path: '/admin/products', color: 'bg-blue-500' },
                 { label: 'Orders', icon: ShoppingBag, path: '/admin/orders', color: 'bg-orange-500' },
+                { label: 'Support', icon: MessageSquare, path: '/support', color: 'bg-red-500' },
                 { label: 'Transactions', icon: CreditCard, path: '/admin/transactions', color: 'bg-emerald-500' },
                 { label: 'Reviews', icon: Star, path: '/admin/reviews', color: 'bg-yellow-500' },
                 { label: 'Users', icon: Users, path: '/admin/users', color: 'bg-purple-500' },
@@ -329,9 +331,12 @@ export default function AdminDashboard() {
             </div>
             <h3 className="text-xl font-black text-white uppercase tracking-wider mb-2">Need Help?</h3>
             <p className="text-emerald-100 text-xs font-bold mb-6">Check out our documentation or contact support.</p>
-            <button className="bg-white text-emerald-600 px-6 py-3 rounded-xl font-black text-xs uppercase tracking-widest shadow-xl shadow-black/10 hover:bg-emerald-50 transition-colors">
+            <Link 
+              to="/support"
+              className="bg-white text-emerald-600 px-6 py-3 rounded-xl font-black text-xs uppercase tracking-widest shadow-xl shadow-black/10 hover:bg-emerald-50 transition-colors inline-block"
+            >
               Contact Support
-            </button>
+            </Link>
           </div>
         </div>
       </div>

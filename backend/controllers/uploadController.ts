@@ -3,6 +3,7 @@ import path from 'path';
 import fs from 'fs';
 import { googleDriveService } from '../services/googleDriveService';
 import { firebaseStorageService } from '../services/firebaseStorageService';
+import { imgbbService } from '../services/imgbbService';
 import { getDb } from '../config/firebase';
 
 let lastConfigFetch = 0;
@@ -42,7 +43,12 @@ export const ensureDriveConfigured = async (forceRefresh = false) => {
     });
 
     if (settingsDoc.exists) {
-      const { clientEmail, privateKey, driveFolderId } = settingsDoc.data() || {};
+      const { clientEmail, privateKey, driveFolderId, imgbbApiKey } = settingsDoc.data() || {};
+      
+      if (imgbbApiKey) {
+        imgbbService.setApiKey(imgbbApiKey);
+      }
+
       if (clientEmail && privateKey) {
         googleDriveService.setConfig(clientEmail, privateKey, driveFolderId || '');
         lastConfigFetch = now;
@@ -69,7 +75,25 @@ export const uploadFile = async (req: Request, res: Response) => {
     }
     console.log('File received:', req.file.originalname, 'Size:', req.file.size);
 
-    // 1. Try Firebase Storage first (Preferred)
+    // 1. Try ImgBB first (New preferred free method)
+    if (imgbbService.isConfigured()) {
+      try {
+        console.log('Attempting ImgBB upload...');
+        const imgbbUrl = await imgbbService.uploadFile(req.file.path);
+        if (imgbbUrl) {
+          console.log('ImgBB upload successful:', imgbbUrl);
+          if (fs.existsSync(req.file.path)) {
+            fs.unlinkSync(req.file.path);
+          }
+          return res.status(200).json({ url: imgbbUrl });
+        }
+      } catch (imgbbError: any) {
+        console.warn('ImgBB upload failed, trying Firebase Storage:', imgbbError.message);
+        lastError = imgbbError.message;
+      }
+    }
+
+    // 2. Try Firebase Storage (Second preference)
     try {
       console.log('Attempting Firebase Storage upload...');
       const firebaseUrl = await firebaseStorageService.uploadFile(
@@ -86,13 +110,21 @@ export const uploadFile = async (req: Request, res: Response) => {
         return res.status(200).json({ url: firebaseUrl });
       }
     } catch (firebaseError: any) {
-      console.warn('Firebase Storage upload failed, trying Google Drive:', firebaseError.message);
-      lastError = firebaseError.message;
+      const errorMessage = firebaseError.message || String(firebaseError);
+      console.error('Firebase Storage upload failed:', errorMessage);
+      
+      if (errorMessage.includes('Permission denied') || errorMessage.includes('bucket does not exist')) {
+        lastError = `Firebase Storage is not enabled or permissions are missing. 
+          Please go to Firebase Console > Storage and click "Get Started". 
+          Original error: ${errorMessage}`;
+      } else {
+        lastError = errorMessage;
+      }
     }
 
     await ensureDriveConfigured();
 
-    // 2. Fallback to Google Drive
+    // 3. Fallback to Google Drive
     if (googleDriveService.isConfigured()) {
       try {
         console.log('Attempting Google Drive upload...');
@@ -118,7 +150,7 @@ export const uploadFile = async (req: Request, res: Response) => {
       console.log('Google Drive not configured, falling back to local storage.');
     }
 
-    // 3. Fallback to local storage (Last resort)
+    // 4. Fallback to local storage (Last resort)
     console.log('Using local storage fallback for file:', req.file.filename);
     const fileUrl = `/uploads/${req.file.filename}`;
     
@@ -150,19 +182,37 @@ export const uploadMultipleFiles = async (req: Request, res: Response) => {
       let uploadedUrl = null;
       let fileError = '';
 
-      // 1. Try Firebase Storage
-      try {
-        uploadedUrl = await firebaseStorageService.uploadFile(
-          file.path,
-          file.originalname,
-          file.mimetype
-        );
-      } catch (firebaseError: any) {
-        console.error('Firebase Storage upload failed for file:', file.filename, firebaseError.message);
-        fileError = firebaseError.message;
+      // 1. Try ImgBB
+      if (imgbbService.isConfigured()) {
+        try {
+          uploadedUrl = await imgbbService.uploadFile(file.path);
+        } catch (imgbbError: any) {
+          console.error('ImgBB upload failed for file:', file.filename, imgbbError.message);
+          fileError = imgbbError.message;
+        }
       }
 
-      // 2. Try Google Drive if Firebase failed
+      // 2. Try Firebase Storage if ImgBB failed
+      if (!uploadedUrl) {
+        try {
+          uploadedUrl = await firebaseStorageService.uploadFile(
+            file.path,
+            file.originalname,
+            file.mimetype
+          );
+        } catch (firebaseError: any) {
+          const errorMessage = firebaseError.message || String(firebaseError);
+          console.error('Firebase Storage upload failed for file:', file.filename, errorMessage);
+          
+          if (errorMessage.includes('Permission denied') || errorMessage.includes('bucket does not exist')) {
+            fileError = `Firebase Storage is not enabled. Please go to Firebase Console > Storage and click "Get Started".`;
+          } else {
+            fileError = errorMessage;
+          }
+        }
+      }
+
+      // 3. Try Google Drive if others failed
       if (!uploadedUrl) {
         await ensureDriveConfigured();
         if (googleDriveService.isConfigured()) {
@@ -185,7 +235,7 @@ export const uploadMultipleFiles = async (req: Request, res: Response) => {
         }
         fileUrls.push(uploadedUrl);
       } else {
-        // 3. Fallback to local
+        // 4. Fallback to local
         console.warn(`All cloud uploads failed for ${file.filename}: ${fileError}. Using local fallback.`);
         fileUrls.push(`/uploads/${file.filename}`);
       }

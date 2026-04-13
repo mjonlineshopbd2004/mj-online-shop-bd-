@@ -4,6 +4,7 @@ import { Toaster } from 'sonner';
 import { AuthProvider } from './contexts/AuthContext';
 import { CartProvider } from './contexts/CartContext';
 import { WishlistProvider } from './contexts/WishlistContext';
+import { CompareProvider } from './contexts/CompareContext';
 import { SettingsProvider } from './contexts/SettingsContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -12,8 +13,11 @@ import AuthModal from './components/AuthModal';
 import ScrollToTop from './components/ScrollToTop';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import AdminLayout from './components/AdminLayout';
+import OfferPopup from './components/OfferPopup';
+import CompareFloatingButton from './components/CompareFloatingButton';
 
 import Wishlist from './pages/Wishlist';
+import Compare from './pages/Compare';
 import Home from './pages/Home';
 import Products from './pages/Products';
 import ProductDetails from './pages/ProductDetails';
@@ -42,6 +46,7 @@ import AdminTransactions from './pages/AdminTransactions';
 import AdminReviews from './pages/AdminReviews';
 import AdminProductImporter from './pages/AdminProductImporter';
 import AdminGoogleSheetSettings from './pages/AdminGoogleSheetSettings';
+import Support from './pages/Support';
 import SplashScreen from './components/SplashScreen';
 import FaviconUpdater from './components/FaviconUpdater';
 import ThemeManager from './components/ThemeManager';
@@ -76,6 +81,8 @@ function AnimatedRoutes() {
         <Route path="/categories" element={<Categories />} />
         <Route path="/vendors" element={<Vendors />} />
         <Route path="/wishlist" element={<Wishlist />} />
+        <Route path="/compare" element={<Compare />} />
+        <Route path="/support" element={<Support />} />
         <Route path="/about" element={<StaticPage title="About Us" content={<p>Welcome to MJ ONLINE SHOP BD, your number one source for all things fashion, electronics, and accessories. We're dedicated to giving you the very best of products, with a focus on dependability, customer service, and uniqueness.</p>} />} />
         <Route path="/contact" element={<StaticPage title="Contact Us" content={<p>If you have any questions or comments, please don't hesitate to contact us at mjonlineshopbd@gmail.com or via WhatsApp.</p>} />} />
         <Route path="/privacy" element={<StaticPage title="Privacy Policy" content={<p>Your privacy is important to us. It is MJ ONLINE SHOP BD's policy to respect your privacy regarding any information we may collect from you across our website.</p>} />} />
@@ -120,6 +127,8 @@ function MainLayout() {
       <BottomNav />
       <OfflineNotice />
       <AuthModal />
+      <OfferPopup />
+      <CompareFloatingButton />
     </div>
   );
 }
@@ -133,12 +142,14 @@ export default function App() {
         <FaviconUpdater />
         <CartProvider>
           <WishlistProvider>
-            <Router>
-              <SplashScreen />
-              <ScrollToTop />
-              <Toaster position="top-center" richColors />
-              <AnimatedRoutes />
-            </Router>
+            <CompareProvider>
+              <Router>
+                <SplashScreen />
+                <ScrollToTop />
+                <Toaster position="top-center" richColors />
+                <AnimatedRoutes />
+              </Router>
+            </CompareProvider>
           </WishlistProvider>
         </CartProvider>
       </SettingsProvider>
