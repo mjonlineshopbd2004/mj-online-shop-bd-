@@ -2,19 +2,19 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Facebook, Instagram, Twitter, Youtube, Phone, Mail, MapPin } from 'lucide-react';
 import { useSettings } from '../contexts/SettingsContext';
-import { getProxyUrl } from '../lib/utils';
+import { cn, getProxyUrl, triggerHaptic } from '../lib/utils';
 
 export default function Footer() {
   const { settings } = useSettings();
   const [logoError, setLogoError] = React.useState(false);
 
   return (
-    <footer className="bg-gray-900 text-gray-300 pt-16 pb-8">
+    <footer className="bg-gray-900 text-gray-300 pt-16 pb-8 border-t border-gray-800">
       <div className="container-custom">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
           {/* Brand */}
           <div>
-            <Link to="/" className="flex items-center mb-6">
+            <Link to="/" onClick={() => triggerHaptic('medium')} className="flex items-center mb-6">
               {settings.logoUrl && !logoError ? (
                 <img 
                   src={getProxyUrl(settings.logoUrl)} 
@@ -33,10 +33,10 @@ export default function Footer() {
               {settings.storeName} is your ultimate destination for fashion, electronics, and accessories in Bangladesh. We provide quality products with fast delivery.
             </p>
             <div className="flex space-x-4">
-              {settings.facebook && <a href={settings.facebook} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors"><Facebook className="h-5 w-5" /></a>}
-              {settings.instagram && <a href={settings.instagram} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors"><Instagram className="h-5 w-5" /></a>}
-              {settings.twitter && <a href={settings.twitter} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors"><Twitter className="h-5 w-5" /></a>}
-              {settings.youtube && <a href={settings.youtube} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors"><Youtube className="h-5 w-5" /></a>}
+              {settings.facebook && <a href={settings.facebook} onClick={() => triggerHaptic('light')} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors"><Facebook className="h-5 w-5" /></a>}
+              {settings.instagram && <a href={settings.instagram} onClick={() => triggerHaptic('light')} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors"><Instagram className="h-5 w-5" /></a>}
+              {settings.twitter && <a href={settings.twitter} onClick={() => triggerHaptic('light')} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors"><Twitter className="h-5 w-5" /></a>}
+              {settings.youtube && <a href={settings.youtube} onClick={() => triggerHaptic('light')} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors"><Youtube className="h-5 w-5" /></a>}
             </div>
           </div>
 
@@ -44,12 +44,12 @@ export default function Footer() {
           <div>
             <h3 className="text-white font-bold text-lg mb-6 font-display uppercase tracking-wider">Quick Links</h3>
             <ul className="space-y-4 font-sans">
-              <li><Link to="/products" className="hover:text-primary transition-colors">Shop All</Link></li>
+              <li><Link to="/products" onClick={() => triggerHaptic('light')} className="hover:text-primary transition-colors">Shop All</Link></li>
               {(settings.categories || []).slice(0, 4).map(category => {
                 const name = typeof category === 'string' ? category : category.name;
                 return (
                   <li key={name}>
-                    <Link to={`/products?category=${encodeURIComponent(name)}`} className="hover:text-primary transition-colors">
+                    <Link to={`/products?category=${encodeURIComponent(name)}`} onClick={() => triggerHaptic('light')} className="hover:text-primary transition-colors">
                       {name}
                     </Link>
                   </li>
@@ -62,13 +62,13 @@ export default function Footer() {
           <div>
             <h3 className="text-white font-bold text-lg mb-6 font-display uppercase tracking-wider">Information</h3>
             <ul className="space-y-4 font-sans">
-              <li><Link to="/about" className="hover:text-primary transition-colors">About Us</Link></li>
-              <li><Link to="/contact" className="hover:text-primary transition-colors">Contact Us</Link></li>
-              <li><Link to="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link></li>
-              <li><Link to="/returns" className="hover:text-primary transition-colors">Return Policy</Link></li>
-              <li><Link to="/refund" className="hover:text-primary transition-colors">Refund Policy</Link></li>
-              <li><Link to="/after-sales" className="hover:text-primary transition-colors">After Sales Service</Link></li>
-              <li><Link to="/terms" className="hover:text-primary transition-colors">Terms & Conditions</Link></li>
+              <li><Link to="/about" onClick={() => triggerHaptic('light')} className="hover:text-primary transition-colors">About Us</Link></li>
+              <li><Link to="/contact" onClick={() => triggerHaptic('light')} className="hover:text-primary transition-colors">Contact Us</Link></li>
+              <li><Link to="/privacy" onClick={() => triggerHaptic('light')} className="hover:text-primary transition-colors">Privacy Policy</Link></li>
+              <li><Link to="/returns" onClick={() => triggerHaptic('light')} className="hover:text-primary transition-colors">Return Policy</Link></li>
+              <li><Link to="/refund" onClick={() => triggerHaptic('light')} className="hover:text-primary transition-colors">Refund Policy</Link></li>
+              <li><Link to="/after-sales" onClick={() => triggerHaptic('light')} className="hover:text-primary transition-colors">After Sales Service</Link></li>
+              <li><Link to="/terms" onClick={() => triggerHaptic('light')} className="hover:text-primary transition-colors">Terms & Conditions</Link></li>
             </ul>
           </div>
 
@@ -100,7 +100,10 @@ export default function Footer() {
                   className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-2 text-sm text-white focus:ring-1 focus:ring-primary outline-none"
                   required
                 />
-                <button className="bg-primary text-white px-4 py-2 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-primary/90 transition-all">
+                <button 
+                  onClick={() => triggerHaptic('medium')}
+                  className="bg-primary text-white px-4 py-2 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-primary/90 transition-all"
+                >
                   Subscribe
                 </button>
               </form>

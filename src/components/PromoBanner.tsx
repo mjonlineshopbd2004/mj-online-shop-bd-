@@ -5,20 +5,25 @@ import { Link } from 'react-router-dom';
 import { getProxyUrl } from '../lib/utils';
 
 export default function PromoBanner() {
+  const [imageError, setImageError] = React.useState(false);
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 my-16">
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        className="relative h-[300px] md:h-[400px] rounded-[2rem] overflow-hidden shadow-2xl group"
+        className="relative h-[300px] md:h-[400px] rounded-[2rem] overflow-hidden shadow-2xl group bg-gradient-to-br from-gray-900 to-gray-800"
       >
-        <img 
-          src={getProxyUrl("https://picsum.photos/seed/promo/1920/600")} 
-          alt="Promotional Banner" 
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000"
-          referrerPolicy="no-referrer"
-        />
+        {!imageError && (
+          <img 
+            src={getProxyUrl("https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&q=80&w=1920")} 
+            alt="Promotional Banner" 
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000 opacity-60"
+            referrerPolicy="no-referrer"
+            onError={() => setImageError(true)}
+          />
+        )}
         <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent flex items-center">
           <div className="p-8 md:p-16 max-w-xl">
             <span className="inline-block px-4 py-1.5 bg-orange-600 text-white rounded-full text-xs font-bold mb-4 tracking-widest uppercase">

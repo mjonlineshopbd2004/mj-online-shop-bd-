@@ -4,7 +4,7 @@ import { Layers, ShoppingCart, Heart, User } from 'lucide-react';
 import { useSettings } from '../contexts/SettingsContext';
 import { useCart } from '../contexts/CartContext';
 import { useWishlist } from '../contexts/WishlistContext';
-import { cn, getProxyUrl } from '../lib/utils';
+import { cn, getProxyUrl, triggerHaptic } from '../lib/utils';
 
 export default function BottomNav() {
   const location = useLocation();
@@ -26,7 +26,7 @@ export default function BottomNav() {
   ];
 
   return (
-    <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white z-50 px-2 py-1 shadow-[0_-8px_30px_rgba(0,0,0,0.08)] border-t border-gray-50">
+    <div className="md:hidden fixed bottom-0 left-0 right-0 bg-gradient-to-r from-indigo-600/70 via-purple-600/70 to-pink-600/70 backdrop-blur-xl z-50 px-2 py-0.5 border-t border-white/20 shadow-[0_-4px_20px_rgba(0,0,0,0.2)]">
       <div className="flex justify-around items-center h-14">
         {navItems.map((item) => {
           const isActive = location.pathname === item.path;
@@ -37,9 +37,10 @@ export default function BottomNav() {
               <Link
                 key={item.name}
                 to="/"
-                className="flex flex-col items-center justify-center -translate-y-2 bg-white p-1 rounded-full shadow-xl border-4 border-white w-16 h-16 transition-transform active:scale-95"
+                onClick={() => triggerHaptic('medium')}
+                className="flex flex-col items-center justify-center -translate-y-3 bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 p-[3px] rounded-full shadow-[0_0_20px_rgba(168,85,247,0.6)] w-14 h-14 transition-transform active:scale-95 z-10"
               >
-                <div className="w-full h-full rounded-full overflow-hidden bg-white flex items-center justify-center border border-gray-100">
+                <div className="w-full h-full rounded-full overflow-hidden bg-white flex items-center justify-center border-2 border-white/30">
                   {settings.logoUrl && !logoError ? (
                     <img 
                       src={getProxyUrl(settings.logoUrl)} 
@@ -61,23 +62,24 @@ export default function BottomNav() {
             <Link
               key={item.name}
               to={item.path}
+              onClick={() => triggerHaptic('light')}
               className="flex-1 flex flex-col items-center justify-center transition-all relative"
             >
               <div className={cn(
                 "p-1 rounded-lg transition-all",
-                isActive ? "text-primary" : "text-gray-400"
+                isActive ? "text-white bg-white/40" : "text-white"
               )}>
                 {Icon && <Icon className={cn("h-6 w-6", isActive && "stroke-[2.5px]")} />}
               </div>
               <span className={cn(
-                "text-[10px] font-bold mt-0.5",
-                isActive ? "text-primary" : "text-gray-500"
+                "text-[11px] font-black mt-0.5 uppercase tracking-normal drop-shadow-sm",
+                isActive ? "text-white" : "text-white/90"
               )}>
                 {item.name}
               </span>
               
               {item.badge !== undefined && item.badge > 0 && (
-                <span className="absolute top-0 right-1/4 bg-primary text-white text-[8px] font-black rounded-full h-4 w-4 flex items-center justify-center border-2 border-white">
+                <span className="absolute top-0 right-1/4 bg-primary text-white text-[7px] font-black rounded-full h-3.5 w-3.5 flex items-center justify-center border border-white/20">
                   {item.badge}
                 </span>
               )}

@@ -5,6 +5,24 @@ export default function ThemeManager() {
   const { settings } = useSettings();
 
   useEffect(() => {
+    // Handle Dark Mode - Disabled for now to restore original look
+    const applyTheme = (isDark: boolean) => {
+      document.documentElement.classList.remove('dark');
+    };
+
+    if (settings.darkMode === 'system') {
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      applyTheme(mediaQuery.matches);
+
+      const handler = (e: MediaQueryListEvent) => applyTheme(e.matches);
+      mediaQuery.addEventListener('change', handler);
+      return () => mediaQuery.removeEventListener('change', handler);
+    } else {
+      applyTheme(settings.darkMode === 'dark');
+    }
+  }, [settings.darkMode]);
+
+  useEffect(() => {
     if (settings.primaryColor) {
       // Apply primary color
       document.documentElement.style.setProperty('--primary', settings.primaryColor);

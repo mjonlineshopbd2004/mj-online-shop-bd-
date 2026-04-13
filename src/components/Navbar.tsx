@@ -24,7 +24,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import { useWishlist } from '../contexts/WishlistContext';
 import { useSettings } from '../contexts/SettingsContext';
-import { cn, getProxyUrl } from '../lib/utils';
+import { cn, getProxyUrl, triggerHaptic } from '../lib/utils';
 import { toast } from 'sonner';
 import { GoogleGenAI } from "@google/genai";
 
@@ -115,45 +115,26 @@ export default function Navbar() {
   ];
 
   return (
-    <nav className="sticky top-0 z-50 w-full">
-      {/* Top Bar - Reverted to primary color as requested */}
-      <div className="bg-primary text-white py-2 hidden md:block">
-        <div className="container-custom flex justify-between items-center text-[13px] font-medium">
-          <div className="flex items-center gap-6">
-            <Link to="/about" className="hover:text-white/80 transition-colors">About Us</Link>
-            <Link to="/profile" className="hover:text-white/80 transition-colors">My Account</Link>
-            <Link to="/wishlist" className="hover:text-white/80 transition-colors">Wishlist</Link>
-            <Link to="/orders" className="hover:text-white/80 transition-colors">Order Tracking</Link>
-          </div>
-          <div className="flex-1 text-center">
-            Welcome to our {settings.storeName} store!
-          </div>
-          <div className="flex items-center gap-4">
-            <span>Follow Us:</span>
-            <div className="flex items-center gap-3">
-              <a href={settings.facebook} target="_blank" rel="noopener noreferrer" className="hover:scale-110 transition-transform"><Facebook className="h-3.5 w-3.5" /></a>
-              <a href={settings.youtube} target="_blank" rel="noopener noreferrer" className="hover:scale-110 transition-transform"><Youtube className="h-3.5 w-3.5" /></a>
-              <a href={settings.twitter} target="_blank" rel="noopener noreferrer" className="hover:scale-110 transition-transform"><Twitter className="h-3.5 w-3.5" /></a>
-              <a href={settings.instagram} target="_blank" rel="noopener noreferrer" className="hover:scale-110 transition-transform"><Instagram className="h-3.5 w-3.5" /></a>
-            </div>
-          </div>
-        </div>
-      </div>
+    <nav className="fixed top-0 left-0 right-0 z-50 w-full bg-white/70 backdrop-blur-xl border-b border-gray-100/50 shadow-md">
+      {/* Top Bar - Removed as requested */}
+      {/* <div className="bg-primary text-white py-2 hidden md:block">
+        ...
+      </div> */}
 
       {/* Main Header */}
-      <div className="bg-white/80 backdrop-blur-md py-2 md:py-3 border-b border-gray-100 sticky top-0 z-50">
+      <div className="py-1.5 md:py-2">
         <div className="container-custom flex items-center justify-between gap-3 md:gap-4">
           {/* Logo */}
-          <Link to="/" className="flex-shrink-0">
+          <Link to="/" onClick={() => triggerHaptic('medium')} className="flex-shrink-0">
             {settings.logoUrl && !logoError ? (
               <img 
                 src={getProxyUrl(settings.logoUrl)} 
                 alt={settings.storeName} 
-                className="h-8 md:h-10 w-auto" 
+                className="h-7 md:h-8 w-auto" 
                 onError={() => setLogoError(true)}
               />
             ) : (
-              <div className="w-8 h-8 md:w-10 md:h-10 bg-primary rounded-lg md:rounded-xl flex items-center justify-center text-white font-bold text-lg md:text-xl shadow-lg shadow-primary/20">
+              <div className="w-7 h-7 md:w-8 md:h-8 bg-primary rounded-lg md:rounded-xl flex items-center justify-center text-white font-bold text-base md:text-lg shadow-lg shadow-primary/20">
                 {settings.storeName.charAt(0)}
               </div>
             )}
@@ -200,13 +181,13 @@ export default function Navbar() {
           </div>
 
           {/* Actions */}
-          <div className="hidden md:flex items-center gap-2 md:gap-3">
+          <div className="hidden md:flex items-center gap-2 md:gap-2">
             {user && isAdmin && (
               <Link 
                 to="/admin" 
-                className="flex items-center gap-2 px-3 py-2 bg-white text-red-600 rounded-xl border border-red-200 font-bold hover:bg-red-50 transition-all shadow-sm text-xs"
+                className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white text-red-600 rounded-xl border border-red-200 font-bold hover:bg-red-50 transition-all shadow-sm text-[10px]"
               >
-                <LayoutDashboard className="h-4 w-4" />
+                <LayoutDashboard className="h-3.5 w-3.5" />
                 <span className="hidden lg:inline">Dashboard</span>
               </Link>
             )}
@@ -214,12 +195,12 @@ export default function Navbar() {
               <div className="relative group/account">
                 <div className="flex items-center gap-2">
                   <Link to="/profile" className="nav-action-card group">
-                    <div className="w-9 h-9 rounded-lg bg-gray-50 flex items-center justify-center group-hover:bg-primary/10 transition-colors">
-                      <User className="h-4 w-4 text-gray-500 group-hover:text-primary" />
+                    <div className="w-7 h-7 rounded-lg bg-gray-50 flex items-center justify-center group-hover:bg-primary/10 transition-colors">
+                      <User className="h-3.5 w-3.5 text-gray-500 group-hover:text-primary" />
                     </div>
                     <div className="hidden lg:block text-left">
-                      <p className="text-[9px] font-bold text-gray-400 uppercase leading-none mb-1">Account</p>
-                      <p className="text-[11px] font-black text-gray-900 truncate max-w-[60px]">
+                      <p className="text-[8px] font-bold text-gray-400 uppercase leading-none mb-0.5">Account</p>
+                      <p className="text-[10px] font-black text-gray-900 truncate max-w-[50px]">
                         {profile?.displayName?.split(' ')[0] || 'Profile'}
                       </p>
                     </div>
@@ -250,72 +231,54 @@ export default function Navbar() {
                 onClick={() => setAuthModalOpen(true)}
                 className="nav-action-card group"
               >
-                <div className="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center group-hover:bg-primary/10 transition-colors">
-                  <User className="h-5 w-5 text-gray-500 group-hover:text-primary" />
+                <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center group-hover:bg-primary/10 transition-colors">
+                  <User className="h-4 w-4 text-gray-500 group-hover:text-primary" />
                 </div>
                 <div className="hidden lg:block text-left">
-                  <p className="text-[10px] font-bold text-gray-400 uppercase leading-none mb-1">Account</p>
-                  <p className="text-xs font-black text-gray-900 leading-none">Login</p>
+                  <p className="text-[8px] font-bold text-gray-400 uppercase leading-none mb-0.5">Account</p>
+                  <p className="text-[10px] font-black text-gray-900 leading-none">Login</p>
                 </div>
               </button>
             )}
 
             <Link to="/wishlist" className="nav-action-card group">
-              <div className="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center group-hover:bg-primary/10 transition-colors relative">
-                <Heart className="h-5 w-5 text-gray-500 group-hover:text-primary" />
+              <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center group-hover:bg-primary/10 transition-colors relative">
+                <Heart className="h-4 w-4 text-gray-500 group-hover:text-primary" />
                 {wishlistItems.length > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-primary text-white text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center border-2 border-white">
+                  <span className="absolute -top-1 -right-1 bg-primary text-white text-[9px] font-bold rounded-full h-4 w-4 flex items-center justify-center border-2 border-white">
                     {wishlistItems.length}
                   </span>
                 )}
               </div>
               <div className="hidden lg:block text-left">
-                <p className="text-[10px] font-bold text-gray-400 uppercase leading-none mb-1">Wishlist</p>
-                <p className="text-xs font-black text-gray-900 leading-none">My List</p>
+                <p className="text-[8px] font-bold text-gray-400 uppercase leading-none mb-0.5">Wishlist</p>
+                <p className="text-[10px] font-black text-gray-900 leading-none">My List</p>
               </div>
             </Link>
 
             <Link to="/cart" className="nav-action-card group">
-              <div className="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center group-hover:bg-primary/10 transition-colors relative">
-                <ShoppingCart className="h-5 w-5 text-gray-500 group-hover:text-primary" />
+              <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center group-hover:bg-primary/10 transition-colors relative">
+                <ShoppingCart className="h-4 w-4 text-gray-500 group-hover:text-primary" />
                 {totalItems > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-primary text-white text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center border-2 border-white">
+                  <span className="absolute -top-1 -right-1 bg-primary text-white text-[9px] font-bold rounded-full h-4 w-4 flex items-center justify-center border-2 border-white">
                     {totalItems}
                   </span>
                 )}
               </div>
               <div className="hidden lg:block text-left">
-                <p className="text-[10px] font-bold text-gray-400 uppercase leading-none mb-1">My Cart</p>
-                <p className="text-xs font-black text-gray-900 leading-none">Total: {totalItems}</p>
+                <p className="text-[8px] font-bold text-gray-400 uppercase leading-none mb-0.5">My Cart</p>
+                <p className="text-[10px] font-black text-gray-900 leading-none">Total: {totalItems}</p>
               </div>
             </Link>
           </div>
         </div>
       </div>
 
-      {/* Mobile Navigation Links - Horizontal Scroll */}
-      <div className="md:hidden bg-white border-b border-gray-50 overflow-x-auto no-scrollbar sticky top-[52px] z-40">
-        <div className="container-custom flex items-center gap-6 py-3 whitespace-nowrap">
-          {mainNavLinks.map((link) => (
-            <Link
-              key={link.name}
-              to={link.path}
-              className="text-[11px] font-black text-gray-600 uppercase tracking-wider hover:text-primary transition-colors px-1"
-            >
-              {link.name}
-            </Link>
-          ))}
-          <Link
-            to="/products?trending=true"
-            className="text-[11px] font-black text-primary uppercase tracking-wider px-1"
-          >
-            Trending
-          </Link>
-        </div>
-      </div>
+      {/* Mobile Navigation Links - Horizontal Scroll - Hidden as requested */}
+      {/* Removed as requested */}
 
       {/* Navigation Bar */}
-      <div className="bg-white border-b border-gray-100 hidden md:block">
+      <div className="border-t border-gray-100/50 hidden md:block">
         <div className="container-custom flex items-center justify-between h-14">
           <div className="flex items-center h-full gap-8">
             {/* Categories Dropdown */}
@@ -375,74 +338,6 @@ export default function Navbar() {
           </div>
         </div>
       </div>
-
-      {/* Mobile Menu */}
-      {isMenuOpen && (
-        <div className="md:hidden fixed inset-0 z-50 bg-white pt-20 overflow-y-auto">
-          <div className="p-6 space-y-8">
-            <div className="space-y-4">
-              <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Main Menu</h3>
-              <div className="grid grid-cols-1 gap-2">
-                {mainNavLinks.map((link) => (
-                  <Link
-                    key={link.name}
-                    to={link.path}
-                    onClick={() => setIsMenuOpen(false)}
-                    className="text-lg font-bold text-gray-900 p-3 bg-gray-50 rounded-xl"
-                  >
-                    {link.name}
-                  </Link>
-                ))}
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Categories</h3>
-              <div className="grid grid-cols-1 gap-2">
-                {categories.map((cat) => (
-                  <Link
-                    key={cat}
-                    to={`/products?category=${encodeURIComponent(cat)}`}
-                    onClick={() => setIsMenuOpen(false)}
-                    className="text-lg font-bold text-gray-900 p-3 bg-gray-50 rounded-xl"
-                  >
-                    {cat}
-                  </Link>
-                ))}
-              </div>
-            </div>
-
-            {user && isAdmin && (
-              <Link
-                to="/admin"
-                onClick={() => setIsMenuOpen(false)}
-                className="flex items-center gap-3 text-lg font-bold text-primary p-3 bg-primary/5 rounded-xl"
-              >
-                <LayoutDashboard className="h-5 w-5" />
-                Admin Dashboard
-              </Link>
-            )}
-
-            {user ? (
-              <button
-                onClick={() => { logout(); setIsMenuOpen(false); }}
-                className="flex items-center gap-3 text-lg font-bold text-red-500 p-3 bg-red-50 rounded-xl w-full"
-              >
-                <LogOut className="h-5 w-5" />
-                Logout
-              </button>
-            ) : (
-              <button
-                onClick={() => { setAuthModalOpen(true); setIsMenuOpen(false); }}
-                className="flex items-center gap-3 text-lg font-bold text-primary p-3 bg-primary/5 rounded-xl w-full"
-              >
-                <User className="h-5 w-5" />
-                Login / Register
-              </button>
-            )}
-          </div>
-        </div>
-      )}
     </nav>
   );
 }

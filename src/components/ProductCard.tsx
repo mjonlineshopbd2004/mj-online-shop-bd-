@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Heart, ShoppingCart, ShoppingBag, Star } from 'lucide-react';
 import { Product } from '../types';
-import { formatPrice, calculateDiscount, cn, getProxyUrl } from '../lib/utils';
+import { formatPrice, calculateDiscount, cn, getProxyUrl, triggerHaptic } from '../lib/utils';
 import { useCart } from '../contexts/CartContext';
 import { useWishlist } from '../contexts/WishlistContext';
 import { toast } from 'sonner';
@@ -43,6 +43,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   return (
     <Link
       to={`/product/${product.id}`}
+      onClick={() => triggerHaptic('light')}
       className="group bg-white rounded-xl md:rounded-2xl overflow-hidden shadow-[0_2px_10px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] transition-all duration-500 border border-gray-100/50 flex flex-col h-full"
     >
       <div className="relative aspect-square overflow-hidden bg-gray-50">
@@ -75,7 +76,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
         {/* Wishlist Button */}
         <button
-          onClick={handleWishlist}
+          onClick={(e) => {
+            triggerHaptic('medium');
+            handleWishlist(e);
+          }}
           className={cn(
             "absolute top-2 right-2 w-7 h-7 flex items-center justify-center rounded-full shadow-md transition-all duration-300 z-10 bg-white",
             isInWishlist(product.id) ? "opacity-100" : "opacity-0 group-hover:opacity-100"
