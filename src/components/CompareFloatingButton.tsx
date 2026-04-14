@@ -22,7 +22,7 @@ export default function CompareFloatingButton() {
             {compareItems.map((product) => (
               <div key={product.id} className="relative group">
                 <img
-                  src={product.image}
+                  src={product.images[0]}
                   alt={product.name}
                   className="w-10 h-10 rounded-full border-2 border-white object-cover shadow-sm"
                 />

@@ -49,8 +49,8 @@ export default function BottomNav() {
                       onError={() => setLogoError(true)}
                     />
                   ) : (
-                    <div className="w-full h-full bg-primary rounded-full flex items-center justify-center text-white font-black text-xl">
-                      {settings.storeName.charAt(0)}
+                    <div className="w-full h-full bg-primary rounded-full flex items-center justify-center text-white">
+                      <ShoppingCart className="h-6 w-6" />
                     </div>
                   )}
                 </div>

@@ -423,7 +423,7 @@ export default function AdminProductForm() {
       const data = {
         ...restData,
         price: Number(formData.price) || 0,
-        discountPrice: (formData.discountPrice !== undefined && formData.discountPrice !== null && formData.discountPrice !== '') ? Number(formData.discountPrice) : null,
+        discountPrice: (formData.discountPrice !== undefined && formData.discountPrice !== null) ? Number(formData.discountPrice) : null,
         stock: Number(formData.stock) || 0,
       };
 

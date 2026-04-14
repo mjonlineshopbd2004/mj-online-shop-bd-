@@ -4,6 +4,7 @@ import { Product } from '../types';
 interface WishlistContextType {
   items: Product[];
   toggleWishlist: (product: Product) => void;
+  removeFromWishlist: (productId: string) => void;
   isInWishlist: (productId: string) => boolean;
 }
 
@@ -29,10 +30,14 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
+  const removeFromWishlist = (productId: string) => {
+    setItems(prev => prev.filter(item => item.id !== productId));
+  };
+
   const isInWishlist = (productId: string) => items.some(item => item.id === productId);
 
   return (
-    <WishlistContext.Provider value={{ items, toggleWishlist, isInWishlist }}>
+    <WishlistContext.Provider value={{ items, toggleWishlist, removeFromWishlist, isInWishlist }}>
       {children}
     </WishlistContext.Provider>
   );

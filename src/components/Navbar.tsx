@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
   ShoppingCart, 
+  ShoppingBag,
   Heart, 
   User, 
   Search, 
@@ -134,8 +135,13 @@ export default function Navbar() {
                 onError={() => setLogoError(true)}
               />
             ) : (
-              <div className="w-7 h-7 md:w-8 md:h-8 bg-primary rounded-lg md:rounded-xl flex items-center justify-center text-white font-bold text-base md:text-lg shadow-lg shadow-primary/20">
-                {settings.storeName.charAt(0)}
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 md:w-8 md:h-8 bg-primary rounded-lg md:rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary/20">
+                  <ShoppingBag className="h-4 w-4 md:h-5 md:w-5" />
+                </div>
+                <span className="font-black text-gray-900 text-sm md:text-base tracking-tighter uppercase hidden sm:block">
+                  {settings.storeName}
+                </span>
               </div>
             )}
           </Link>

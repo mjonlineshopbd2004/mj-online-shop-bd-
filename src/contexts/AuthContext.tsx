@@ -27,7 +27,7 @@ interface AuthContextType {
   isLoggingIn: boolean;
   isAuthModalOpen: boolean;
   setAuthModalOpen: (open: boolean) => void;
-  checkEmail: (email: string) => Promise<{ exists: boolean }>;
+  checkEmail: (email: string) => Promise<{ exists: boolean; method?: 'google' | 'email' }>;
   sendEmailOTP: (email: string, isForgotPassword?: boolean) => Promise<void>;
   verifyEmailOTP: (email: string, otp: string) => Promise<boolean>;
   verifyRegister: (data: { email: string; code: string; password: string; phone: string; name: string }) => Promise<void>;

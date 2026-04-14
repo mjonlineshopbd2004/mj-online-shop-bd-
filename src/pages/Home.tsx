@@ -63,6 +63,16 @@ export default function Home() {
 
   useEffect(() => {
     const fetchProducts = async () => {
+      const timeoutId = setTimeout(() => {
+        if (loading) {
+          console.log("Fetching products timed out, showing demo data");
+          setFeaturedProducts(DEMO_PRODUCTS.filter(p => p.featured).slice(0, 4));
+          setTrendingProducts(DEMO_PRODUCTS.filter(p => p.trending).slice(0, 8));
+          setAllProducts(DEMO_PRODUCTS.slice(0, 12));
+          setLoading(false);
+        }
+      }, 5000); // 5 second timeout
+
       try {
         const productsRef = collection(db, 'products');
         
@@ -80,6 +90,8 @@ export default function Home() {
         const allQuery = query(productsRef, orderBy('createdAt', 'desc'), limit(12));
         const allSnap = await getDocs(allQuery);
         const all = allSnap.docs.map(doc => ({ ...doc.data(), id: doc.id } as Product));
+
+        clearTimeout(timeoutId);
 
         if (featured.length === 0) {
           setFeaturedProducts(DEMO_PRODUCTS.filter(p => p.featured).slice(0, 4));
@@ -100,6 +112,7 @@ export default function Home() {
         }
       } catch (error) {
         console.error("Error fetching products:", error);
+        clearTimeout(timeoutId);
         setFeaturedProducts(DEMO_PRODUCTS.filter(p => p.featured).slice(0, 4));
         setTrendingProducts(DEMO_PRODUCTS.filter(p => p.trending).slice(0, 8));
         setAllProducts(DEMO_PRODUCTS.slice(0, 12));

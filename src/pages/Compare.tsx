@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom';
 
 export default function Compare() {
   const { compareItems, removeFromCompare, clearCompare } = useCompare();
-  const { addToCart } = useCart();
+  const { addItem } = useCart();
 
   if (compareItems.length === 0) {
     return (
@@ -63,7 +63,7 @@ export default function Compare() {
                           <X className="h-4 w-4" />
                         </button>
                         <img
-                          src={product.image}
+                          src={product.images[0]}
                           alt={product.name}
                           className="w-32 h-32 object-cover rounded-2xl mx-auto mb-4 border border-gray-100 shadow-sm"
                         />
@@ -84,10 +84,10 @@ export default function Compare() {
                   ))}
                 </tr>
                 <tr>
-                  <td className="px-6 py-4 text-sm font-black text-gray-900 bg-gray-50/50">Brand</td>
+                  <td className="px-6 py-4 text-sm font-black text-gray-900 bg-gray-50/50">Vendor</td>
                   {compareItems.map(product => (
                     <td key={product.id} className="px-6 py-4 text-center text-sm text-gray-600 font-medium">
-                      {product.brand || 'N/A'}
+                      {product.vendor || 'N/A'}
                     </td>
                   ))}
                 </tr>
@@ -106,7 +106,7 @@ export default function Compare() {
                   {compareItems.map(product => (
                     <td key={product.id} className="px-6 py-4 text-center">
                       <button
-                        onClick={() => addToCart(product)}
+                        onClick={() => addItem(product)}
                         disabled={product.stock === 0}
                         className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary text-white font-black rounded-xl hover:bg-primary-dark transition-all shadow-lg shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed text-xs uppercase tracking-widest"
                       >

@@ -123,7 +123,7 @@ export default function Wishlist() {
       </div>
 
       {/* Sticky Bottom Bar */}
-      <div className="fixed bottom-0 left-0 right-0 bg-[#003d4d] z-50 px-4 py-3 flex items-center gap-4 shadow-[0_-4px_20px_rgba(0,0,0,0.1)]">
+      <div className="fixed bottom-14 md:bottom-0 left-0 right-0 bg-[#003d4d] z-40 px-4 py-3 flex items-center gap-4 shadow-[0_-4px_20px_rgba(0,0,0,0.1)]">
         <Link 
           to="/" 
           className="flex flex-col items-center justify-center text-white/80 hover:text-white transition-colors"

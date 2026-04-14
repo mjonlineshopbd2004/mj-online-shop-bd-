@@ -45,9 +45,9 @@ export const PWAInstallBanner = () => {
         initial={{ y: 100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: 100, opacity: 0 }}
-        className="fixed bottom-20 left-4 right-4 z-50"
+        className="fixed bottom-24 left-4 right-4 z-[60]"
       >
-        <div className="bg-emerald-600 text-white p-4 rounded-2xl shadow-2xl flex items-center justify-between border border-emerald-500/20 backdrop-blur-lg">
+        <div className="bg-emerald-600 text-white p-4 rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.3)] flex items-center justify-between border border-white/20 backdrop-blur-lg">
           <div className="flex items-center gap-3">
             <div className="bg-white/20 p-2 rounded-xl">
               <Download className="w-6 h-6" />
