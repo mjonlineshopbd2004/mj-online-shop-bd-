@@ -2,10 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { Bell, X, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { toast } from 'sonner';
+import { useSettings } from '../contexts/SettingsContext';
+import { getProxyUrl } from '../lib/utils';
 
 export default function PushNotificationManager() {
   const [showPrompt, setShowPrompt] = useState(false);
   const [permission, setPermission] = useState<NotificationPermission>('default');
+  const { settings } = useSettings();
 
   useEffect(() => {
     if ('Notification' in window) {
@@ -35,9 +38,11 @@ export default function PushNotificationManager() {
         });
         
         // Simulate a welcome notification
-        new Notification('MJ ONLINE SHOP BD', {
+        const logoUrl = settings.logoUrl || 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&q=80&w=192&h=192';
+        
+        new Notification(settings.storeName || 'MJ ONLINE SHOP BD', {
           body: 'Welcome! You will now receive our latest updates.',
-          icon: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&q=80&w=192&h=192'
+          icon: getProxyUrl(logoUrl) || logoUrl
         });
       }
     } catch (error) {

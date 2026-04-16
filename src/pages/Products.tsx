@@ -68,6 +68,14 @@ export default function Products() {
           .map(item => item.product);
         }
 
+        const getTime = (date: any) => {
+          if (!date) return 0;
+          if (typeof date === 'string') return new Date(date).getTime();
+          if (date.toDate) return date.toDate().getTime();
+          if (date.seconds) return date.seconds * 1000;
+          return new Date(date).getTime();
+        };
+
         if (sortBy === 'price-low') {
           results.sort((a, b) => (a.discountPrice || a.price) - (b.discountPrice || b.price));
         } else if (sortBy === 'price-high') {
@@ -75,7 +83,7 @@ export default function Products() {
         } else if (sortBy === 'rating') {
           results.sort((a, b) => b.rating - a.rating);
         } else {
-          results.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+          results.sort((a, b) => getTime(b.createdAt) - getTime(a.createdAt));
         }
 
         setProducts(results);
@@ -109,10 +117,10 @@ export default function Products() {
           <p className="text-gray-500 font-medium">{products.length} products found</p>
         </div>
 
-        <div className="flex items-center space-x-4">
-          <div className="relative hidden sm:block">
+        <div className="flex items-center space-x-2 md:space-x-4">
+          <div className="relative flex-1 sm:flex-none">
             <select
-              className="appearance-none bg-white border border-gray-200 rounded-xl px-6 py-3 pr-12 font-bold text-gray-700 focus:ring-2 focus:ring-orange-500 outline-none cursor-pointer"
+              className="w-full sm:w-auto appearance-none bg-white border border-gray-200 rounded-xl px-4 md:px-6 py-3 pr-10 md:pr-12 font-bold text-gray-700 focus:ring-2 focus:ring-orange-500 outline-none cursor-pointer text-sm md:text-base"
               value={sortBy}
               onChange={(e) => {
                 searchParams.set('sort', e.target.value);

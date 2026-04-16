@@ -28,6 +28,7 @@ try {
 }
 
 import * as scraperController from './backend/controllers/scraperController.ts';
+import { getDb } from './backend/config/firebase.ts';
 import { authenticate } from './backend/middleware/auth.ts';
 
 // Set GOOGLE_CLOUD_PROJECT early to ensure Firebase Admin SDK uses the correct project ID
@@ -227,13 +228,54 @@ async function startServer() {
   });
   
   // PWA Direct Routes (Ensures PWABuilder can find them)
-  app.get('/manifest.json', (req, res) => {
+  app.get('/manifest.json', async (req, res) => {
+    let settings: any = {
+      storeName: 'MJ ONLINE SHOP BD',
+      shopTagline: 'Premium Online Shop',
+      logoUrl: ''
+    };
+
+    try {
+      const db = getDb();
+      const settingsDoc = await db.collection('settings').doc('site').get();
+      if (settingsDoc.exists) {
+        settings = { ...settings, ...settingsDoc.data() };
+      }
+    } catch (error) {
+      console.error('Error fetching settings for manifest:', error);
+    }
+
+    const getProxyUrl = (url: string) => {
+      if (!url || url.startsWith('data:') || url.startsWith('/') || url.includes('/api/proxy-image')) return url;
+      
+      const reliableCDNs = [
+        'images.unsplash.com',
+        'firebasestorage.googleapis.com',
+        'picsum.photos',
+        'cloudinary.com',
+        'imgbb.com',
+        'raw.githubusercontent.com',
+        'cdn.jsdelivr.net',
+        'logo.clearbit.com'
+      ];
+
+      try {
+        const urlObj = new URL(url);
+        if (reliableCDNs.some(cdn => urlObj.hostname.includes(cdn))) return url;
+      } catch (e) {}
+
+      return `/api/proxy-image?url=${encodeURIComponent(url)}`;
+    };
+
+    const logoUrl = settings.logoUrl ? getProxyUrl(settings.logoUrl) : "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%2310b981'/%3E%3C/svg%3E";
+    const themeColor = settings.primaryColor || "#10b981";
+
     res.setHeader('Content-Type', 'application/manifest+json');
     res.send({
-      "name": "MJ ONLINE SHOP BD",
-      "short_name": "MJ SHOP",
-      "description": "Premium Online Shop in Bangladesh. Quality products, fast delivery, and secure payments.",
-      "theme_color": "#10b981",
+      "name": settings.storeName,
+      "short_name": settings.storeName.substring(0, 12),
+      "description": settings.shopTagline,
+      "theme_color": themeColor,
       "background_color": "#ffffff",
       "display": "standalone",
       "orientation": "portrait",
@@ -241,19 +283,19 @@ async function startServer() {
       "start_url": "/",
       "icons": [
         {
-          "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%2310b981'/%3E%3C/svg%3E",
+          "src": logoUrl,
           "sizes": "192x192",
           "type": "image/png",
           "purpose": "any"
         },
         {
-          "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%2310b981'/%3E%3C/svg%3E",
+          "src": logoUrl,
           "sizes": "512x512",
           "type": "image/png",
           "purpose": "any"
         },
         {
-          "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%2310b981'/%3E%3C/svg%3E",
+          "src": logoUrl,
           "sizes": "512x512",
           "type": "image/png",
           "purpose": "maskable"
