@@ -7,7 +7,7 @@ import * as couponController from '../controllers/couponController.ts';
 import * as paymentController from '../controllers/paymentController.ts';
 import * as uploadController from '../controllers/uploadController.ts';
 import * as scraperController from '../controllers/scraperController.ts';
-import { authenticate, authorize } from '../middleware/auth.ts';
+import { authenticate, authorize, optionalAuthenticate } from '../middleware/auth.ts';
 import { upload } from '../middleware/upload.ts';
 
 const router = Router();
@@ -52,8 +52,8 @@ router.get('/scraper/status', authenticate, authorize(['admin']), scraperControl
 router.post('/scraper/product', authenticate, authorize(['admin']), scraperController.scrapeProduct);
 
 // Order Routes
-router.get('/orders/next-id', authenticate, orderController.getNextOrderId);
-router.post('/orders', authenticate, orderController.createOrder);
+router.get('/orders/next-id', optionalAuthenticate, orderController.getNextOrderId);
+router.post('/orders', optionalAuthenticate, orderController.createOrder);
 router.get('/orders/my', authenticate, orderController.getUserOrders);
 router.get('/orders/:id', authenticate, orderController.getOrderById);
 router.get('/admin/orders', authenticate, authorize(['admin']), orderController.getAllOrders);
@@ -208,7 +208,7 @@ router.post('/payment/cancel/:trans_id', paymentController.paymentCancel);
 router.post('/payment/ipn', paymentController.paymentIPN);
 
 // Upload Routes
-router.post('/upload/single', authenticate, upload.single('file'), uploadController.uploadFile);
-router.post('/upload/multiple', authenticate, upload.array('files', 10), uploadController.uploadMultipleFiles);
+router.post('/upload/single', optionalAuthenticate, upload.single('file'), uploadController.uploadFile);
+router.post('/upload/multiple', optionalAuthenticate, upload.array('files', 10), uploadController.uploadMultipleFiles);
 
 export default router;

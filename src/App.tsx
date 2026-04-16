@@ -6,6 +6,7 @@ import { CartProvider } from './contexts/CartContext';
 import { WishlistProvider } from './contexts/WishlistContext';
 import { CompareProvider } from './contexts/CompareContext';
 import { SettingsProvider } from './contexts/SettingsContext';
+import { LanguageProvider } from './contexts/LanguageContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import WhatsAppButton from './components/WhatsAppButton';
@@ -26,6 +27,7 @@ import Checkout from './pages/Checkout';
 import Payment from './pages/Payment';
 import OrderConfirmation from './pages/OrderConfirmation';
 import OrderHistory from './pages/OrderHistory';
+import TrackOrder from './pages/TrackOrder';
 import Profile from './pages/Profile';
 import UserDashboard from './pages/UserDashboard';
 import UserSettings from './pages/UserSettings';
@@ -74,6 +76,7 @@ function AnimatedRoutes() {
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/payment" element={<Payment />} />
         <Route path="/order-confirmation/:id" element={<OrderConfirmation />} />
+        <Route path="/track-order" element={<TrackOrder />} />
         <Route path="/orders" element={<OrderHistory />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/profile/dashboard" element={<UserDashboard />} />
@@ -142,21 +145,23 @@ export default function App() {
     <ErrorBoundary>
       <AuthProvider>
         <SettingsProvider>
-          <ThemeManager />
-          <FaviconUpdater />
-          <CartProvider>
-            <WishlistProvider>
-              <CompareProvider>
-                <Router>
-                  <SplashScreen />
-                  <PushNotificationManager />
-                  <ScrollToTop />
-                  <Toaster position="top-center" richColors />
-                  <AnimatedRoutes />
-                </Router>
-              </CompareProvider>
-            </WishlistProvider>
-          </CartProvider>
+          <LanguageProvider>
+            <ThemeManager />
+            <FaviconUpdater />
+            <CartProvider>
+              <WishlistProvider>
+                <CompareProvider>
+                  <Router>
+                    <SplashScreen />
+                    <PushNotificationManager />
+                    <ScrollToTop />
+                    <Toaster position="top-center" richColors />
+                    <AnimatedRoutes />
+                  </Router>
+                </CompareProvider>
+              </WishlistProvider>
+            </CartProvider>
+          </LanguageProvider>
         </SettingsProvider>
       </AuthProvider>
     </ErrorBoundary>

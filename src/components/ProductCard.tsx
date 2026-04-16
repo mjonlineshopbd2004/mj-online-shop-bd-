@@ -6,17 +6,20 @@ import { formatPrice, calculateDiscount, cn, getProxyUrl, triggerHaptic } from '
 import { useCart } from '../contexts/CartContext';
 import { useWishlist } from '../contexts/WishlistContext';
 import { useCompare } from '../contexts/CompareContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 
 interface ProductCardProps {
   product: Product;
+  variant?: 'default' | 'compact';
 }
 
-const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
-  const { addItem } = useCart();
+const ProductCard: React.FC<ProductCardProps> = ({ product, variant = 'default' }) => {
+  const { addItem, toggleAllSelection } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
   const { addToCompare, isInCompare, removeFromCompare } = useCompare();
+  const { translateCategory } = useLanguage();
   const navigate = useNavigate();
   const discount = calculateDiscount(product.price, product.discountPrice);
 
@@ -28,6 +31,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
   const handleBuyNow = (e: React.MouseEvent) => {
     e.preventDefault();
+    toggleAllSelection(false);
     addItem(product);
     navigate('/checkout');
   };
@@ -50,6 +54,46 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       addToCompare(product);
     }
   };
+
+  if (variant === 'compact') {
+    return (
+      <Link
+        to={`/product/${product.id}`}
+        onClick={() => triggerHaptic('light')}
+        className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100 flex flex-col h-full"
+      >
+        <div className="relative aspect-square overflow-hidden bg-gray-50">
+          <img
+            src={getProxyUrl(product.images[0])}
+            alt={product.name}
+            className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
+            referrerPolicy="no-referrer"
+          />
+          {discount > 0 && (
+            <div className="absolute top-2 left-2 bg-orange-600 text-white text-[8px] font-black px-1.5 py-0.5 rounded-lg shadow-md">
+              -{discount}%
+            </div>
+          )}
+        </div>
+        <div className="p-2 flex flex-col flex-1">
+          <h3 className="text-gray-900 font-bold text-[10px] line-clamp-1 mb-1 group-hover:text-orange-600 transition-colors font-display tracking-tight">
+            {product.name}
+          </h3>
+          <div className="flex items-center justify-between mt-auto">
+            <span className="text-xs font-black text-orange-600 font-display">
+              ৳ {formatPrice(product.discountPrice || product.price).replace(/[^0-9.]/g, '')}
+            </span>
+            <button 
+              onClick={handleAddToCart}
+              className="p-1.5 bg-orange-50 text-orange-600 rounded-lg hover:bg-orange-600 hover:text-white transition-all"
+            >
+              <ShoppingCart className="h-3 w-3" />
+            </button>
+          </div>
+        </div>
+      </Link>
+    );
+  }
 
   return (
     <Link
@@ -119,7 +163,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
       <div className="p-3 flex flex-col flex-1">
         <p className="text-[8px] md:text-[9px] font-black text-primary uppercase tracking-wider mb-1 font-sans">
-          {product.category}
+          {translateCategory(product.category)}
         </p>
         <h3 className="text-gray-900 font-bold text-xs md:text-sm line-clamp-2 mb-2 group-hover:text-primary transition-colors font-display tracking-tight leading-tight min-h-[2.5rem]">
           {product.name}

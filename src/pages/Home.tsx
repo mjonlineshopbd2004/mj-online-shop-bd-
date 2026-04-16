@@ -4,17 +4,22 @@ import { db } from '../lib/firebase';
 import { Product } from '../types';
 import { DEMO_PRODUCTS, CATEGORIES } from '../constants';
 import { useSettings } from '../contexts/SettingsContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import { getProxyUrl } from '../lib/utils';
 import HeroSection from '../components/HeroSection';
 import ProductCard from '../components/ProductCard';
+import FlashSaleTimer from '../components/FlashSaleTimer';
+import RecentlyViewed from '../components/RecentlyViewed';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Star, Quote, Truck, ShieldCheck, RotateCcw, Headphones, ChevronLeft, ChevronRight, Layers } from 'lucide-react';
+import { ArrowRight, Star, Quote, Truck, ShieldCheck, RotateCcw, Headphones, ChevronLeft, ChevronRight, Layers, Zap } from 'lucide-react';
 import { motion } from 'motion/react';
 
 export default function Home() {
   const { settings } = useSettings();
+  const { t, translateCategory } = useLanguage();
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [trendingProducts, setTrendingProducts] = useState<Product[]>([]);
+  const [flashSaleProducts, setFlashSaleProducts] = useState<Product[]>([]);
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -86,6 +91,21 @@ export default function Home() {
         const trendingSnap = await getDocs(trendingQuery);
         const trending = trendingSnap.docs.map(doc => ({ ...doc.data(), id: doc.id } as Product));
 
+        // Flash Sale
+        if (settings.flashSale?.active && settings.flashSale.productIds?.length > 0) {
+          const flashQuery = query(productsRef, where('__name__', 'in', settings.flashSale.productIds.slice(0, 10)));
+          const flashSnap = await getDocs(flashQuery);
+          const flash = flashSnap.docs.map(doc => ({ ...doc.data(), id: doc.id } as Product));
+          
+          if (flash.length === 0) {
+            setFlashSaleProducts(DEMO_PRODUCTS.slice(0, 4));
+          } else {
+            setFlashSaleProducts(flash);
+          }
+        } else {
+          setFlashSaleProducts([]);
+        }
+
         // All Products
         const allQuery = query(productsRef, orderBy('createdAt', 'desc'), limit(12));
         const allSnap = await getDocs(allQuery);
@@ -128,6 +148,63 @@ export default function Home() {
     <div className="space-y-4 md:space-y-8">
       <HeroSection />
       
+      {/* Flash Sale Section */}
+      {settings.flashSale?.active && (
+        <section className="container-custom">
+          <div className="bg-orange-600 rounded-3xl p-4 md:p-6 relative overflow-hidden shadow-xl shadow-orange-200">
+            {/* Background Decoration */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl" />
+            
+            <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center text-white shadow-lg">
+                  <Zap className="h-5 w-5 fill-current" />
+                </div>
+                <div>
+                  <h2 className="text-lg md:text-xl font-black text-white font-display uppercase tracking-tight leading-none">
+                    {settings.flashSale.title}
+                  </h2>
+                  <p className="text-[10px] text-orange-100 font-bold uppercase tracking-widest mt-1">{t('limitedTimeOffer')}</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-4">
+                <FlashSaleTimer endTime={settings.flashSale.endTime} />
+                <Link 
+                  to="/products" 
+                  className="hidden md:flex items-center gap-2 bg-white text-orange-600 px-4 py-2 rounded-xl font-black text-xs uppercase tracking-widest shadow-lg hover:scale-105 transition-all"
+                >
+                  {t('viewAll')} <ArrowRight className="h-3 w-3" />
+                </Link>
+              </div>
+            </div>
+
+            {/* Flash Sale Products - Horizontal Scroll */}
+            {flashSaleProducts.length > 0 && (
+              <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2 px-1">
+                {flashSaleProducts.map(product => (
+                  <div key={product.id} className="flex-shrink-0 w-[140px] md:w-[180px]">
+                    <div className="bg-white/10 backdrop-blur-md p-1.5 rounded-2xl border border-white/20 group hover:bg-white/20 transition-all h-full">
+                      <ProductCard product={product} variant="compact" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Mobile View All Button */}
+            <div className="mt-4 md:hidden">
+              <Link 
+                to="/products" 
+                className="flex items-center justify-center gap-2 bg-white text-orange-600 w-full py-3 rounded-xl font-black text-xs uppercase tracking-widest shadow-lg"
+              >
+                {t('viewAll')} <ArrowRight className="h-3 w-3" />
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Features Bar */}
       <section className="hidden md:block bg-white border-y border-gray-100 shadow-sm">
         <div className="container-custom py-3 md:py-8">
@@ -137,8 +214,8 @@ export default function Home() {
                 <Truck className="h-3 w-3 md:h-6 md:w-6 text-primary" />
               </div>
               <div>
-                <h3 className="font-black text-gray-900 text-[7px] md:text-base uppercase tracking-tight whitespace-nowrap">Fast Delivery</h3>
-                <p className="text-[6px] md:text-sm text-gray-500 font-bold">All over BD</p>
+                <h3 className="font-black text-gray-900 text-[7px] md:text-base uppercase tracking-tight whitespace-nowrap">{t('fastDelivery')}</h3>
+                <p className="text-[6px] md:text-sm text-gray-500 font-bold">{t('allOverBD')}</p>
               </div>
             </div>
             <div className="flex-shrink-0 flex items-center space-x-1.5 md:space-x-4 bg-gray-50 p-1.5 md:p-3.5 rounded-lg border border-gray-200/60 min-w-[110px] md:min-w-0 shadow-sm">
@@ -146,7 +223,7 @@ export default function Home() {
                 <ShieldCheck className="h-3 w-3 md:h-6 md:w-6 text-primary" />
               </div>
               <div>
-                <h3 className="font-black text-gray-900 text-[7px] md:text-base uppercase tracking-tight whitespace-nowrap">Secure Pay</h3>
+                <h3 className="font-black text-gray-900 text-[7px] md:text-base uppercase tracking-tight whitespace-nowrap">{t('securePay')}</h3>
                 <p className="text-[6px] md:text-sm text-gray-500 font-bold">bKash, Nagad</p>
               </div>
             </div>
@@ -155,8 +232,8 @@ export default function Home() {
                 <RotateCcw className="h-3 w-3 md:h-6 md:w-6 text-primary" />
               </div>
               <div>
-                <h3 className="font-black text-gray-900 text-[7px] md:text-base uppercase tracking-tight whitespace-nowrap">Easy Returns</h3>
-                <p className="text-[6px] md:text-sm text-gray-500 font-bold">7-day policy</p>
+                <h3 className="font-black text-gray-900 text-[7px] md:text-base uppercase tracking-tight whitespace-nowrap">{t('easyReturns')}</h3>
+                <p className="text-[6px] md:text-sm text-gray-500 font-bold">{t('sevenDayPolicy')}</p>
               </div>
             </div>
             <div className="flex-shrink-0 flex items-center space-x-1.5 md:space-x-4 bg-gray-50 p-1.5 md:p-3.5 rounded-lg border border-gray-200/60 min-w-[110px] md:min-w-0 shadow-sm">
@@ -164,7 +241,7 @@ export default function Home() {
                 <Headphones className="h-3 w-3 md:h-6 md:w-6 text-primary" />
               </div>
               <div>
-                <h3 className="font-black text-gray-900 text-[7px] md:text-base uppercase tracking-tight whitespace-nowrap">24/7 Support</h3>
+                <h3 className="font-black text-gray-900 text-[7px] md:text-base uppercase tracking-tight whitespace-nowrap">{t('support247')}</h3>
                 <p className="text-[6px] md:text-sm text-gray-500 font-bold">WhatsApp</p>
               </div>
             </div>
@@ -179,10 +256,10 @@ export default function Home() {
             <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white shadow-lg">
               <Star className="h-4 w-4 fill-current" />
             </div>
-            <h2 className="text-xl font-black text-gray-900 tracking-tight font-display uppercase">Trending Products</h2>
+            <h2 className="text-xl font-black text-gray-900 tracking-tight font-display uppercase">{t('trendingProducts')}</h2>
           </div>
           <Link to="/products" className="bg-primary/5 text-primary px-4 py-2 rounded-full font-bold text-xs flex items-center gap-2 hover:bg-primary hover:text-white transition-all">
-            View More <ArrowRight className="h-4 w-4" />
+            {t('viewMore')} <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
         
@@ -211,10 +288,10 @@ export default function Home() {
             <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center text-primary">
               <Layers className="h-4 w-4" />
             </div>
-            <h2 className="text-xl font-black text-gray-900 tracking-tight font-display uppercase">Top Categories</h2>
+            <h2 className="text-xl font-black text-gray-900 tracking-tight font-display uppercase">{t('topCategories')}</h2>
           </div>
           <Link to="/categories" className="text-primary font-bold text-xs hover:underline">
-            See All
+            {t('seeAll')}
           </Link>
         </div>
         
@@ -264,7 +341,7 @@ export default function Home() {
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover/cat:opacity-100 transition-opacity" />
                   </div>
-                  <h3 className="text-[10px] md:text-sm font-black text-gray-900 text-center tracking-tight leading-tight max-w-[80px] md:max-w-[112px] truncate uppercase">{name}</h3>
+                  <h3 className="text-[10px] md:text-sm font-black text-gray-900 text-center tracking-tight leading-tight max-w-[80px] md:max-w-[112px] truncate uppercase">{translateCategory(name)}</h3>
                 </Link>
               );
             })}
@@ -276,11 +353,11 @@ export default function Home() {
       <section className="container-custom">
         <div className="flex justify-between items-end mb-12">
           <div>
-            <h2 className="section-title">Our Collection</h2>
+            <h2 className="section-title">{t('shop')}</h2>
             <p className="section-subtitle">Explore all our products</p>
           </div>
           <Link to="/products" className="text-orange-600 font-bold flex items-center hover:underline">
-            View All <ArrowRight className="ml-2 h-5 w-5" />
+            {t('viewAll')} <ArrowRight className="ml-2 h-5 w-5" />
           </Link>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-2 md:gap-3">
@@ -301,11 +378,11 @@ export default function Home() {
         <div className="container-custom">
           <div className="flex justify-between items-end mb-12">
             <div>
-              <h2 className="section-title">Featured Products</h2>
+              <h2 className="section-title">{t('featuredProducts')}</h2>
               <p className="section-subtitle">Handpicked items for you</p>
             </div>
             <Link to="/products" className="text-orange-600 font-bold flex items-center hover:underline">
-              View All <ArrowRight className="ml-2 h-5 w-5" />
+              {t('viewAll')} <ArrowRight className="ml-2 h-5 w-5" />
             </Link>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-2 md:gap-3">
@@ -321,6 +398,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Recently Viewed */}
+      <RecentlyViewed />
 
       {/* Reviews */}
       <section className="bg-orange-600 py-12 md:py-16 relative overflow-hidden">

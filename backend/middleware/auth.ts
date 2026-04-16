@@ -102,6 +102,43 @@ export const authenticate = async (req: AuthRequest, res: Response, next: NextFu
   }
 };
 
+export const optionalAuthenticate = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  const token = req.headers.authorization?.split(' ')[1];
+
+  if (!token) {
+    return next();
+  }
+
+  try {
+    const auth = getAuthInstance();
+    const db = getDb();
+    const decodedToken = await auth.verifyIdToken(token);
+    
+    let role = 'customer';
+    if (decodedToken.email === 'mjonlineshopbd@gmail.com') {
+      role = 'admin';
+    } else {
+      try {
+        const userDoc = await db.collection('users').doc(decodedToken.uid).get();
+        if (userDoc.exists) {
+          role = userDoc.data()?.role || 'customer';
+        }
+      } catch (e) {}
+    }
+    
+    req.user = {
+      uid: decodedToken.uid,
+      email: decodedToken.email || '',
+      role: role
+    };
+    
+    next();
+  } catch (error) {
+    // If token is invalid, we still proceed but without req.user
+    next();
+  }
+};
+
 export const authorize = (roles: string[]) => {
   return (req: AuthRequest, res: Response, next: NextFunction) => {
     if (!req.user || !roles.includes(req.user.role)) {

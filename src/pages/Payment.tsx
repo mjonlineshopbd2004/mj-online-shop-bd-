@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useSettings } from '../contexts/SettingsContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import { formatPrice, getProxyUrl } from '../lib/utils';
 import { PAYMENT_METHODS } from '../constants';
 import { collection, addDoc } from 'firebase/firestore';
@@ -70,6 +71,7 @@ export default function Payment() {
   const { clearCart } = useCart();
   const { user } = useAuth();
   const { settings } = useSettings();
+  const { t } = useLanguage();
   
   const checkoutData = location.state;
 
@@ -144,7 +146,7 @@ export default function Payment() {
     try {
       let screenshotUrl = '';
       if (screenshotFile) {
-        const idToken = await user.getIdToken();
+        const idToken = user ? await user.getIdToken() : '';
         const uploadedUrl = await uploadFile(screenshotFile, idToken);
         if (!uploadedUrl) {
           setIsSubmitting(false);
@@ -154,9 +156,9 @@ export default function Payment() {
       }
 
       const orderData = {
-        userId: user.uid,
+        userId: user?.uid || '',
         customerName: formData.name,
-        customerEmail: user.email,
+        customerEmail: user?.email || formData.email,
         phone: formData.phone,
         emergencyNumber: formData.emergencyNumber,
         district: formData.district,
@@ -186,7 +188,7 @@ export default function Payment() {
       };
 
       try {
-        const token = await auth.currentUser?.getIdToken();
+        const token = user ? await user.getIdToken() : '';
         const response = await fetch('/api/orders', {
           method: 'POST',
           credentials: 'same-origin',
@@ -272,7 +274,7 @@ export default function Payment() {
         <div className="flex-1 bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col">
           <div className="p-8 md:p-10 flex-1">
             <div className="flex justify-between items-center mb-10">
-              <h1 className="text-2xl font-bold text-[#4a154b]">Select Payment Method</h1>
+              <h1 className="text-2xl font-bold text-[#4a154b]">{t('selectPaymentMethod')}</h1>
             </div>
 
             {/* Tabs */}
@@ -285,7 +287,7 @@ export default function Payment() {
                 )}
               >
                 <Phone className="h-4 w-4" />
-                Mobile Banking
+                {t('mobileBanking')}
               </button>
               <button 
                 onClick={() => setActiveTab('card')}
@@ -295,7 +297,7 @@ export default function Payment() {
                 )}
               >
                 <CreditCard className="h-4 w-4" />
-                Debit / Credit Card
+                {t('cardPayment')}
               </button>
             </div>
 
@@ -304,7 +306,7 @@ export default function Payment() {
               <div className="mb-10">
                 <div className="flex items-center gap-2 mb-6 text-[#6d2077]">
                   <Phone className="h-5 w-5" />
-                  <h2 className="font-bold uppercase tracking-wider text-sm">Mobile Banking</h2>
+                  <h2 className="font-bold uppercase tracking-wider text-sm">{t('mobileBanking')}</h2>
                 </div>
                 <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
                   {mobileMethods.map((method) => (
@@ -339,7 +341,7 @@ export default function Payment() {
               <div className="mb-10">
                 <div className="flex items-center gap-2 mb-6 text-[#6d2077]">
                   <CreditCard className="h-5 w-5" />
-                  <h2 className="font-bold uppercase tracking-wider text-sm">Debit / Credit Card</h2>
+                  <h2 className="font-bold uppercase tracking-wider text-sm">{t('cardPayment')}</h2>
                 </div>
                 <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3 mb-6">
                   {cardMethods.map((method) => (
@@ -531,7 +533,7 @@ export default function Payment() {
                   <div className="flex-1 space-y-4">
                     <h3 className="font-bold text-[#6d2077] flex items-center gap-2">
                       <CheckCircle2 className="h-5 w-5" />
-                      Payment Instructions
+                      {t('paymentInstructions')}
                     </h3>
                     {(paymentMethod === 'bank' || specificBanks.some(b => b.id === paymentMethod)) ? (
                       <div className="text-sm text-gray-600 space-y-1 font-bold">
@@ -573,7 +575,7 @@ export default function Payment() {
 
                           return (
                             <>
-                              Send <span className="text-[#6d2077]">{formatPrice(payableAmount)}</span> to <span className="text-black">{number}</span> via {mobile?.name || paymentMethod}.
+                              {t('sendTo')} <span className="text-[#6d2077]">{formatPrice(payableAmount)}</span> to <span className="text-black">{number}</span> {t('via')} {mobile?.name || paymentMethod}.
                             </>
                           );
                         })()}
@@ -581,14 +583,14 @@ export default function Payment() {
                     )}
                     <input
                       type="text"
-                      placeholder="Transaction ID"
+                      placeholder={t('transactionId')}
                       className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 outline-none focus:border-[#6d2077] transition-all text-sm font-bold"
                       value={transactionId}
                       onChange={(e) => setTransactionId(e.target.value)}
                     />
                   </div>
                   <div className="flex-1">
-                    <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Upload Screenshot</label>
+                    <label className="block text-xs font-bold text-gray-500 uppercase mb-2">{t('uploadScreenshot')}</label>
                     <div className="relative h-32">
                       <input type="file" accept="image/*" onChange={handleScreenshotChange} className="hidden" id="manual-upload" />
                       <label 
@@ -603,7 +605,7 @@ export default function Payment() {
                         ) : (
                           <>
                             <Upload className="h-6 w-6 text-gray-400 mb-1" />
-                            <span className="text-[10px] font-bold text-gray-500">Click to upload</span>
+                            <span className="text-[10px] font-bold text-gray-500">{t('clickToUpload')}</span>
                           </>
                         )}
                       </label>
@@ -619,15 +621,15 @@ export default function Payment() {
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-1 text-gray-400">
                   <div className="bg-[#4caf50] text-white p-1 rounded-full"><CheckCircle2 className="h-3 w-3" /></div>
-                  <span className="text-[10px] font-bold uppercase tracking-tighter">SSL Secured</span>
+                  <span className="text-[10px] font-bold uppercase tracking-tighter">{t('securePaymentBadge')}</span>
                 </div>
                 <div className="flex items-center gap-1 text-gray-400">
                   <div className="bg-[#003d71] text-white p-1 rounded-full"><CreditCard className="h-3 w-3" /></div>
-                  <span className="text-[10px] font-bold uppercase tracking-tighter">PCI DSS Compliant</span>
+                  <span className="text-[10px] font-bold uppercase tracking-tighter">{t('pciBadge')}</span>
                 </div>
               </div>
               <div className="flex items-center gap-2 grayscale opacity-50">
-                <span className="text-[10px] font-bold text-gray-400">Powered by:</span>
+                <span className="text-[10px] font-bold text-gray-400">{t('poweredBy')}:</span>
                 <div className="bg-[#00a19a] text-white px-2 py-0.5 rounded text-[8px] font-bold italic">Unlocklive</div>
               </div>
             </div>
@@ -638,20 +640,20 @@ export default function Payment() {
         <div className="lg:w-80 flex flex-col gap-4">
           <div className="bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col">
             <div className="bg-[#f8f9fa] p-6 border-b border-gray-100">
-              <h2 className="text-xl font-bold text-[#4a154b]">Order Summary</h2>
+              <h2 className="text-xl font-bold text-[#4a154b]">{t('orderSummary')}</h2>
             </div>
             <div className="p-6 space-y-6 flex-1">
               <div className="space-y-4">
                 <div className="flex justify-between text-xs">
-                  <span className="text-gray-500 font-bold">Invoice to:</span>
+                  <span className="text-gray-500 font-bold">{t('invoiceTo')}:</span>
                   <span className="text-gray-900 font-black truncate max-w-[120px]">{formData.name}</span>
                 </div>
                 <div className="flex justify-between text-xs">
-                  <span className="text-gray-500 font-bold">Order Id:</span>
+                  <span className="text-gray-500 font-bold">{t('orderId')}:</span>
                   <span className="text-gray-900 font-black">#{nextOrderId || '...'}</span>
                 </div>
                 <div className="flex justify-between text-xs pt-4 border-t border-gray-100">
-                  <span className="text-gray-500 font-bold">Invoice Amount:</span>
+                  <span className="text-gray-500 font-bold">{t('invoiceAmount')}:</span>
                   <span className="text-lg font-black text-[#4a154b]">{formatPrice(payableAmount)}</span>
                 </div>
               </div>
@@ -665,7 +667,7 @@ export default function Payment() {
                   <Loader2 className="h-5 w-5 animate-spin" />
                 ) : (
                   <>
-                    <span>Pay Now</span>
+                    <span>{t('payNow')}</span>
                     <ArrowRight className="h-5 w-5" />
                   </>
                 )}
@@ -688,7 +690,7 @@ export default function Payment() {
             className="text-white/60 hover:text-white text-xs font-bold flex items-center justify-center gap-2 transition-colors"
           >
             <ArrowLeft className="h-3 w-3" />
-            Back to Shipping Details
+            {t('backToShipping')}
           </button>
         </div>
 

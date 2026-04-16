@@ -8,16 +8,21 @@ import { formatPrice, calculateDiscount, cn, getProxyUrl } from '../lib/utils';
 import { useCart } from '../contexts/CartContext';
 import { useWishlist } from '../contexts/WishlistContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useRecentlyViewed } from '../hooks/useRecentlyViewed';
+import { useLanguage } from '../contexts/LanguageContext';
 import { motion, AnimatePresence } from 'motion/react';
 import { Star, ShoppingCart, ShoppingBag, Heart, Truck, ShieldCheck, RefreshCw, ChevronRight, Check, ChevronLeft, Plus, Minus, MessageSquare, Send, Store, Facebook, MessageCircle, Link, Share2 } from 'lucide-react';
 import { toast } from 'sonner';
 import ProductCard from '../components/ProductCard';
+import RecentlyViewed from '../components/RecentlyViewed';
 
 export default function ProductDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { addItem } = useCart();
+  const { addItem, toggleAllSelection } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
+  const { addViewedProduct } = useRecentlyViewed();
+  const { t } = useLanguage();
   
   const [product, setProduct] = useState<Product | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -91,6 +96,12 @@ export default function ProductDetails() {
     fetchData();
     window.scrollTo(0, 0);
   }, [id]);
+
+  useEffect(() => {
+    if (product) {
+      addViewedProduct(product.id);
+    }
+  }, [product, addViewedProduct]);
 
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
   const [reviewForm, setReviewForm] = useState({ rating: 5, comment: '' });
@@ -248,6 +259,8 @@ export default function ProductDetails() {
 
   const handleBuyNow = () => {
     const q = typeof quantity === 'string' ? (parseInt(quantity) || 0) : quantity;
+    // Deselect all other items so only this one is in checkout
+    toggleAllSelection(false);
     addItem(product, q, selectedSize, selectedColor);
     navigate('/checkout');
   };
@@ -401,13 +414,13 @@ export default function ProductDetails() {
                 <span className="text-sm font-bold text-yellow-700">{product.rating}</span>
               </div>
               <span className="text-gray-400 font-bold">|</span>
-              <span className="text-gray-500 font-bold">{product.reviewsCount} Customer Reviews</span>
+              <span className="text-gray-500 font-bold">{product.reviewsCount} {t('customerReviews')}</span>
               <span className="text-gray-400 font-bold">|</span>
               <span className={cn(
                 "font-bold",
                 product.stock > 0 ? "text-green-600" : "text-red-600"
               )}>
-                {product.stock > 0 ? `In Stock (${product.stock})` : 'Out of Stock'}
+                {product.stock > 0 ? `${t('inStock')} (${product.stock})` : t('outOfStock')}
               </span>
             </div>
           </div>
@@ -428,8 +441,8 @@ export default function ProductDetails() {
             {((product.colors && product.colors.length > 0) || (product.colorVariants && product.colorVariants.length > 0)) && (
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
-                  <h3 className="text-base font-medium text-gray-500">Color Family</h3>
-                  <span className="text-base font-bold text-gray-900">{selectedColor || 'Select Color'}</span>
+                  <h3 className="text-base font-medium text-gray-500">{t('colorFamily')}</h3>
+                  <span className="text-base font-bold text-gray-900">{selectedColor || t('selectColor')}</span>
                 </div>
                 <div className="flex flex-wrap gap-3">
                   {/* Image-based color variants (Prioritize these) */}
@@ -503,9 +516,9 @@ export default function ProductDetails() {
             {product.sizes && product.sizes.length > 0 && (
               <div>
                 <div className="flex items-center gap-2 mb-4">
-                  <h3 className="text-sm font-bold text-gray-900 uppercase tracking-widest">Size</h3>
+                  <h3 className="text-sm font-bold text-gray-900 uppercase tracking-widest">{t('size')}</h3>
                   <span className="text-sm font-bold text-gray-400">:</span>
-                  <span className="text-sm font-bold text-gray-900">{selectedSize || 'Select Size'}</span>
+                  <span className="text-sm font-bold text-gray-900">{selectedSize || t('selectSize')}</span>
                 </div>
                 <div className="flex flex-wrap gap-3">
                   {product.sizes.map(size => (
@@ -528,7 +541,7 @@ export default function ProductDetails() {
 
             {/* Quantity */}
             <div>
-              <h3 className="text-sm font-bold text-gray-900 uppercase tracking-widest mb-4">Quantity</h3>
+              <h3 className="text-sm font-bold text-gray-900 uppercase tracking-widest mb-4">{t('quantity')}</h3>
               <div className="flex items-center space-x-4">
                 <div className="flex items-center bg-gray-50 rounded-2xl p-1 border border-gray-100">
                   <button
@@ -589,7 +602,7 @@ export default function ProductDetails() {
                 )}
               >
                 <Heart className={cn("h-5 w-5", isInWishlist(product.id) && "fill-current")} />
-                <span className="font-bold text-sm">Wishlist</span>
+                <span className="font-bold text-sm">{t('wishlist')}</span>
               </button>
               <button
                 onClick={handleAddToCart}
@@ -597,7 +610,7 @@ export default function ProductDetails() {
                 className="bg-white text-orange-600 border-2 border-orange-600 py-4 rounded-2xl font-bold text-sm hover:bg-orange-50 transition-all flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <ShoppingCart className="h-5 w-5" />
-                <span>Cart</span>
+                <span>{t('myCart')}</span>
               </button>
             </div>
             <button
@@ -606,7 +619,7 @@ export default function ProductDetails() {
               className="bg-orange-600 text-white py-4 rounded-2xl font-bold text-sm shadow-lg shadow-orange-100 hover:bg-orange-700 transition-all flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <ShoppingBag className="h-5 w-5" />
-              <span>Buy Now</span>
+              <span>{t('buyNow')}</span>
             </button>
           </div>
 
@@ -614,7 +627,7 @@ export default function ProductDetails() {
           <div className="mb-10 p-6 bg-gray-50 rounded-[2rem] border border-gray-100">
             <div className="flex items-center gap-2 mb-4">
               <Share2 className="h-4 w-4 text-gray-400" />
-              <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest">Share this Product</h3>
+              <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest">{t('shareProduct')}</h3>
             </div>
             <div className="flex flex-wrap gap-3">
               <button
@@ -641,18 +654,18 @@ export default function ProductDetails() {
               <button
                 onClick={() => {
                   navigator.clipboard.writeText(window.location.href);
-                  toast.success('Link copied to clipboard!');
+                  toast.success(t('language') === 'bn' ? 'লিঙ্ক কপি করা হয়েছে!' : 'Link copied to clipboard!');
                 }}
                 className="flex items-center gap-2 px-5 py-2.5 bg-white text-gray-600 border border-gray-200 rounded-xl font-bold text-xs hover:bg-gray-50 transition-all shadow-sm active:scale-95"
               >
                 <Link className="h-4 w-4" />
-                Copy Link
+                {t('copyLink')}
               </button>
             </div>
           </div>
 
           <div className="mb-10 border-b border-gray-100 pb-10">
-            <h3 className="text-sm font-bold text-gray-900 uppercase tracking-widest mb-4">Description</h3>
+            <h3 className="text-sm font-bold text-gray-900 uppercase tracking-widest mb-4">{t('description')}</h3>
             <p className="text-gray-600 text-base leading-relaxed">
               {product.description}
             </p>
@@ -663,22 +676,22 @@ export default function ProductDetails() {
             <div className="flex items-center space-x-3">
               <div className="bg-orange-50 p-3 rounded-2xl"><Truck className="h-6 w-6 text-orange-600" /></div>
               <div>
-                <p className="text-sm font-bold text-gray-900">Fast Delivery</p>
-                <p className="text-xs text-gray-500">Across Bangladesh</p>
+                <p className="text-sm font-bold text-gray-900">{t('fastDelivery')}</p>
+                <p className="text-xs text-gray-500">{t('acrossBangladesh')}</p>
               </div>
             </div>
             <div className="flex items-center space-x-3">
               <div className="bg-orange-50 p-3 rounded-2xl"><ShieldCheck className="h-6 w-6 text-orange-600" /></div>
               <div>
-                <p className="text-sm font-bold text-gray-900">Secure Payment</p>
-                <p className="text-xs text-gray-500">100% Protected</p>
+                <p className="text-sm font-bold text-gray-900">{t('securePayment')}</p>
+                <p className="text-xs text-gray-500">{t('protected100')}</p>
               </div>
             </div>
             <div className="flex items-center space-x-3">
               <div className="bg-orange-50 p-3 rounded-2xl"><RefreshCw className="h-6 w-6 text-orange-600" /></div>
               <div>
-                <p className="text-sm font-bold text-gray-900">Easy Returns</p>
-                <p className="text-xs text-gray-500">7-Day Return Policy</p>
+                <p className="text-sm font-bold text-gray-900">{t('easyReturns')}</p>
+                <p className="text-xs text-gray-500">{t('returnPolicy7Day')}</p>
               </div>
             </div>
           </div>
@@ -689,18 +702,18 @@ export default function ProductDetails() {
       <section className="pt-24 border-t border-gray-100 mb-24">
         <div className="flex flex-col lg:flex-row gap-12">
           <div className="lg:w-1/3">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4 tracking-tight">Customer Reviews</h2>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4 tracking-tight">{t('customerReviews')}</h2>
             <div className="flex items-center space-x-4 mb-8">
               <div className="flex items-center bg-yellow-50 px-4 py-2 rounded-2xl">
                 <Star className="h-6 w-6 text-yellow-500 fill-current mr-2" />
                 <span className="text-2xl font-bold text-yellow-700">{product.rating}</span>
               </div>
-              <p className="text-gray-500 font-bold">Based on {reviews.length} reviews</p>
+              <p className="text-gray-500 font-bold">{t('basedOn')} {reviews.length} {t('reviews')}</p>
             </div>
 
             {/* Review Form */}
             <div className="bg-gray-50 p-8 rounded-[2rem] border border-gray-100">
-              <h3 className="text-xl font-bold text-gray-900 mb-6 tracking-tight">Write a Review</h3>
+              <h3 className="text-xl font-bold text-gray-900 mb-6 tracking-tight">{t('writeReview')}</h3>
               
               {!authUser ? (
                 <div className="text-center py-6">
@@ -720,7 +733,7 @@ export default function ProductDetails() {
               ) : canReview ? (
                 <form onSubmit={handleReviewSubmit} className="space-y-6">
                   <div>
-                    <label className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-3 block">Rating</label>
+                    <label className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-3 block">{t('rating')}</label>
                     <div className="flex space-x-2">
                       {[1, 2, 3, 4, 5].map((star) => (
                         <button
@@ -740,7 +753,7 @@ export default function ProductDetails() {
                     </div>
                   </div>
                   <div>
-                    <label className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-3 block">Your Comment</label>
+                    <label className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-3 block">{t('yourComment')}</label>
                     <textarea
                       rows={4}
                       className="w-full bg-white border-2 border-transparent focus:border-orange-500 rounded-2xl px-6 py-4 outline-none transition-all font-bold"
@@ -758,7 +771,7 @@ export default function ProductDetails() {
                       <div className="h-6 w-6 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
                     ) : (
                       <>
-                        <span>Submit Review</span>
+                        <span>{t('submitReview')}</span>
                         <Send className="h-5 w-5" />
                       </>
                     )}
@@ -786,7 +799,7 @@ export default function ProductDetails() {
               {reviews.length === 0 ? (
                 <div className="text-center py-12 bg-gray-50 rounded-[2rem] border-2 border-dashed border-gray-200">
                   <MessageSquare className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-500 font-bold">No reviews yet. Be the first to review this product!</p>
+                  <p className="text-gray-500 font-bold">{t('noReviewsYet')}</p>
                 </div>
               ) : (
                 reviews.map((review) => (
@@ -820,7 +833,7 @@ export default function ProductDetails() {
         <section className="pt-24 border-t border-gray-100">
           <div className="flex justify-between items-end mb-12">
             <div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-2 tracking-tight">Similar Products</h2>
+              <h2 className="text-3xl font-bold text-gray-900 mb-2 tracking-tight">{t('relatedProducts')}</h2>
               <p className="text-gray-500 font-medium">You might also like these suggestions</p>
             </div>
           </div>
@@ -831,6 +844,9 @@ export default function ProductDetails() {
           </div>
         </section>
       )}
+
+      {/* Recently Viewed */}
+      <RecentlyViewed />
     </div>
   );
 }

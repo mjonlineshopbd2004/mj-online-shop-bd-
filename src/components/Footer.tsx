@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Facebook, Instagram, Twitter, Youtube, Phone, Mail, MapPin, Download, Headphones } from 'lucide-react';
 import { useSettings } from '../contexts/SettingsContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import { cn, getProxyUrl, triggerHaptic } from '../lib/utils';
 import { toast } from 'sonner';
 
 export default function Footer() {
   const { settings } = useSettings();
+  const { t } = useLanguage();
   const [logoError, setLogoError] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const navigate = useNavigate();
@@ -126,9 +128,10 @@ export default function Footer() {
 
           {/* Quick Links */}
           <div>
-            <h3 className="text-white font-bold text-lg mb-6 font-display uppercase tracking-wider">Quick Links</h3>
+            <h3 className="text-white font-bold text-lg mb-6 font-display uppercase tracking-wider">{t('quickLinks')}</h3>
             <ul className="space-y-4 font-sans">
-              <li><Link to="/products" onClick={() => triggerHaptic('light')} className="hover:text-primary transition-colors">Shop All</Link></li>
+              <li><Link to="/products" onClick={() => triggerHaptic('light')} className="hover:text-primary transition-colors">{t('shop')}</Link></li>
+              <li><Link to="/track-order" onClick={() => triggerHaptic('light')} className="hover:text-primary transition-colors">{t('trackOrder')}</Link></li>
               {(settings.categories || []).slice(0, 4).map(category => {
                 const name = typeof category === 'string' ? category : category.name;
                 return (
@@ -144,21 +147,21 @@ export default function Footer() {
 
           {/* Information */}
           <div>
-            <h3 className="text-white font-bold text-lg mb-6 font-display uppercase tracking-wider">Information</h3>
+            <h3 className="text-white font-bold text-lg mb-6 font-display uppercase tracking-wider">{t('customerService')}</h3>
             <ul className="space-y-4 font-sans">
-              <li><Link to="/about" onClick={() => triggerHaptic('light')} className="hover:text-primary transition-colors">About Us</Link></li>
-              <li><Link to="/contact" onClick={() => triggerHaptic('light')} className="hover:text-primary transition-colors">Contact Us</Link></li>
-              <li><Link to="/privacy" onClick={() => triggerHaptic('light')} className="hover:text-primary transition-colors">Privacy Policy</Link></li>
+              <li><Link to="/about" onClick={() => triggerHaptic('light')} className="hover:text-primary transition-colors">{t('about')}</Link></li>
+              <li><Link to="/contact" onClick={() => triggerHaptic('light')} className="hover:text-primary transition-colors">{t('contactUs')}</Link></li>
+              <li><Link to="/privacy" onClick={() => triggerHaptic('light')} className="hover:text-primary transition-colors">{t('privacyPolicy')}</Link></li>
               <li><Link to="/returns" onClick={() => triggerHaptic('light')} className="hover:text-primary transition-colors">Return Policy</Link></li>
               <li><Link to="/refund" onClick={() => triggerHaptic('light')} className="hover:text-primary transition-colors">Refund Policy</Link></li>
               <li><Link to="/after-sales" onClick={() => triggerHaptic('light')} className="hover:text-primary transition-colors">After Sales Service</Link></li>
-              <li><Link to="/terms" onClick={() => triggerHaptic('light')} className="hover:text-primary transition-colors">Terms & Conditions</Link></li>
+              <li><Link to="/terms" onClick={() => triggerHaptic('light')} className="hover:text-primary transition-colors">{t('termsConditions')}</Link></li>
             </ul>
           </div>
 
           {/* Contact */}
           <div>
-            <h3 className="text-white font-bold text-lg mb-6 font-display uppercase tracking-wider">Contact Us</h3>
+            <h3 className="text-white font-bold text-lg mb-6 font-display uppercase tracking-wider">{t('contactUs')}</h3>
             <ul className="space-y-4 font-sans">
               <li className="flex items-start space-x-3">
                 <MapPin className="h-5 w-5 text-primary mt-1" />

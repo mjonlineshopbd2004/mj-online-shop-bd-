@@ -22,6 +22,7 @@ export const createOrder = async (req: any, res: Response) => {
   const { 
     items, 
     customerName, 
+    customerEmail,
     phone, 
     emergencyNumber,
     district,
@@ -49,6 +50,36 @@ export const createOrder = async (req: any, res: Response) => {
   try {
     const db = getDb();
     let orderId = '';
+    let userId = req.user?.uid;
+    let email = req.user?.email || customerEmail;
+
+    // Auto-registration logic
+    if (!userId && email) {
+      // Check if user already exists by email
+      const usersSnapshot = await db.collection('users').where('email', '==', email).limit(1).get();
+      
+      if (!usersSnapshot.empty) {
+        userId = usersSnapshot.docs[0].id;
+      } else {
+        // Create a new user profile
+        const newUserRef = db.collection('users').doc();
+        userId = newUserRef.id;
+        await newUserRef.set({
+          uid: userId,
+          email: email,
+          displayName: customerName,
+          phone: phone,
+          role: 'customer',
+          createdAt: new Date().toISOString(),
+          address: address,
+          district: district,
+          city: city
+        });
+      }
+    } else if (!userId) {
+      // If no email provided, use a random ID (though email is required in our form)
+      userId = 'guest_' + Math.random().toString(36).substring(7);
+    }
     
     // Generate sequential order ID starting from 2026
     await db.runTransaction(async (transaction) => {
@@ -66,9 +97,9 @@ export const createOrder = async (req: any, res: Response) => {
 
     const newOrder: Order = {
       id: orderId,
-      userId: req.user.uid,
+      userId: userId,
       customerName,
-      customerEmail: req.user.email,
+      customerEmail: email || '',
       phone,
       emergencyNumber: emergencyNumber || '',
       district,

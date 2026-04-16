@@ -42,7 +42,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           item.id === product.id && 
           item.selectedSize === size && 
           item.selectedColor === color
-            ? { ...item, quantity: item.quantity + quantity }
+            ? { ...item, quantity: item.quantity + quantity, selected: true }
             : item
         );
       }

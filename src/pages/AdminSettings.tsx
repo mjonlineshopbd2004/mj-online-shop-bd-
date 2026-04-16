@@ -25,6 +25,8 @@ import {
   RotateCcw,
   Share2,
   Gift,
+  Zap,
+  Clock,
   ExternalLink,
   ShieldCheck
 } from 'lucide-react';
@@ -34,18 +36,32 @@ import { uploadFile } from '../lib/upload';
 import { useAuth } from '../contexts/AuthContext';
 import { collection, getDocs, deleteDoc, doc, writeBatch } from 'firebase/firestore';
 import { db } from '../lib/firebase';
+import { Product } from '../types';
 
 export default function AdminSettings() {
   const { settings, updateSettings, loading } = useSettings();
   const { user } = useAuth();
   const [formData, setFormData] = useState(settings);
   const [isSaving, setIsSaving] = useState(false);
+  const [products, setProducts] = useState<Product[]>([]);
   const [clearDataConfirm, setClearDataConfirm] = useState('');
   const [resetSettingsConfirm, setResetSettingsConfirm] = useState('');
 
   useEffect(() => {
     setFormData(settings);
   }, [settings]);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const snap = await getDocs(collection(db, 'products'));
+        setProducts(snap.docs.map(doc => ({ ...doc.data(), id: doc.id } as Product)));
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      }
+    };
+    fetchProducts();
+  }, []);
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -255,6 +271,7 @@ export default function AdminSettings() {
             { id: 'ai-scraper', label: 'AI Scraper', icon: Globe },
             { id: 'payments', label: 'Payments', icon: CreditCard },
             { id: 'offer-popup', label: 'Offer Popup', icon: Gift },
+            { id: 'flash-sale', label: 'Flash Sale', icon: Zap },
             { id: 'banners', label: 'Banners', icon: ImageIcon },
             { id: 'delivery', label: 'Delivery', icon: Truck },
             { id: 'social', label: 'Social', icon: Share2 },
@@ -1151,6 +1168,122 @@ export default function AdminSettings() {
               onClick={handleSave}
               disabled={isSaving}
               className="flex items-center px-6 py-3 bg-purple-600 text-white rounded-xl font-black text-base shadow-lg shadow-purple-600/20 hover:bg-purple-700 transition-all disabled:opacity-50 active:scale-95"
+            >
+              {isSaving ? (
+                <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+              ) : (
+                <Save className="h-4 w-4 mr-2" />
+              )}
+              Save Changes
+            </button>
+          </div>
+        </section>
+
+        {/* Flash Sale Settings */}
+        <section id="flash-sale" className="bg-orange-500/5 rounded-[32px] p-8 border border-orange-500/10 shadow-2xl space-y-8">
+          <div className="flex items-center space-x-4 pb-6 border-b border-orange-500/10">
+            <div className="p-3 bg-orange-500/10 rounded-2xl">
+              <Zap className="h-7 w-7 text-orange-500" />
+            </div>
+            <h2 className="text-xl font-black uppercase tracking-widest text-orange-500">Flash Sale Settings</h2>
+          </div>
+
+          <div className="bg-[#1a1a1a] p-8 rounded-[28px] border border-white/10">
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <h3 className="font-black text-white text-lg">Enable Flash Sale</h3>
+                <p className="text-xs text-gray-500 font-black uppercase tracking-wider mt-1">Show a countdown timer and selected products on home page</p>
+              </div>
+              <button
+                onClick={() => setFormData({ 
+                  ...formData, 
+                  flashSale: { ...formData.flashSale, active: !formData.flashSale.active } 
+                })}
+                className={cn(
+                  "w-16 h-8 rounded-full transition-all relative",
+                  formData.flashSale.active ? "bg-orange-500" : "bg-gray-800"
+                )}
+              >
+                <div className={cn(
+                  "absolute top-1 w-6 h-6 bg-white rounded-full transition-all shadow-md",
+                  formData.flashSale.active ? "right-1" : "left-1"
+                )} />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-6">
+                <div className="space-y-3">
+                  <label className="text-xs font-black text-gray-400 uppercase tracking-[0.2em] ml-1">Sale Title</label>
+                  <input
+                    type="text"
+                    className="w-full bg-[#111111] border border-white/10 focus:border-orange-500 rounded-2xl px-6 py-4 outline-none transition-all font-bold text-base text-white"
+                    placeholder="Eid Flash Sale"
+                    value={formData.flashSale.title}
+                    onChange={(e) => setFormData({ 
+                      ...formData, 
+                      flashSale: { ...formData.flashSale, title: e.target.value } 
+                    })}
+                  />
+                </div>
+                <div className="space-y-3">
+                  <label className="text-xs font-black text-gray-400 uppercase tracking-[0.2em] ml-1">End Time</label>
+                  <div className="relative">
+                    <input
+                      type="datetime-local"
+                      className="w-full bg-[#111111] border border-white/10 focus:border-orange-500 rounded-2xl px-6 py-4 pl-14 outline-none transition-all font-bold text-base text-white"
+                      value={formData.flashSale.endTime.slice(0, 16)}
+                      onChange={(e) => setFormData({ 
+                        ...formData, 
+                        flashSale: { ...formData.flashSale, endTime: new Date(e.target.value).toISOString() } 
+                      })}
+                    />
+                    <Clock className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-600" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <label className="text-xs font-black text-gray-400 uppercase tracking-[0.2em] ml-1">Select Products (Max 10)</label>
+                <div className="bg-[#111111] rounded-2xl border border-white/10 p-4 h-[300px] overflow-y-auto space-y-2 custom-scrollbar">
+                  {products.map(product => (
+                    <label key={product.id} className="flex items-center gap-3 p-3 bg-white/5 rounded-xl cursor-pointer hover:bg-white/10 transition-all">
+                      <input
+                        type="checkbox"
+                        className="w-5 h-5 rounded-lg border-white/10 text-orange-600 focus:ring-orange-500 bg-gray-900"
+                        checked={formData.flashSale.productIds.includes(product.id)}
+                        onChange={(e) => {
+                          const productIds = e.target.checked
+                            ? [...formData.flashSale.productIds, product.id].slice(0, 10)
+                            : formData.flashSale.productIds.filter(id => id !== product.id);
+                          setFormData({
+                            ...formData,
+                            flashSale: { ...formData.flashSale, productIds }
+                          });
+                        }}
+                      />
+                      <div className="w-10 h-10 rounded-lg overflow-hidden bg-gray-800">
+                        <img src={getProxyUrl(product.images[0])} alt="" className="w-full h-full object-cover" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold text-white truncate">{product.name}</p>
+                        <p className="text-[10px] font-black text-orange-500 uppercase">৳ {formatPrice(product.discountPrice || product.price)}</p>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+                <p className="text-[10px] text-gray-600 font-black uppercase tracking-wider ml-1">
+                  Selected: {formData.flashSale.productIds.length} / 10
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex justify-end pt-6 border-t border-orange-500/10">
+            <button
+              onClick={handleSave}
+              disabled={isSaving}
+              className="flex items-center px-6 py-3 bg-orange-600 text-white rounded-xl font-black text-base shadow-lg shadow-orange-600/20 hover:bg-orange-700 transition-all disabled:opacity-50 active:scale-95"
             >
               {isSaving ? (
                 <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>

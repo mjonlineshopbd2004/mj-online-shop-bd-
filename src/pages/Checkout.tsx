@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useSettings } from '../contexts/SettingsContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import { formatPrice, getProxyUrl } from '../lib/utils';
 import { DELIVERY_AREAS, PAYMENT_METHODS, BANGLADESH_DISTRICTS } from '../constants';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
@@ -67,6 +68,7 @@ function handleFirestoreError(error: unknown, operationType: OperationType, path
 export default function Checkout() {
   const { selectedItems, selectedSubtotal, clearCart } = useCart();
   const { user, profile, setAuthModalOpen } = useAuth();
+  const { t, translateDistrict } = useLanguage();
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
@@ -149,13 +151,8 @@ export default function Checkout() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) {
-      toast.error('Please login to continue');
-      setAuthModalOpen(true);
-      return;
-    }
 
-    if (!formData.name || !formData.phone || !formData.address || !formData.district || !formData.city) {
+    if (!formData.name || !formData.phone || !formData.address || !formData.district || !formData.city || !formData.email) {
       toast.error('Please fill in all required fields');
       return;
     }
@@ -184,25 +181,25 @@ export default function Checkout() {
         className="flex items-center text-gray-500 font-bold hover:text-orange-600 mb-8 transition-colors"
       >
         <ArrowLeft className="mr-2 h-5 w-5" />
-        Back to Cart
+        {t('backToCart')}
       </button>
 
       <div className="flex flex-col lg:flex-row gap-12 items-stretch lg:items-start">
         <div className="flex-1">
-          <h1 className="text-4xl font-bold tracking-tight text-gray-900 mb-12">Checkout</h1>
+          <h1 className="text-4xl font-bold tracking-tight text-gray-900 mb-12">{t('checkout')}</h1>
 
           <form onSubmit={handleSubmit} className="space-y-12">
             {/* Shipping Info */}
             <section>
               <div className="flex items-center space-x-3 mb-8">
                 <div className="bg-orange-100 p-3 rounded-2xl"><MapPin className="h-6 w-6 text-orange-600" /></div>
-                <h2 className="text-2xl font-bold tracking-tight text-gray-900">Shipping Information</h2>
+                <h2 className="text-2xl font-bold tracking-tight text-gray-900">{t('shippingInfo')}</h2>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Name */}
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-gray-900 flex items-center gap-1">
-                    <span className="text-red-500">*</span> Name
+                    <span className="text-red-500">*</span> {t('name')}
                   </label>
                   <input
                     type="text"
@@ -217,7 +214,7 @@ export default function Checkout() {
                 {/* Phone */}
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-gray-900 flex items-center gap-1">
-                    <span className="text-red-500">*</span> Phone
+                    <span className="text-red-500">*</span> {t('phone')}
                   </label>
                   <input
                     type="tel"
@@ -232,7 +229,7 @@ export default function Checkout() {
                 {/* Email */}
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-gray-900 flex items-center gap-1">
-                    <span className="text-red-500">*</span> Email
+                    <span className="text-red-500">*</span> {t('email')}
                   </label>
                   <input
                     type="email"
@@ -247,7 +244,7 @@ export default function Checkout() {
                 {/* Emergency Number */}
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-gray-900">
-                    Emergency Number
+                    {t('emergencyNumber')}
                   </label>
                   <input
                     type="tel"
@@ -261,7 +258,7 @@ export default function Checkout() {
                 {/* District */}
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-gray-900 flex items-center gap-1">
-                    <span className="text-red-500">*</span> District
+                    <span className="text-red-500">*</span> {t('district')}
                   </label>
                   <select
                     required
@@ -269,9 +266,9 @@ export default function Checkout() {
                     value={formData.district}
                     onChange={(e) => setFormData({ ...formData, district: e.target.value })}
                   >
-                    <option value="">Select District</option>
+                    <option value="">{t('selectDistrict')}</option>
                     {BANGLADESH_DISTRICTS.map(district => (
-                      <option key={district} value={district}>{district}</option>
+                      <option key={district} value={district}>{translateDistrict(district)}</option>
                     ))}
                   </select>
                 </div>
@@ -279,12 +276,12 @@ export default function Checkout() {
                 {/* City */}
                 <div className="space-y-2">
                   <label className="text-sm font-bold text-gray-900 flex items-center gap-1">
-                    <span className="text-red-500">*</span> City
+                    <span className="text-red-500">*</span> {t('city')}
                   </label>
                   <input
                     type="text"
                     required
-                    placeholder="Enter your city"
+                    placeholder={t('enterCity')}
                     className="w-full bg-white border border-gray-200 focus:border-orange-500 focus:ring-1 focus:ring-orange-500 rounded-xl px-4 py-3 outline-none transition-all font-medium text-gray-700"
                     value={formData.city}
                     onChange={(e) => setFormData({ ...formData, city: e.target.value })}
@@ -294,7 +291,7 @@ export default function Checkout() {
                 {/* Address */}
                 <div className="md:col-span-2 space-y-2">
                   <label className="text-sm font-bold text-gray-900 flex items-center gap-1">
-                    <span className="text-red-500">*</span> Address
+                    <span className="text-red-500">*</span> {t('address')}
                   </label>
                   <textarea
                     required
@@ -341,7 +338,7 @@ export default function Checkout() {
             <section>
               <div className="flex items-center space-x-3 mb-8">
                 <div className="bg-orange-100 p-3 rounded-2xl"><Truck className="h-6 w-6 text-orange-600" /></div>
-                <h2 className="text-2xl font-bold tracking-tight text-gray-900">Delivery Area</h2>
+                <h2 className="text-2xl font-bold tracking-tight text-gray-900">{t('deliveryArea')}</h2>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {DELIVERY_AREAS.map((area) => (
@@ -357,9 +354,9 @@ export default function Checkout() {
                     )}
                   >
                     <div className="text-left">
-                      <p className="font-bold text-gray-900">{area.name}</p>
+                      <p className="font-bold text-gray-900">{t(area.id === 'inside-dhaka' ? 'insideDhaka' : 'outsideDhaka')}</p>
                       <p className="text-sm text-gray-500 font-bold">
-                        Delivery Charge: {formatPrice(area.id === 'inside-dhaka' ? settings.deliveryChargeInside : settings.deliveryChargeOutside)}
+                        {t('deliveryCharge')}: {formatPrice(area.id === 'inside-dhaka' ? settings.deliveryChargeInside : settings.deliveryChargeOutside)}
                       </p>
                     </div>
                     {formData.deliveryArea === area.id && <CheckCircle2 className="h-6 w-6 text-orange-600" />}
@@ -372,12 +369,12 @@ export default function Checkout() {
             <section className="animate-in fade-in slide-in-from-bottom-4 duration-500">
               <div className="flex items-center space-x-3 mb-4">
                 <div className="bg-orange-100 p-3 rounded-2xl"><CreditCard className="h-6 w-6 text-orange-600" /></div>
-                <h2 className="text-2xl font-bold tracking-tight text-gray-900">Payment Type</h2>
+                <h2 className="text-2xl font-bold tracking-tight text-gray-900">{t('paymentType')}</h2>
               </div>
-              <p className="text-gray-600 font-bold mb-6">নিচের রেঞ্জ থেকে আপনার অগ্রিম পেমেন্ট পার্সেন্ট সিলেক্ট করুন</p>
+              <p className="text-gray-600 font-bold mb-6">{t('selectAdvancePayment')}</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {[
-                  { id: '100%', name: 'Pay Now 100%', description: 'Pay the full amount now' }
+                  { id: '100%', name: t('payNow100'), description: t('payFullAmount') }
                 ].map((type) => (
                   <button
                     key={type.id}
@@ -426,20 +423,20 @@ export default function Checkout() {
 
             <div className="space-y-4 mb-8 border-t border-white/10 pt-8">
               <div className="flex justify-between text-gray-400 font-bold">
-                <span>Subtotal</span>
+                <span>{t('subtotal')}</span>
                 <span className="text-white">{formatPrice(selectedSubtotal)}</span>
               </div>
               <div className="flex justify-between text-gray-400 font-bold">
-                <span>Delivery Charge</span>
+                <span>{t('shipping')}</span>
                 <span className="text-white">{formatPrice(deliveryCharge)}</span>
               </div>
               <div className="border-t border-white/10 pt-4 flex justify-between items-center">
-                <span className="text-xl font-bold tracking-tight">Total</span>
+                <span className="text-xl font-bold tracking-tight">{t('total')}</span>
                 <span className="text-2xl md:text-3xl font-bold tracking-tight text-orange-500">{formatPrice(total)}</span>
               </div>
               {formData.paymentType && (
                 <div className="flex justify-between items-center text-orange-400 font-bold">
-                  <span>Payable Now ({formData.paymentType})</span>
+                  <span>{t('payableNow')} ({formData.paymentType})</span>
                   <span className="text-lg md:text-xl">{formatPrice(payableAmount)}</span>
                 </div>
               )}
@@ -454,7 +451,7 @@ export default function Checkout() {
                 <div className="h-6 w-6 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
               ) : (
                 <>
-                  <span>Proceed to Payment</span>
+                  <span>{t('proceedToPayment')}</span>
                   <CheckCircle2 className="h-5 w-5 md:h-6 md:w-6" />
                 </>
               )}

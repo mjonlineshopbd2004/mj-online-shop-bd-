@@ -25,6 +25,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import { useWishlist } from '../contexts/WishlistContext';
 import { useSettings } from '../contexts/SettingsContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import { cn, getProxyUrl, triggerHaptic } from '../lib/utils';
 import { toast } from 'sonner';
 import { GoogleGenAI } from "@google/genai";
@@ -34,6 +35,7 @@ export default function Navbar() {
   const { totalItems } = useCart();
   const { items: wishlistItems } = useWishlist();
   const { settings } = useSettings();
+  const { language, setLanguage, t, translateCategory } = useLanguage();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [isCategoriesOpen, setIsCategoriesOpen] = useState(false);
@@ -121,11 +123,12 @@ export default function Navbar() {
   );
 
   const mainNavLinks = [
-    { name: 'Home', path: '/' },
-    { name: 'About', path: '/about' },
-    { name: 'Shop', path: '/products' },
-    { name: 'Vendors', path: '/vendors' },
-    { name: 'Contact', path: '/contact' },
+    { name: t('home'), path: '/' },
+    { name: t('about'), path: '/about' },
+    { name: t('shop'), path: '/products' },
+    { name: t('vendors'), path: '/vendors' },
+    { name: t('contact'), path: '/contact' },
+    { name: t('trackOrder'), path: t('trackOrder') === 'Track Order' ? '/track-order' : '/track-order' },
   ];
 
   return (
@@ -170,7 +173,7 @@ export default function Navbar() {
               </div>
               <input
                 type="text"
-                placeholder="Search products..."
+                placeholder={t('searchPlaceholder')}
                 className="w-full bg-gray-100/50 border-none rounded-full pl-9 pr-10 py-2 outline-none focus:bg-white focus:ring-2 focus:ring-primary/20 transition-all text-[11px] md:text-xs font-medium"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -204,6 +207,28 @@ export default function Navbar() {
 
           {/* Actions */}
           <div className="hidden md:flex items-center gap-2 md:gap-2">
+            {/* Language Switcher */}
+            <div className="flex items-center bg-gray-100 rounded-lg p-1 mr-2">
+              <button
+                onClick={() => setLanguage('bn')}
+                className={cn(
+                  "px-2 py-1 rounded-md text-[9px] font-black transition-all",
+                  language === 'bn' ? "bg-primary text-white shadow-sm" : "text-gray-500 hover:text-gray-700"
+                )}
+              >
+                বাংলা
+              </button>
+              <button
+                onClick={() => setLanguage('en')}
+                className={cn(
+                  "px-2 py-1 rounded-md text-[9px] font-black transition-all",
+                  language === 'en' ? "bg-primary text-white shadow-sm" : "text-gray-500 hover:text-gray-700"
+                )}
+              >
+                EN
+              </button>
+            </div>
+
             {user && isAdmin && (
               <Link 
                 to="/admin" 
@@ -227,7 +252,7 @@ export default function Navbar() {
                       <User className="h-3.5 w-3.5 text-gray-500 group-hover:text-primary" />
                     </div>
                     <div className="hidden lg:block text-left">
-                      <p className="text-[8px] font-bold text-gray-400 uppercase leading-none mb-0.5">Account</p>
+                      <p className="text-[8px] font-bold text-gray-400 uppercase leading-none mb-0.5">{t('account')}</p>
                       <p className="text-[10px] font-black text-gray-900 truncate max-w-[50px]">
                         {profile?.displayName?.split(' ')[0] || 'Profile'}
                       </p>
@@ -243,7 +268,7 @@ export default function Navbar() {
                       className="flex items-center gap-3 px-4 py-2 text-sm font-bold text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors"
                     >
                       <User className="h-4 w-4" />
-                      My Profile
+                      {t('myProfile')}
                     </Link>
                     <Link 
                       to="/orders" 
@@ -251,7 +276,7 @@ export default function Navbar() {
                       className="flex items-center gap-3 px-4 py-2 text-sm font-bold text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors"
                     >
                       <ShoppingCart className="h-4 w-4" />
-                      My Orders
+                      {t('myOrders')}
                     </Link>
                     <div className="h-px bg-gray-100 my-2 mx-4" />
                     <button 
@@ -262,7 +287,7 @@ export default function Navbar() {
                       className="w-full flex items-center gap-3 px-4 py-2 text-sm font-bold text-red-500 hover:bg-red-50 transition-colors"
                     >
                       <LogOut className="h-4 w-4" />
-                      Logout
+                      {t('logout')}
                     </button>
                   </div>
                 )}
@@ -276,8 +301,8 @@ export default function Navbar() {
                   <User className="h-4 w-4 text-gray-500 group-hover:text-primary" />
                 </div>
                 <div className="hidden lg:block text-left">
-                  <p className="text-[8px] font-bold text-gray-400 uppercase leading-none mb-0.5">Account</p>
-                  <p className="text-[10px] font-black text-gray-900 leading-none">Login</p>
+                  <p className="text-[8px] font-bold text-gray-400 uppercase leading-none mb-0.5">{t('account')}</p>
+                  <p className="text-[10px] font-black text-gray-900 leading-none">{t('account') === 'Account' ? 'Login' : 'লগইন'}</p>
                 </div>
               </button>
             )}
@@ -292,8 +317,8 @@ export default function Navbar() {
                 )}
               </div>
               <div className="hidden lg:block text-left">
-                <p className="text-[8px] font-bold text-gray-400 uppercase leading-none mb-0.5">Wishlist</p>
-                <p className="text-[10px] font-black text-gray-900 leading-none">My List</p>
+                <p className="text-[8px] font-bold text-gray-400 uppercase leading-none mb-0.5">{t('myList')}</p>
+                <p className="text-[10px] font-black text-gray-900 leading-none">{t('myList')}</p>
               </div>
             </Link>
 
@@ -307,8 +332,8 @@ export default function Navbar() {
                 )}
               </div>
               <div className="hidden lg:block text-left">
-                <p className="text-[8px] font-bold text-gray-400 uppercase leading-none mb-0.5">My Cart</p>
-                <p className="text-[10px] font-black text-gray-900 leading-none">Total: {totalItems}</p>
+                <p className="text-[8px] font-bold text-gray-400 uppercase leading-none mb-0.5">{t('myCart')}</p>
+                <p className="text-[10px] font-black text-gray-900 leading-none">{t('total')}: {totalItems}</p>
               </div>
             </Link>
           </div>
@@ -332,7 +357,7 @@ export default function Navbar() {
                 className="bg-primary hover:bg-primary-dark text-white px-6 h-full flex items-center gap-3 font-bold text-sm transition-all min-w-[240px]"
               >
                 <Menu className="h-5 w-5" />
-                All Categories
+                {t('allCategories')}
                 <ChevronDown className={cn("h-4 w-4 ml-auto transition-transform", isCategoriesOpen && "rotate-180")} />
               </button>
               
@@ -345,7 +370,7 @@ export default function Navbar() {
                       onClick={() => setIsCategoriesOpen(false)}
                       className="block px-6 py-2.5 text-sm font-semibold text-gray-700 hover:bg-primary/5 hover:text-primary transition-colors"
                     >
-                      {cat}
+                      {translateCategory(cat)}
                     </Link>
                   ))}
                 </div>
@@ -368,14 +393,14 @@ export default function Navbar() {
 
           <div className="flex items-center gap-8">
             <Link to="/products?trending=true" className="text-sm font-bold text-gray-700 hover:text-primary transition-colors">
-              Trending Products
+              {t('trendingProducts')}
             </Link>
             
             {/* Promo Banner */}
             <div className="bg-primary/10 h-14 flex items-center px-6 relative overflow-hidden group">
               <div className="relative z-10 flex items-center gap-3">
-                <p className="text-sm font-bold text-primary">Get 30% Discount Now</p>
-                <span className="bg-primary text-white text-[10px] font-black px-2 py-0.5 rounded-full uppercase">Sale</span>
+                <p className="text-sm font-bold text-primary">{t('discountPromo')}</p>
+                <span className="bg-primary text-white text-[10px] font-black px-2 py-0.5 rounded-full uppercase">{t('sale')}</span>
               </div>
               <div className="absolute top-0 right-0 w-24 h-full bg-primary/20 -skew-x-12 translate-x-12 group-hover:translate-x-8 transition-transform"></div>
             </div>

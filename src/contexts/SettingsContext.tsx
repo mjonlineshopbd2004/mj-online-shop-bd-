@@ -33,6 +33,13 @@ interface MobileBankingDetails {
   logo: string;
 }
 
+interface FlashSale {
+  active: boolean;
+  endTime: string;
+  title: string;
+  productIds: string[];
+}
+
 export interface SiteSettings {
   storeName: string;
   shopTagline: string;
@@ -88,6 +95,7 @@ export interface SiteSettings {
   categories: Category[];
   banks: BankDetails[];
   mobileBanking: MobileBankingDetails[];
+  flashSale: FlashSale;
 }
 
 interface SettingsContextType {
@@ -170,6 +178,12 @@ export const defaultSettings: SiteSettings = {
     { id: 'nagad', name: 'Nagad', number: '01810580592', type: 'personal', logo: 'https://raw.githubusercontent.com/tusharnit/bangladesh-payment-gateways/master/logos/nagad.png' },
     { id: 'rocket', name: 'Rocket', number: '01810580592', type: 'personal', logo: 'https://raw.githubusercontent.com/tusharnit/bangladesh-payment-gateways/master/logos/rocket.png' },
   ],
+  flashSale: {
+    active: true,
+    endTime: new Date(Date.now() + 86400000).toISOString(),
+    title: 'Flash Sale',
+    productIds: ['p1', 'p2', 'p3', 'p5']
+  }
 };
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
